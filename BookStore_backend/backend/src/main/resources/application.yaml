@@ -2,9 +2,9 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/bookstore?timezone=Asia/Ho_Chi_Minh
+    url: jdbc:postgresql://localhost:5432/BOOKSTORE_DB?timezone=Asia/Ho_Chi_Minh
     username: postgres
-    password: 123456
+    password: 240206
     driver-class-name: org.postgresql.Driver
 
   jpa:
