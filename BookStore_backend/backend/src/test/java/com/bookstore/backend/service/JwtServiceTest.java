@@ -3,12 +3,14 @@ package com.bookstore.backend.service;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
@@ -31,22 +33,26 @@ class JwtServiceTest {
     void setUp() {
         JwtProperties jwtProperties = new JwtProperties(
                 "bookstore-secret-key-for-jwt-signing-2026-safe",
+                "bookstore-backend",
                 60
         );
         SecretKey secretKey = new SecretKeySpec(jwtProperties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         JwtEncoder jwtEncoder = new NimbusJwtEncoder(new ImmutableSecret<>(secretKey));
-        JwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey)
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+        jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(jwtProperties.issuer()));
         jwtService = new JwtService(jwtEncoder, jwtDecoder, jwtProperties);
     }
 
     @Test
     void shouldGenerateAndValidateToken() {
-        JwtTokenResponse tokenResponse = jwtService.generateToken("bookstore-user");
+        JwtTokenResponse tokenResponse = jwtService.generateToken("bookstore-user", List.of("ADMIN"));
 
         assertNotNull(tokenResponse.token());
         assertEquals("Bearer", tokenResponse.tokenType());
+        assertEquals("bookstore-user", tokenResponse.subject());
+        assertEquals(List.of("ADMIN"), tokenResponse.roles());
         assertNotNull(tokenResponse.issuedAt());
         assertNotNull(tokenResponse.expiresAt());
 
@@ -54,6 +60,7 @@ class JwtServiceTest {
 
         assertTrue(validationResponse.valid());
         assertEquals("bookstore-user", validationResponse.subject());
+        assertEquals(List.of("ADMIN"), validationResponse.roles());
         assertEquals("Token is valid", validationResponse.message());
         assertNotNull(validationResponse.issuedAt());
         assertNotNull(validationResponse.expiresAt());

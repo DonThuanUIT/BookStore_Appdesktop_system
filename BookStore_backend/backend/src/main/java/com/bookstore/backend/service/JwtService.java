@@ -1,5 +1,6 @@
 package com.bookstore.backend.service;
 
+import java.util.List;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -30,21 +31,23 @@ public class JwtService {
         this.jwtProperties = jwtProperties;
     }
 
-    public JwtTokenResponse generateToken(String subject) {
+    public JwtTokenResponse generateToken(String subject, List<String> roles) {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(jwtProperties.expirationMinutes(), ChronoUnit.MINUTES);
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(subject)
+                .issuer(jwtProperties.issuer())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
+                .claim("roles", roles)
                 .build();
 
         String token = jwtEncoder.encode(
                 JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)
         ).getTokenValue();
 
-        return new JwtTokenResponse(token, "Bearer", issuedAt, expiresAt);
+        return new JwtTokenResponse(token, "Bearer", subject, roles, issuedAt, expiresAt);
     }
 
     public JwtValidationResponse validateToken(String token) {
@@ -53,12 +56,13 @@ public class JwtService {
             return new JwtValidationResponse(
                     true,
                     jwt.getSubject(),
+                    jwt.getClaimAsStringList("roles"),
                     jwt.getIssuedAt(),
                     jwt.getExpiresAt(),
                     "Token is valid"
             );
         } catch (JwtException ex) {
-            return new JwtValidationResponse(false, null, null, null, ex.getMessage());
+            return new JwtValidationResponse(false, null, null, null, null, ex.getMessage());
         }
     }
 }
