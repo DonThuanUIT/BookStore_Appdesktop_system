@@ -2,6 +2,7 @@ package com.bookstore.backend.controller;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,11 @@ import com.bookstore.backend.dto.request.LoginRequest;
 import com.bookstore.backend.dto.response.JwtTokenResponse;
 import com.bookstore.backend.dto.response.UserProfileResponse;
 import com.bookstore.backend.service.AuthService;
-
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
+@Tag(name = "Auth")
+@SecurityRequirement(name = "bearerAuth")
 public class AuthController {
 
     private final AuthService authService;

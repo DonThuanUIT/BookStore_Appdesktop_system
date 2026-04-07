@@ -1,31 +1,10 @@
 spring:
   application:
     name: backend
-  datasource:
-    url: jdbc:postgresql://localhost:5432/bookstore?timezone=Asia/Ho_Chi_Minh
-    username: postgres
-    password: 123456
-    driver-class-name: org.postgresql.Driver
+  profiles:
+    active: local
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-
-app:
-  jwt:
-    secret: ${JWT_SECRET}
-    issuer: ${JWT_ISSUER:bookstore-backend}
-    expiration-minutes: 60
