@@ -1,0 +1,96 @@
+.root {
+    -fx-primary-black: #050505;
+    -fx-primary-white: #FFFFFF;
+    -fx-accent-gold: #D4AF37;
+    -fx-input-bg: #C2BA9B;
+    -fx-border-color: #E0E0E0;
+    -fx-font-family: "Segoe UI", "Open Sans", sans-serif;
+}
+
+.bg-black {
+    -fx-background-color: -fx-primary-black;
+}
+
+.bg-white {
+    -fx-background-color: -fx-primary-white;
+}
+
+.text-title-gold {
+    -fx-text-fill: -fx-accent-gold;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.text-subtitle-gold {
+    -fx-text-fill: -fx-accent-gold;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.text-body-white {
+    -fx-text-fill: -fx-primary-white;
+    -fx-font-size: 14px;
+}
+
+.text-body-black {
+    -fx-text-fill: -fx-primary-black;
+    -fx-font-size: 14px;
+}
+
+.custom-input {
+    -fx-background-color: -fx-input-bg;
+    -fx-text-fill: -fx-primary-black;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px 15px;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #555555;
+}
+
+.custom-input:focused {
+    -fx-border-color: -fx-accent-gold;
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-insets: 2;
+}
+
+.btn-primary {
+    -fx-background-color: -fx-accent-gold;
+    -fx-text-fill: -fx-primary-white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 25px;
+    -fx-cursor: hand;
+    -fx-padding: 10px 40px;
+}
+
+.btn-primary:hover {
+    -fx-background-color: derive(-fx-accent-gold, -10%);
+}
+
+.btn-text-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-accent-gold;
+    -fx-cursor: hand;
+    -fx-underline: true;
+}
+
+.nav-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-primary-white;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.nav-link:hover {
+    -fx-text-fill: -fx-accent-gold;
+}
+
+.book-card {
+    -fx-background-color: -fx-primary-white;
+    -fx-border-color: -fx-border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
+}
