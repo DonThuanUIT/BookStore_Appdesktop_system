@@ -7,7 +7,7 @@ spring:
 #    url: jdbc:postgresql://localhost:5432/BOOKSTORE_DB?timezone=Asia/Ho_Chi_Minh
 #    username: postgres
 #    password: 240206
-#    driver-class-name: org.postgresql.Driver
+#  driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
