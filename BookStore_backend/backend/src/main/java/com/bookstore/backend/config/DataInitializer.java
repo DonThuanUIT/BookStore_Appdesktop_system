@@ -15,9 +15,9 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner seedUsers(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            seedUser(appUserRepository, passwordEncoder, "admin", "Admin@123", Role.ADMIN);
-            seedUser(appUserRepository, passwordEncoder, "staff", "Staff@123", Role.STAFF);
-            seedUser(appUserRepository, passwordEncoder, "customer", "Customer@123", Role.CUSTOMER);
+//            seedUser(appUserRepository, passwordEncoder, "admin", "Admin@123", Role.ADMIN);
+//            seedUser(appUserRepository, passwordEncoder, "staff", "Staff@123", Role.STAFF);
+//            seedUser(appUserRepository, passwordEncoder, "customer", "Customer@123", Role.CUSTOMER);
         };
     }
 

@@ -38,7 +38,10 @@ class AuthServiceTest {
 
     @Test
     void shouldLoginAndReturnJwtWithRole() {
-        AppUser user = new AppUser("admin", "encoded-password", Role.ADMIN);
+//        AppUser user = new AppUser("admin", "encoded-password", Role.ADMIN);
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN"); // Hoặc set giá trị tương ứng với logic của bạn
+        AppUser user = new AppUser("admin", "password", adminRole);
         JwtTokenResponse tokenResponse = new JwtTokenResponse(
                 "token-value",
                 "Bearer",
@@ -60,7 +63,10 @@ class AuthServiceTest {
 
     @Test
     void shouldRejectInvalidPassword() {
-        AppUser user = new AppUser("admin", "encoded-password", Role.ADMIN);
+//        AppUser user = new AppUser("admin", "encoded-password", Role.ADMIN);
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN"); // Hoặc set giá trị tương ứng với logic của bạn
+        AppUser user = new AppUser("admin", "password", adminRole);
 
         when(appUserRepository.findByUsername("admin")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong-password", "encoded-password")).thenReturn(false);

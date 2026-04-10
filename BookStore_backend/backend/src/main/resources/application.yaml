@@ -3,8 +3,8 @@ spring:
     active: local
   application:
     name: backend
-  profiles:
-    active: local
+#  profiles:
+#    active: local
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/BOOKSTORE_DB?timezone=Asia/Ho_Chi_Minh
 #    username: postgres
@@ -18,3 +18,9 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+app:
+  jwt:
+    # Chuỗi secret này dùng để mã hóa Token, phải đủ dài (ít nhất 32 ký tự)
+    secret: "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#"
+    issuer: "BookStoreBackend"
+    expiration-minutes: 60
