@@ -1,96 +1,63 @@
-.root {
-    -fx-primary-black: #050505;
-    -fx-primary-white: #FFFFFF;
-    -fx-accent-gold: #D4AF37;
-    -fx-input-bg: #C2BA9B;
-    -fx-border-color: #E0E0E0;
-    -fx-font-family: "Segoe UI", "Open Sans", sans-serif;
-}
-
-.bg-black {
-    -fx-background-color: -fx-primary-black;
-}
-
-.bg-white {
-    -fx-background-color: -fx-primary-white;
-}
+.bg-black { -fx-background-color: #000000; }
 
 .text-title-gold {
-    -fx-text-fill: -fx-accent-gold;
-    -fx-font-size: 28px;
+    -fx-font-size: 26px;
     -fx-font-weight: bold;
+    -fx-text-fill: #C2991D;
 }
 
 .text-subtitle-gold {
-    -fx-text-fill: -fx-accent-gold;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
+    -fx-text-fill: #C2991D;
 }
 
-.text-body-white {
-    -fx-text-fill: -fx-primary-white;
-    -fx-font-size: 14px;
+.text-description {
+    -fx-text-fill: #AAAAAA;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 3px;
 }
 
-.text-body-black {
-    -fx-text-fill: -fx-primary-black;
-    -fx-font-size: 14px;
-}
-
+/* Ô nhập liệu màu vàng đất đặc trưng */
 .custom-input {
-    -fx-background-color: -fx-input-bg;
-    -fx-text-fill: -fx-primary-black;
-    -fx-background-radius: 8px;
-    -fx-padding: 12px 15px;
-    -fx-font-size: 14px;
+    -fx-background-color: #C5C183;
+    -fx-background-radius: 10;
+    -fx-pref-height: 48;
+    -fx-text-fill: #222222;
     -fx-prompt-text-fill: #555555;
+    -fx-padding: 0 40 0 15;
 }
 
-.custom-input:focused {
-    -fx-border-color: -fx-accent-gold;
-    -fx-border-width: 2px;
-    -fx-border-radius: 6px;
-    -fx-background-insets: 2;
-}
-
-.btn-primary {
-    -fx-background-color: -fx-accent-gold;
-    -fx-text-fill: -fx-primary-white;
+.input-icon {
+    -fx-text-fill: #444444;
     -fx-font-size: 16px;
+    -fx-padding: 0 15 0 0;
+}
+
+.btn-login {
+    -fx-background-color: #C2991D;
+    -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 25px;
+    -fx-background-radius: 20;
+    -fx-pref-height: 40;
     -fx-cursor: hand;
-    -fx-padding: 10px 40px;
 }
 
-.btn-primary:hover {
-    -fx-background-color: derive(-fx-accent-gold, -10%);
-}
-
-.btn-text-link {
+.btn-google {
     -fx-background-color: transparent;
-    -fx-text-fill: -fx-accent-gold;
-    -fx-cursor: hand;
-    -fx-underline: true;
-}
-
-.nav-link {
-    -fx-background-color: transparent;
-    -fx-text-fill: -fx-primary-white;
+    -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-cursor: hand;
+    -fx-alignment: center-left;
 }
 
-.nav-link:hover {
-    -fx-text-fill: -fx-accent-gold;
+.link-forgot, .link-create {
+    -fx-text-fill: #C2991D;
+    -fx-font-size: 13px;
 }
 
-.book-card {
-    -fx-background-color: -fx-primary-white;
-    -fx-border-color: -fx-border-color;
-    -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
-    -fx-padding: 15px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
+.btn-window {
+    -fx-background-color: transparent;
+    -fx-text-fill: #C2991D;
+    -fx-font-size: 16px;
 }
