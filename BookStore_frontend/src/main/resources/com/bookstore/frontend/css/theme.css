@@ -1,32 +1,56 @@
+@import "colors.css";
 .bg-black { -fx-background-color: #000000; }
 
 .text-title-gold {
     -fx-font-size: 26px;
     -fx-font-weight: bold;
     -fx-text-fill: #C2991D;
+    -fx-font-family: serif;
+    -fx-text-alignment: center;
 }
 
 .text-subtitle-gold {
-    -fx-font-size: 20px;
+    -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-text-fill: #C2991D;
+    -fx-text-fill: -text-title;
+    -fx-font-family: serif;
+    -fx-text-alignment: center;
 }
 
 .text-description {
     -fx-text-fill: #AAAAAA;
     -fx-font-size: 13px;
     -fx-line-spacing: 3px;
+    -fx-font-family: sans-serif;
+    -fx-text-alignment: center;
 }
 
-/* Ô nhập liệu màu vàng đất đặc trưng */
+.btn-eye {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-text-fill: #444444;
+    -fx-font-size: 16px;
+    -fx-border-color: transparent;
+    -fx-focus-traversable: false;
+}
+
+.btn-eye:hover {
+    -fx-text-fill: #000000;
+}
+
 .custom-input {
     -fx-background-color: #C5C183;
     -fx-background-radius: 10;
     -fx-pref-height: 48;
-    -fx-text-fill: #222222;
-    -fx-prompt-text-fill: #555555;
-    -fx-padding: 0 40 0 15;
+    -fx-padding: 0 45 0 15;
+    -fx-text-fill: #000000;
+    -fx-prompt-text-fill: -text-placeholder;
+    -fx-prompt-font-weight: bold;
+    -fx-font-family: serif;
+    -fx-font-size: 14px;
+    -fx-padding: 0 0 0 20;
 }
+
 
 .input-icon {
     -fx-text-fill: #444444;
@@ -35,12 +59,15 @@
 }
 
 .btn-login {
-    -fx-background-color: #C2991D;
+    -fx-background-color: -bg-button;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 20;
+    -fx-background-radius: 12;
     -fx-pref-height: 40;
+    -fx-pref-width: 120;
     -fx-cursor: hand;
+    -fx-font-size: 16px;
+    -fx-font-family: serif;
 }
 
 .btn-google {
@@ -52,8 +79,18 @@
 }
 
 .link-forgot, .link-create {
-    -fx-text-fill: #C2991D;
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
+    -fx-font-family: sans-serif;
+}
+
+.link-create {
+    -fx-text-fill: -text-title-brighter;
+    -fx-font-weight: bold;
+}
+
+.link-forgot {
+    -fx-font-size: 14px;
+    -fx-text-fill: -secondary-gold;
 }
 
 .btn-window {

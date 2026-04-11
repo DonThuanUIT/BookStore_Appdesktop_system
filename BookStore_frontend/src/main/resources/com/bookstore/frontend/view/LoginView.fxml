@@ -32,20 +32,20 @@
          </children>
       </StackPane>
 
-      <VBox alignment="CENTER_LEFT" spacing="20.0" styleClass="bg-black" HBox.hgrow="ALWAYS">
+      <VBox alignment="CENTER_LEFT" spacing="40.0" styleClass="bg-black" HBox.hgrow="ALWAYS">
          <padding>
             <Insets bottom="30.0" left="60.0" right="60.0" top="50.0" />
          </padding>
          <children>
             <VBox spacing="10.0">
                <children>
-                  <Label styleClass="text-title-gold" text="Welcome to Neth BookPoint!" wrapText="true" maxWidth="Infinity" />
-                  <Label styleClass="text-description" wrapText="true" maxWidth="450.0"
+                  <Label alignment="CENTER" styleClass="text-title-gold" text="Welcome to Neth BookPoint!" wrapText="true" maxWidth="Infinity" />
+                  <Label alignment="CENTER" styleClass="text-description" wrapText="true" maxWidth="450.0"
                          text="Discover a seamless way to sell your books and unlock exclusive benefits. Enjoy a hassle-free experience, save valuable time, and take advantage of our amazing offers." />
                </children>
             </VBox>
 
-            <Label styleClass="text-subtitle-gold" text="Login to Your Account!" />
+            <Label alignment="CENTER" maxWidth="Infinity" styleClass="text-subtitle-gold" text="Login to Your Account!" />
 
             <VBox maxWidth="420.0" spacing="18.0">
                <children>
@@ -58,8 +58,15 @@
 
                   <StackPane alignment="CENTER_RIGHT">
                      <children>
+                        <TextField fx:id="txtPasswordVisible" promptText="Enter Password" styleClass="custom-input" visible="false" />
+
                         <PasswordField fx:id="txtPassword" promptText="Enter Password" styleClass="custom-input" />
-                        <Label styleClass="input-icon" text="👁" />
+
+                        <Button fx:id="btnTogglePassword" onAction="#togglePassword" styleClass="btn-eye" text="👁">
+                           <StackPane.margin>
+                              <Insets right="4.0" />
+                           </StackPane.margin>
+                        </Button>
                      </children>
                   </StackPane>
 
@@ -67,7 +74,7 @@
 
                   <Label fx:id="lblMessage" style="-fx-text-fill: #ff5555; -fx-font-weight: bold;" wrapText="true" />
 
-                  <HBox alignment="CENTER_LEFT" spacing="5.0">
+                  <HBox alignment="CENTER_LEFT" spacing="60.0" style="-fx-font-size: 16px;">
                      <children>
                         <Label style="-fx-text-fill: white;" text="Don't you have an account?" />
                         <Hyperlink styleClass="link-create" text="Create an account" />
@@ -78,7 +85,7 @@
                      <children>
                         <Button graphicTextGap="12.0" minWidth="190.0" styleClass="btn-google" text="Login with Google">
                            <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0"><Image url="@../image/google.png" /></ImageView>
+                              <ImageView fitHeight="40.0" fitWidth="40.0"><Image url="@../image/google.png" /></ImageView>
                            </graphic>
                         </Button>
                         <Region HBox.hgrow="ALWAYS" />
