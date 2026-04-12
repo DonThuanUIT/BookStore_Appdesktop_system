@@ -3,6 +3,8 @@ package com.bookstore.backend;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.util.TimeZone;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -12,6 +14,8 @@ import java.awt.Desktop;
 import java.net.URI;
 
 @SpringBootApplication
+@EntityScan("com.bookstore.backend.entity")
+@EnableJpaRepositories("com.bookstore.backend.repository")
 public class BackendApplication {
 
 
