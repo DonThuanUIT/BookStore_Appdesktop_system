@@ -203,3 +203,4 @@ README.html
 
 .env
 docker-compose.override.yml
+application-local.yml
