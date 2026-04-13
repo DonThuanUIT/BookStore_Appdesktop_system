@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin")
 @Tag(name = "Admin Only")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
+
     @GetMapping("/users")
-    public String getAllUsers(){
-        return "Danh sách người dùng hệ thống";
+    public String getAllUsers() {
+        return "Danh sach nguoi dung he thong";
     }
 }

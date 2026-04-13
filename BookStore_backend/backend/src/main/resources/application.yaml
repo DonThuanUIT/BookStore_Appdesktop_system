@@ -24,4 +24,5 @@ springdoc:
 app:
   jwt:
     secret: ${JWT_SECRET:bookstore-secret-key-for-jwt-signing-2026-safe}
+    issuer: bookstore-backend
     expiration-minutes: 60

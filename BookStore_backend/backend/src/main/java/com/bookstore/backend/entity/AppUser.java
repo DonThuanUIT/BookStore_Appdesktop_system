@@ -6,11 +6,11 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
 @Table(name = "users")
+
 public class AppUser {
 
     @Id
@@ -29,7 +29,8 @@ public class AppUser {
 
 //    protected AppUser() {
 //    }
-
+    public AppUser() {
+    }
     public AppUser(String username, String password, Role role) {
         this.username = username;
         this.password = password;
