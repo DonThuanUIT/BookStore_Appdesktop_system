@@ -54,8 +54,6 @@ public class AuthService {
     public JwtTokenResponse login(String username, String password) {
         AppUser user = appUserRepository.findByUsername(username)
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
-        System.out.println(user.getPassword());
-        System.out.println(passwordEncoder.matches("12345", user.getPassword()));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
         }
