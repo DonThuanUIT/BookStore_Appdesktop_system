@@ -14,12 +14,12 @@ public class BookController {
 
     @GetMapping
     public String getAllBooks() {
-        return "Danh sách sách: Mọi người (bao gồm CUSTOMER) đều xem được.";
+        return "Danh sach sach.";
     }
 
     @PostMapping("/add")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public String addBook() {
-        return "Thêm sách thành công! (Chỉ dành cho ADMIN/STAFF)";
+        return "Them sach thanh cong.";
     }
 }

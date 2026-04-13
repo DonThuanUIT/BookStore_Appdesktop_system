@@ -30,10 +30,10 @@ public class JwtConfig {
             return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         }
 
-    @Bean
-    public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
-    }
+   // @Bean
+  //  public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
+   //     return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
+   // }
 
 //    @Bean
 //    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey, JwtProperties jwtProperties) {

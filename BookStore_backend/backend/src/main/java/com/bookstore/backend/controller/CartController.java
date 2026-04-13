@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/cart")
 @Tag(name = "Cart")
-@PreAuthorize("hasRole('ROLE_CUSTOMER')")
+@PreAuthorize("hasRole('CUSTOMER')")
 public class CartController {
 
     @GetMapping
     public String getMyCart() {
-        return "Đây là giỏ hàng của bạn (Customer).";
+        return "Day la gio hang cua ban.";
     }
 }
