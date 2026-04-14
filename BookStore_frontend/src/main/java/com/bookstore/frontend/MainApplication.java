@@ -12,13 +12,12 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view/LoginView.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view/MainLayout.fxml"));
 
         Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
 
         stage.setTitle("BookStore - Login");
         stage.setScene(scene);
-        stage.setResizable(false);
         stage.show();
     }
 
