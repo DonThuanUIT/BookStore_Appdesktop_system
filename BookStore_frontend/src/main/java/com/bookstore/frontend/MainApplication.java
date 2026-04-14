@@ -25,14 +25,19 @@ public class MainApplication extends Application {
         }
     }
 
+<<<<<<< HEAD
     public static void showView(String fxmlFileName, String title) throws IOException {
         String resourcePath = fxmlFileName.startsWith("/") ? fxmlFileName : VIEW_BASE_PATH + fxmlFileName;
         URL fxmlLocation = MainApplication.class.getResource(resourcePath);
+=======
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view/MainLayout.fxml"));
+>>>>>>> origin/main
 
         if (fxmlLocation == null) {
             throw new IOException("Resource not found: " + resourcePath);
         }
 
+<<<<<<< HEAD
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         Parent root = loader.load();
 
@@ -48,6 +53,11 @@ public class MainApplication extends Application {
         primaryStage.setResizable(false);
         primaryStage.centerOnScreen();
         primaryStage.show();
+=======
+        stage.setTitle("BookStore - Login");
+        stage.setScene(scene);
+        stage.show();
+>>>>>>> origin/main
     }
 
     public static void main(String[] args) {

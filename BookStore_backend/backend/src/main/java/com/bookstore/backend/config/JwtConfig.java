@@ -20,20 +20,20 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 @EnableConfigurationProperties(JwtProperties.class)
 public class JwtConfig {
 
-    //    @Bean
+//    @Bean
 //    public SecretKey jwtSecretKey(JwtProperties jwtProperties) {
 //        return new SecretKeySpec(jwtProperties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 //    }
-    @Bean
-    public SecretKey jwtSecretKey() {
-        String secret = "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#";
-        return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-    }
+        @Bean
+        public SecretKey jwtSecretKey() {
+            String secret = "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#";
+            return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        }
 
-    // @Bean
-    //  public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
-    //     return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
-    // }
+   // @Bean
+  //  public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
+   //     return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
+   // }
 
 //    @Bean
 //    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey, JwtProperties jwtProperties) {

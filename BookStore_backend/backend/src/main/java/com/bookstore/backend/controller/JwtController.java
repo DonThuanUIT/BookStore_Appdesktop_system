@@ -1,8 +1,8 @@
 package com.bookstore.backend.controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookstore.backend.dto.request.JwtValidationRequest;
 import com.bookstore.backend.dto.response.JwtValidationResponse;
 import com.bookstore.backend.service.JwtService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
-@RequestMapping("/auth/jwt")
+@RequestMapping("/api/auth/jwt")
 @Tag(name = "JWT")
 @SecurityRequirement(name = "bearerAuth")
 public class JwtController {
