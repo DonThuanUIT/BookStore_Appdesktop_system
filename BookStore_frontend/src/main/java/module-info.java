@@ -1,7 +1,7 @@
 module com.bookstore.frontend {
     requires javafx.controls;
     requires javafx.fxml;
-
+    requires java.net.http;
     opens com.bookstore.frontend.controller to javafx.fxml;
 
     opens com.bookstore.frontend.model to javafx.base;

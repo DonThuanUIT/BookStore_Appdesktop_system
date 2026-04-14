@@ -24,23 +24,16 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        // 1. Binding Username và Message
         txtUsername.textProperty().bindBidirectional(model.usernameProperty());
         lblMessage.textProperty().bind(model.messageProperty());
-
         txtPassword.textProperty().bindBidirectional(model.passwordProperty());
         txtPasswordVisible.textProperty().bindBidirectional(model.passwordProperty());
-
 
         txtPasswordVisible.visibleProperty().bind(model.passwordVisibleProperty());
         txtPassword.visibleProperty().bind(model.passwordVisibleProperty().not());
 
         model.passwordVisibleProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                btnTogglePassword.setText("🙈");
-            } else {
-                btnTogglePassword.setText("👁");
-            }
+            btnTogglePassword.setText(newValue ? "🙈" : "👁");
         });
     }
 
@@ -52,5 +45,11 @@ public class LoginController {
     @FXML
     public void togglePassword() {
         interactor.togglePasswordVisibility();
+    }
+
+    // Thêm method này để xử lý sự kiện nút Create Account
+    @FXML
+    public void handleNavigateToRegister() {
+        interactor.navigateToRegister();
     }
 }

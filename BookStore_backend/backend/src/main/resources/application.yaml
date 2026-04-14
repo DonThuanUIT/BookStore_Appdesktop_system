@@ -3,13 +3,6 @@ spring:
     active: local
   application:
     name: backend
-#  profiles:
-#    active: local
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/BOOKSTORE_DB?timezone=Asia/Ho_Chi_Minh
-#    username: postgres
-#    password: 240206
-#  driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,9 +11,17 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-app:
-  jwt:
-    # Chuỗi secret này dùng để mã hóa Token, phải đủ dài (ít nhất 32 ký tự)
-    secret: "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#"
-    issuer: "BookStoreBackend"
-    expiration-minutes: 60
+
+  springdoc:
+    api-docs:
+      path: /v3/api-docs
+    swagger-ui:
+      path: /swagger-ui.html
+      operations-sorter: method
+      tags-sorter: alpha
+
+  app:
+    jwt:
+      secret: ${JWT_SECRET:bookstore-secret-key-for-jwt-signing-2026-safe}
+      issuer: bookstore-backend
+      expiration-minutes: 60

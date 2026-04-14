@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox fx:id="rootNode" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+      prefHeight="650.0" prefWidth="1100.0" stylesheets="@../css/theme.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.RegisterController">
+    <children>
+        <VBox alignment="CENTER_LEFT" spacing="30.0" styleClass="bg-black" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets bottom="30.0" left="60.0" right="60.0" top="40.0" />
+            </padding>
+            <children>
+                <VBox spacing="5.0">
+                    <children>
+                        <Label styleClass="text-title-gold" text="Join Us Today!" />
+                        <Label styleClass="text-description" text="Create an account to start your journey with Neth BookPoint." />
+                    </children>
+                </VBox>
+
+                <VBox maxWidth="420.0" spacing="15.0">
+                    <children>
+                        <StackPane alignment="CENTER_RIGHT">
+                            <children>
+                                <TextField fx:id="txtUsername" promptText="Username" styleClass="custom-input" />
+                                <Label styleClass="input-icon" text="👤" />
+                            </children>
+                        </StackPane>
+
+                        <StackPane alignment="CENTER_RIGHT">
+                            <children>
+                                <TextField fx:id="txtPasswordVisible" promptText="Password" styleClass="custom-input" visible="false" />
+                                <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-input" />
+                                <Button onAction="#togglePassword" styleClass="btn-eye" text="👁" />
+                            </children>
+                        </StackPane>
+
+                        <StackPane alignment="CENTER_RIGHT">
+                            <children>
+                                <TextField fx:id="txtConfirmVisible" promptText="Confirm Password" styleClass="custom-input" visible="false" />
+                                <PasswordField fx:id="txtConfirmPassword" promptText="Confirm Password" styleClass="custom-input" />
+                                <Button onAction="#toggleConfirmPassword" styleClass="btn-eye" text="👁" />
+                            </children>
+                        </StackPane>
+
+                        <Label fx:id="lblMessage" style="-fx-text-fill: #ff5555; -fx-font-weight: bold;" wrapText="true" />
+
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <children>
+                                <Label style="-fx-text-fill: white;" text="Already have an account?" />
+                                <Hyperlink onAction="#navigateToLogin" styleClass="link-create" text="Login here" />
+                            </children>
+                        </HBox>
+
+                        <Button fx:id="btnRegister" maxWidth="Infinity" onAction="#handleRegister" styleClass="btn-login" text="CREATE ACCOUNT" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+
+        <StackPane fx:id="rightPane" style="-fx-background-color: black;" HBox.hgrow="ALWAYS">
+            <children>
+                <ImageView fitHeight="600.0" pickOnBounds="true" preserveRatio="true">
+                    <image><Image url="@../image/Library.png" /></image>
+                </ImageView>
+            </children>
+        </StackPane>
+    </children>
+</HBox>

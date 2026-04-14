@@ -77,8 +77,7 @@
                   <HBox alignment="CENTER_LEFT" spacing="60.0" style="-fx-font-size: 16px;">
                      <children>
                         <Label style="-fx-text-fill: white;" text="Don't you have an account?" />
-                        <Hyperlink styleClass="link-create" text="Create an account" />
-                     </children>
+                        <Hyperlink text="Create Account" onAction="#handleNavigateToRegister" styleClass="link-create"/>                     </children>
                   </HBox>
 
                   <HBox alignment="CENTER_LEFT" spacing="15.0">
