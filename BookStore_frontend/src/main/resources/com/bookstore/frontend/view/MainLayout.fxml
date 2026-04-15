@@ -28,10 +28,8 @@
                     <children>
                         <Button mnemonicParsing="false" onAction="#onCartClick" styleClass="nav-button" text="🛒 Cart" />
                         <Button mnemonicParsing="false" onAction="#onHomeClick" styleClass="nav-button, nav-button-active" text="Home" />
-                        <Button mnemonicParsing="false" onAction="#onAboutClick" styleClass="nav-button" text="About" />
+                        <Button mnemonicParsing="false" onAction="#onInventoryClick" styleClass="nav-button" text="Inventory" />
                         <Button mnemonicParsing="false" onAction="#onShopNavClick" styleClass="nav-button" text="Shop" />
-                        <Button mnemonicParsing="false" onAction="#onDeliveryClick" styleClass="nav-button" text="Delivery Team" />
-                        <Button mnemonicParsing="false" onAction="#onSellersClick" styleClass="nav-button" text="Sellers" />
                     </children>
                 </HBox>
 

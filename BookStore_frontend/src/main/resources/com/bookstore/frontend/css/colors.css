@@ -18,5 +18,5 @@
 
     /* State Colors */
     -fx-error-red: #ff5555;
-    -fx-border-color: #E0E0E0;
+    -custom-border-color: #E0E0E0;
 }

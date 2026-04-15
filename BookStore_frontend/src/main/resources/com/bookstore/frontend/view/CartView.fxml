@@ -9,7 +9,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox prefHeight="730.0" prefWidth="1000.0" styleClass="bg-white" stylesheets="@../css/theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.CartController">
+<HBox prefHeight="730.0" prefWidth="1000.0" styleClass="bg-white"
+      stylesheets="@../css/theme.css" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.CartController">
     <children>
         <VBox prefWidth="300.0" style="-fx-background-color: #0d1b2a;">
             <children>
