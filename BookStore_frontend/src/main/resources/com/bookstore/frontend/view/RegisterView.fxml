@@ -46,6 +46,14 @@
                             </children>
                         </StackPane>
 
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Account Role" style="-fx-text-fill: #b1b1b1; -fx-font-size: 12px;" />
+                                <ComboBox fx:id="cbRole" maxWidth="Infinity" styleClass="custom-input"
+                                          disable="true" style="-fx-opacity: 1; -fx-cursor: default;" />
+                            </children>
+                        </VBox>
+
                         <Label fx:id="lblMessage" style="-fx-text-fill: #ff5555; -fx-font-weight: bold;" wrapText="true" />
 
                         <HBox alignment="CENTER_LEFT" spacing="10.0">

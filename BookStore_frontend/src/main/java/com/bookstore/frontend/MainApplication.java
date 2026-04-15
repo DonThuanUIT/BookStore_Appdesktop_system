@@ -19,45 +19,41 @@ public class MainApplication extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
         try {
+            // Khởi động màn hình Login đầu tiên bằng phương thức showView
             showView("LoginView.fxml", "BookStore - Login");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-<<<<<<< HEAD
     public static void showView(String fxmlFileName, String title) throws IOException {
+        // Logic của bạn: Tự động nối VIEW_BASE_PATH nếu file name không bắt đầu bằng "/"
         String resourcePath = fxmlFileName.startsWith("/") ? fxmlFileName : VIEW_BASE_PATH + fxmlFileName;
         URL fxmlLocation = MainApplication.class.getResource(resourcePath);
-=======
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("view/MainLayout.fxml"));
->>>>>>> origin/main
 
         if (fxmlLocation == null) {
             throw new IOException("Resource not found: " + resourcePath);
         }
 
-<<<<<<< HEAD
+        // Nạp FXML theo fxmlLocation đã xác định
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         Parent root = loader.load();
 
+        // Thiết lập Scene với kích thước 1300x650 như code của bạn
         Scene scene = new Scene(root, 1300, 650);
 
+        // Nạp CSS theme
         URL cssLocation = MainApplication.class.getResource(CSS_PATH);
         if (cssLocation != null) {
             scene.getStylesheets().add(cssLocation.toExternalForm());
         }
 
+        // Cấu hình Stage theo ý bạn
         primaryStage.setTitle(title);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.centerOnScreen();
         primaryStage.show();
-=======
-        stage.setTitle("BookStore - Login");
-        stage.setScene(scene);
-        stage.show();
->>>>>>> origin/main
     }
 
     public static void main(String[] args) {

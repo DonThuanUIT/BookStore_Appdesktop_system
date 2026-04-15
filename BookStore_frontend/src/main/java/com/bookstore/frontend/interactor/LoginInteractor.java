@@ -2,7 +2,11 @@ package com.bookstore.frontend.interactor;
 
 import com.bookstore.frontend.MainApplication;
 import com.bookstore.frontend.model.LoginModel;
+import com.bookstore.frontend.navigation.NavigationService;
+import com.bookstore.frontend.navigation.PageType;
+import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
+import javafx.scene.control.Alert.AlertType;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,9 +21,16 @@ public class LoginInteractor {
     }
 
     public void login() {
+        String username = model.usernameProperty().get();
+        String password = model.passwordProperty().get();
+
+        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
+            AlertUtils.show(AlertType.WARNING, "Login Warning", "Please enter both username and password!");
+            return;
+        }
+
         model.loadingProperty().set(true);
-        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}",
-                model.usernameProperty().get(), model.passwordProperty().get());
+        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/api/auth/login"))
@@ -31,25 +42,38 @@ public class LoginInteractor {
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
-                        model.messageProperty().set("Login Success!");
+                        AlertUtils.show(AlertType.INFORMATION, "Success", "Login Successful!");
+                        // CHỈ THỰC HIỆN CHUYỂN TRANG TỪ ĐÂY
+                        navigateToHome(username);
                     } else {
-                        model.messageProperty().set("Invalid credentials!");
+                        AlertUtils.show(AlertType.ERROR, "Authentication Failed", "Invalid username or password.");
                     }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         model.loadingProperty().set(false);
-                        model.messageProperty().set("Server connection failed.");
+                        AlertUtils.show(AlertType.ERROR, "Connection Error", "Could not connect to the server.");
                     });
                     return null;
                 });
+    }
+
+    private void navigateToHome(String username) {
+        try {
+            // Bước 1: Mở khung MainLayout (có thanh điều hướng)
+            MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
+
+            // Bước 2: Dùng NavigationService nạp HomeView vào vùng giữa
+            NavigationService.getInstance().navigateTo(PageType.HOME, username);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void togglePasswordVisibility() {
         model.passwordVisibleProperty().set(!model.passwordVisibleProperty().get());
     }
 
-    // Logic chuyển trang
     public void navigateToRegister() {
         try {
             MainApplication.showView("RegisterView.fxml", "BookStore - Register");
