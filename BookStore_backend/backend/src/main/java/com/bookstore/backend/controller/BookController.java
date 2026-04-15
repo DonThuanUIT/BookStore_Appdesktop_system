@@ -32,13 +32,9 @@ public class BookController {
     public ResponseEntity<?> addBook(
             @RequestPart("title") String title,
             @RequestPart("image") MultipartFile image) {
-        try{
-            String imageUrl = imageService.uploadImage(image);
-            return ResponseEntity.ok("Success! Book title: " + title + ". Image URL: " + imageUrl);
-        }catch (IOException e){
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Image upload error: " + e.getMessage());
-        }
+        String imageUrl = imageService.uploadImage(image);
+
+        return ResponseEntity.ok("Success! Book title: " + title + ". Image URL: " + imageUrl);
     }
 
 
