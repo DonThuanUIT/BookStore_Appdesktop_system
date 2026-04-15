@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="800.0" prefWidth="1200.0"
+            styleClass="bg-black" stylesheets="@../css/theme.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.bookstore.frontend.controller.MainController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" prefHeight="70.0" spacing="20.0" styleClass="nav-bar" BorderPane.alignment="CENTER">
+            <children>
+
+                <ImageView fitHeight="50.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../image/logo.png" />
+                    </image>
+                </ImageView>
+
+                <HBox alignment="CENTER" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#onCartClick" styleClass="nav-button" text="🛒 Cart" />
+                        <Button mnemonicParsing="false" onAction="#onHomeClick" styleClass="nav-button, nav-button-active" text="Home" />
+                        <Button mnemonicParsing="false" onAction="#onAboutClick" styleClass="nav-button" text="About" />
+                        <Button mnemonicParsing="false" onAction="#onShopNavClick" styleClass="nav-button" text="Shop" />
+                        <Button mnemonicParsing="false" onAction="#onDeliveryClick" styleClass="nav-button" text="Delivery Team" />
+                        <Button mnemonicParsing="false" onAction="#onSellersClick" styleClass="nav-button" text="Sellers" />
+                    </children>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="20.0">
+                    <children>
+
+                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true" styleClass="btn-icon">
+
+                        </ImageView>
+                        <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+
+                        </ImageView>
+                    </children>
+                </HBox>
+
+            </children>
+            <padding>
+                <Insets left="20.0" right="20.0" />
+            </padding>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentArea" prefHeight="150.0" prefWidth="200.0" styleClass="bg-white" BorderPane.alignment="CENTER" />
+    </center>
+
+</BorderPane>

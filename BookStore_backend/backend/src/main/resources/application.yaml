@@ -26,3 +26,7 @@ app:
     secret: ${JWT_SECRET:bookstore-secret-key-for-jwt-signing-2026-safe}
     issuer: bookstore-backend
     expiration-minutes: 60
+cloudinary:
+  cloud-name: diyllh0nb
+  api-key: 616741512236885
+  api-secret: ios3hWyIrsdljGXYyAYwVb3o3Rk

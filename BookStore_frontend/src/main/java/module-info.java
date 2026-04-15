@@ -9,4 +9,6 @@ module com.bookstore.frontend {
     exports com.bookstore.frontend;
     exports com.bookstore.frontend.controller;
     exports com.bookstore.frontend.model;
+
+    exports com.bookstore.frontend.navigation;
 }
