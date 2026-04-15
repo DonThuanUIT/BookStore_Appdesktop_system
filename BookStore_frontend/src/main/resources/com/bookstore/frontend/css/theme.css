@@ -1,28 +1,63 @@
 @import "colors.css";
-.bg-black { -fx-background-color: #000000; }
 
+.bg-black { -fx-background-color: -fx-primary-black; }
+.bg-white { -fx-background-color: -fx-primary-white; }
+
+/* Typography */
 .text-title-gold {
     -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-text-fill: #C2991D;
-    -fx-font-family: serif;
+    -fx-text-fill: -fx-accent-gold;
+    -fx-font-family: "Serif";
     -fx-text-alignment: center;
 }
 
 .text-subtitle-gold {
-    -fx-font-size: 26px;
+    -fx-font-size: 22px;
     -fx-font-weight: bold;
-    -fx-text-fill: -text-title;
-    -fx-font-family: serif;
+    -fx-text-fill: -fx-bright-gold;
+    -fx-font-family: "Serif";
     -fx-text-alignment: center;
 }
 
 .text-description {
-    -fx-text-fill: #AAAAAA;
+    -fx-text-fill: -text-description;
     -fx-font-size: 13px;
     -fx-line-spacing: 3px;
-    -fx-font-family: sans-serif;
+    -fx-font-family: "Sans-serif";
     -fx-text-alignment: center;
+}
+
+/* Input Fields */
+.custom-input {
+    -fx-background-color: -fx-input-yellow;
+    -fx-background-radius: 10;
+    -fx-pref-height: 48;
+    -fx-text-fill: -fx-primary-black;
+    -fx-prompt-text-fill: -text-placeholder;
+    -fx-font-size: 14px;
+    -fx-padding: 0 45 0 20; /* Chừa khoảng trống bên phải cho icon/eye button */
+    -fx-border-color: transparent;
+}
+
+.custom-input:focused {
+    -fx-border-color: -fx-accent-gold;
+    -fx-border-radius: 10;
+    -fx-border-width: 1.5;
+}
+
+/* Buttons */
+.btn-login {
+    -fx-background-color: -fx-button-gold;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-font-size: 15px;
+}
+
+.btn-login:hover {
+    -fx-background-color: -fx-accent-gold;
 }
 
 .btn-eye {
@@ -30,78 +65,13 @@
     -fx-cursor: hand;
     -fx-text-fill: #444444;
     -fx-font-size: 16px;
-    -fx-border-color: transparent;
-    -fx-focus-traversable: false;
 }
 
-.btn-eye:hover {
-    -fx-text-fill: #000000;
-}
-
-.custom-input {
-    -fx-background-color: #C5C183;
-    -fx-background-radius: 10;
-    -fx-pref-height: 48;
-    -fx-padding: 0 45 0 15;
-    -fx-text-fill: #000000;
-    -fx-prompt-text-fill: -text-placeholder;
-    -fx-prompt-font-weight: bold;
-    -fx-font-family: serif;
-    -fx-font-size: 14px;
-    -fx-padding: 0 0 0 20;
-}
-
-
-.input-icon {
-    -fx-text-fill: #444444;
-    -fx-font-size: 16px;
-    -fx-padding: 0 15 0 0;
-}
-
-.btn-login {
-    -fx-background-color: -bg-button;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 12;
-    -fx-pref-height: 40;
-    -fx-pref-width: 120;
-    -fx-cursor: hand;
-    -fx-font-size: 16px;
-    -fx-font-family: serif;
-}
-
-.btn-google {
-    -fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-    -fx-alignment: center-left;
-}
-
-.link-forgot, .link-create {
-    -fx-font-size: 16px;
-    -fx-font-family: sans-serif;
-}
-
-.btn-window {
-    -fx-background-color: transparent;
-    -fx-text-fill: #C2991D;
-    -fx-font-size: 16px;
-}
-.book-card {
-    -fx-background-color: -fx-primary-white;
-    -fx-border-color: -fx-border-color;
-    -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
-    -fx-padding: 15px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
-}
-
+/* Navigation */
 .nav-bar {
-    -fx-background-color: -fx-primary-black;
+    -fx-background-color: -fx-secondary-black;
     -fx-border-color: transparent transparent -fx-accent-gold transparent;
-    -fx-border-width: 0 0 1 0; /* Đường kẻ chỉ vàng mỏng ở dưới */
+    -fx-border-width: 0 0 1 0;
 }
 
 .nav-button {
@@ -110,16 +80,19 @@
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-padding: 10 15;
-    -fx-transition: 0.3s;
-}
-
-.nav-button:hover {
-    -fx-text-fill: -fx-accent-gold;
 }
 
 .nav-button-active {
     -fx-text-fill: -fx-accent-gold;
     -fx-border-color: transparent transparent -fx-accent-gold transparent;
     -fx-border-width: 0 0 2 0;
+}
+
+/* Cards */
+.book-card {
+    -fx-background-color: white;
+    -fx-border-color: -fx-border-color;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
 }

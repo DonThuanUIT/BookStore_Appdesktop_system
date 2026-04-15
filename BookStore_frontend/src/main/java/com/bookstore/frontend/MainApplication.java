@@ -19,7 +19,6 @@ public class MainApplication extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
         try {
-            // Khởi động màn hình Login đầu tiên bằng phương thức showView
             showView("LoginView.fxml", "BookStore - Login");
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,7 +39,7 @@ public class MainApplication extends Application {
         Parent root = loader.load();
 
         // Thiết lập Scene với kích thước 1300x650 như code của bạn
-        Scene scene = new Scene(root, 1300, 650);
+        Scene scene = new Scene(root, 1300, 600);
 
         // Nạp CSS theme
         URL cssLocation = MainApplication.class.getResource(CSS_PATH);
