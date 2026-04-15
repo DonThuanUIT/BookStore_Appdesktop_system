@@ -2,7 +2,9 @@ package com.bookstore.backend.service;
 
 import java.util.List;
 
+import com.bookstore.backend.exception.AppException;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,11 +39,11 @@ public class AuthService {
     @Transactional
     public void register(RegistrationRequest request) {
         if (appUserRepository.existsByUsername(request.username())) {
-            throw new RuntimeException("Username da ton tai!");
+            throw new AppException(HttpStatus.CONFLICT, "Username already exists!");
         }
 
         Role customerRole = roleRepository.findByName("CUSTOMER")
-                .orElseThrow(() -> new RuntimeException("Khong tim thay role CUSTOMER"));
+                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "The system has not been configured with Role CUSTOMER!"));
 
         AppUser user = new AppUser(
                 request.username(),
