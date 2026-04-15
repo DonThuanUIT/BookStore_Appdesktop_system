@@ -40,7 +40,7 @@ public class AuthService {
             throw new RuntimeException("Username da ton tai!");
         }
 
-        Role customerRole = roleRepository.findByName("CUSTOMER")
+        Role customerRole = roleRepository.findByName("ROLE_CUSTOMER")
                 .orElseThrow(() -> new RuntimeException("Khong tim thay role CUSTOMER"));
 
         AppUser user = new AppUser(
