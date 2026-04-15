@@ -42,8 +42,8 @@ public class AuthService {
             throw new AppException(HttpStatus.CONFLICT, "Username already exists!");
         }
 
-        Role customerRole = roleRepository.findByName("CUSTOMER")
-                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "The system has not been configured with Role CUSTOMER!"));
+        Role customerRole = roleRepository.findByName("ROLE_CUSTOMER")
+                .orElseThrow(() -> new RuntimeException("Khong tim thay role CUSTOMER"));
 
         AppUser user = new AppUser(
                 request.username(),
