@@ -1,0 +1,22 @@
+.root {
+    /* Main Colors */
+    -fx-primary-black: #000000;
+    -fx-secondary-black: #0d1b2a;
+    -fx-primary-white: #FFFFFF;
+    -fx-secondary-white: #F5F5F5;
+
+    /* Gold Theme */
+    -fx-accent-gold: #C2991D;
+    -fx-bright-gold: #FFD700;
+    -fx-button-gold: #DAA520;
+    -fx-input-yellow: #C5C183;
+
+    /* Text Colors */
+    -text-primary: #FFFFFF;
+    -text-description: #AAAAAA;
+    -text-placeholder: #484848;
+
+    /* State Colors */
+    -fx-error-red: #ff5555;
+    -fx-border-color: #E0E0E0;
+}
