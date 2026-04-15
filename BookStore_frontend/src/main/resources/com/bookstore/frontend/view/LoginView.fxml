@@ -12,39 +12,61 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" stylesheets="@../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" stylesheets="@../css/theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.LoginController">
+
    <children>
+
       <StackPane alignment="CENTER_RIGHT" prefHeight="600.0" prefWidth="450.0" styleClass="bg-white">
+
          <children>
-            <ImageView fitHeight="345.0" fitWidth="469.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="338.0" fitWidth="454.0" preserveRatio="true">
                <image>
                   <Image url="@../image/Library.png" />
                </image>
             </ImageView>
          </children>
       </StackPane>
+
       <VBox alignment="CENTER" prefHeight="600.0" prefWidth="550.0" spacing="20.0" styleClass="bg-black">
+
          <padding>
             <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
          </padding>
+
          <children>
-            <Label styleClass="text-title-gold" text="Well come to BookStore" />
-            <Label maxWidth="400.0" styleClass="text-body-white" text="Discover a seamless way to sell your books and unlock exclusive benefits. Enjoy a hassle-free experience, save valuable time, and take advantage of our amazing offers." textAlignment="CENTER" wrapText="true" />
+
+            <Label styleClass="text-title-gold" text="Welcome to BookStore" />
+
+            <Label maxWidth="400.0" styleClass="text-body-white" text="Discover a seamless way to sell your books and unlock exclusive benefits." textAlignment="CENTER" wrapText="true" />
+
             <Label styleClass="text-subtitle-gold" text="Login to Your Account!" />
-            <VBox maxWidth="350.0" prefHeight="200.0" prefWidth="100.0">
+
+            <VBox alignment="TOP_CENTER" maxWidth="400.0" spacing="7.0">
+
                <children>
-                  <TextField styleClass="custom-input" />
-                  <PasswordField styleClass="custom-input" />
-                  <Hyperlink styleClass="btn-text-link" text="Forgot Password?" />
-                  <Button mnemonicParsing="false" styleClass="btn-primary" text="Login" />
-                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+
+                  <TextField fx:id="txtUsername" promptText="Username" styleClass="custom-input" />
+
+                  <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-input" />
+
+                                    <Hyperlink alignment="CENTER_RIGHT" prefHeight="22.0" prefWidth="331.0" styleClass="btn-text-link" text="Forgot Password?" textAlignment="RIGHT" />
+
+                              <Button onAction="#handleLogin" prefHeight="44.0" prefWidth="165.0" styleClass="btn-primary" text="Login" textAlignment="CENTER" />
+                  <HBox alignment="CENTER" prefHeight="28.0" prefWidth="316.0" spacing="5.0" VBox.vgrow="NEVER">
                      <children>
-                        <Label styleClass="text-body-white" text="Don't you have an account?" />
-                        <Hyperlink styleClass="btn-text-link" text="Create an account" />
+                        <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" prefHeight="18.0" prefWidth="395.0" styleClass="text-body-white" text="Don't you have an account?" />
+                        <Hyperlink contentDisplay="CENTER" prefHeight="22.0" prefWidth="331.0" styleClass="btn-text-link" text="Create an account" />
                      </children>
                   </HBox>
+
+                  <Label fx:id="lblMessage" styleClass="text-body-white" text="" />
+
+                  <HBox alignment="CENTER" prefWidth="350.0" spacing="10.0" />
+
                </children>
             </VBox>
-         </children></VBox>
+
+         </children>
+      </VBox>
    </children>
 </HBox>
