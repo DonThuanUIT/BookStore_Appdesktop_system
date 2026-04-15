@@ -3,17 +3,20 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.RegisterInteractor;
 import com.bookstore.frontend.model.RegisterModel;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
 public class RegisterController {
-    @FXML private TextField txtUsername, txtPasswordVisible, txtConfirmVisible;
-    @FXML private PasswordField txtPassword, txtConfirmPassword;
-    @FXML private ComboBox<String> cbRole;
-    @FXML private Label lblMessage;
-    @FXML private Button btnRegister;
 
-    private final RegisterModel model;
-    private final RegisterInteractor interactor;
+    @FXML private TextField txtFullName;
+    @FXML private TextField txtEmail;
+    @FXML private PasswordField txtPassword;
+    @FXML private PasswordField txtConfirmPassword;
+    @FXML private Label lblMessage;
+
+    private RegisterModel model;
+    private RegisterInteractor interactor;
 
     public RegisterController() {
         this.model = new RegisterModel();
@@ -22,31 +25,21 @@ public class RegisterController {
 
     @FXML
     public void initialize() {
-        txtUsername.textProperty().bindBidirectional(model.usernameProperty());
+        txtFullName.textProperty().bindBidirectional(model.fullNameProperty());
+        txtEmail.textProperty().bindBidirectional(model.emailProperty());
         txtPassword.textProperty().bindBidirectional(model.passwordProperty());
-        txtPasswordVisible.textProperty().bindBidirectional(model.passwordProperty());
         txtConfirmPassword.textProperty().bindBidirectional(model.confirmPasswordProperty());
-        txtConfirmVisible.textProperty().bindBidirectional(model.confirmPasswordProperty());
+
         lblMessage.textProperty().bind(model.messageProperty());
-
-        // ComboBox Role
-        cbRole.getItems().add("CUSTOMER");
-        cbRole.getSelectionModel().select("CUSTOMER");
-        cbRole.valueProperty().bindBidirectional(model.roleProperty());
-        cbRole.setDisable(true);
-        cbRole.setStyle("-fx-opacity: 1; -fx-text-fill: black;");
-
-        // Ẩn hiện mật khẩu
-        txtPasswordVisible.visibleProperty().bind(model.passwordVisibleProperty());
-        txtPassword.visibleProperty().bind(model.passwordVisibleProperty().not());
-        txtConfirmVisible.visibleProperty().bind(model.confirmVisibleProperty());
-        txtConfirmPassword.visibleProperty().bind(model.confirmVisibleProperty().not());
-
-        btnRegister.disableProperty().bind(model.loadingProperty());
     }
 
-    @FXML public void handleRegister() { interactor.executeRegister(); }
-    @FXML public void togglePassword() { model.passwordVisibleProperty().set(!model.passwordVisibleProperty().get()); }
-    @FXML public void toggleConfirmPassword() { model.confirmVisibleProperty().set(!model.confirmVisibleProperty().get()); }
-    @FXML public void navigateToLogin() { interactor.navigateToLogin(); }
+    @FXML
+    public void handleRegister() {
+        interactor.register();
+    }
+
+    @FXML
+    public void goToLogin() {
+        model.setMessage("Navigate back to login screen.");
+    }
 }
