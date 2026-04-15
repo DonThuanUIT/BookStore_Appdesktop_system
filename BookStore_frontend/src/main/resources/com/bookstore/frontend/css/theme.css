@@ -91,7 +91,7 @@
 /* Cards */
 .book-card {
     -fx-background-color: white;
-    -fx-border-color: -fx-border-color;
+    -fx-border-color: -custom-border-color;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);

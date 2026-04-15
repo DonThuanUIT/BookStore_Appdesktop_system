@@ -19,7 +19,8 @@ public class MainApplication extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
         try {
-            showView("LoginView.fxml", "BookStore - Login");
+           // showView("LoginView.fxml", "BookStore - Login");
+            showView("MainLayout.fxml", "BookStore - Main");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,7 +51,6 @@ public class MainApplication extends Application {
         // Cấu hình Stage theo ý bạn
         primaryStage.setTitle(title);
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
         primaryStage.centerOnScreen();
         primaryStage.show();
     }

@@ -49,4 +49,8 @@ public class MainController implements Initializable {
     void onCartClick() {
         NavigationService.getInstance().navigateTo(PageType.CART);
     }
+    @FXML
+    void onInventoryClick() {
+        NavigationService.getInstance().navigateTo(PageType.INVENTORY);
+    }
 }
