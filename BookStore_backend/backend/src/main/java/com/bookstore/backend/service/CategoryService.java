@@ -2,11 +2,10 @@ package com.bookstore.backend.service;
 
 import java.util.List;
 
+import com.bookstore.backend.exception.AppException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.bookstore.backend.dto.request.CategoryUpsertRequest;
 import com.bookstore.backend.dto.response.CategoryResponse;
 import com.bookstore.backend.entity.Category;
@@ -29,7 +28,7 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public CategoryResponse getById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục"));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục"));
         return toResponse(category);
     }
 
@@ -45,7 +44,7 @@ public class CategoryService {
     @Transactional
     public CategoryResponse update(Long id, CategoryUpsertRequest request) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục"));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục"));
         category.setName(request.name().trim());
         return toResponse(categoryRepository.save(category));
     }
@@ -53,7 +52,7 @@ public class CategoryService {
     @Transactional
     public void delete(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục");
+            throw new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục");
         }
         categoryRepository.deleteById(id);
     }
