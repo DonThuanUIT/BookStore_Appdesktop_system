@@ -11,8 +11,7 @@ import com.bookstore.backend.repository.PublisherRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
+import com.bookstore.backend.exception.AppException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +40,7 @@ public class BookService {
     @Transactional(readOnly = true)
     public BookResponse getById(Long id) {
         Book book = bookRepository.findByIdActive(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
         return toResponse(book);
     }
 
@@ -50,7 +49,7 @@ public class BookService {
         Publisher publisher = null;
         if (request.publisherId() != null) {
             publisher = publisherRepository.findById(request.publisherId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà xuất bản"));
+                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà xuất bản"));
         }
 
         Set<Category> categories = resolveCategories(request.categoryIds());
@@ -74,7 +73,7 @@ public class BookService {
     @Transactional
     public BookResponse update(Long id, BookUpsertRequest request) {
         Book book = bookRepository.findByIdActive(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
 
         book.setTitle(request.title().trim());
 
@@ -92,7 +91,7 @@ public class BookService {
         }
         if (request.publisherId() != null) {
             Publisher publisher = publisherRepository.findById(request.publisherId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà xuất bản"));
+                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà xuất bản"));
             book.setPublisher(publisher);
         }
 
@@ -107,7 +106,7 @@ public class BookService {
     @Transactional
     public void delete(Long id) {
         Book book = bookRepository.findByIdActive(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
 
         book.setIsDeleted(true);
         bookRepository.save(book);
@@ -156,7 +155,7 @@ public class BookService {
 
         Set<Category> categories = new HashSet<>(categoryRepository.findAllById(uniqueIds));
         if (categories.size() != uniqueIds.size()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục sách");
+            throw new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục sách");
         }
         return categories;
     }

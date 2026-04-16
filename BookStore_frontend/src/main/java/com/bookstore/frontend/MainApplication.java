@@ -19,8 +19,8 @@ public class MainApplication extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
         try {
-           // showView("LoginView.fxml", "BookStore - Login");
-            showView("MainLayout.fxml", "BookStore - Main");
+            showView("LoginView.fxml", "BookStore - Login");
+           // showView("MainLayout.fxml", "BookStore - Main");
         } catch (IOException e) {
             e.printStackTrace();
         }
