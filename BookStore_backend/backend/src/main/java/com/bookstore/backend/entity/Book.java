@@ -11,7 +11,6 @@ import java.util.Set;
 public class Book extends BaseEntity {
     @Column (nullable = false)
     private String title;
-    private String isbn;
     private Integer publishYear;
     private BigDecimal sellPrice;
     private String imageUrl;
