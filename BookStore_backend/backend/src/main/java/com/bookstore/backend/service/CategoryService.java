@@ -61,9 +61,7 @@ public class CategoryService {
     private CategoryResponse toResponse(Category category) {
         return new CategoryResponse(
                 category.getId(),
-                category.getName(),
-                category.getCreatedAt(),
-                category.getUpdatedAt()
+                category.getName()
         );
     }
 }
