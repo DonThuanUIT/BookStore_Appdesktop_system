@@ -1,42 +1,33 @@
 package com.bookstore.frontend.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.util.List;
 
-/**
- * DTO thống nhất để nhận dữ liệu từ API /api/books.
- * Phục vụ cho cả màn hình Quản lý kho (Inventory) và Cửa hàng (Shop).
- */
+@JsonIgnoreProperties(ignoreUnknown = true) // Cực kỳ quan trọng: Bỏ qua các thuộc tính thừa của Backend
 public class BookResponseDto {
-    // --- Thông tin cơ bản (Dùng chung) ---
     private Long id;
     private String title;
+    private Integer publishYear;
     private BigDecimal sellPrice;
     private String imageUrl;
-
-    // --- Thông tin Tác giả & NXB (Dùng chung) ---
-    private List<String> authorNames;
-    private List<Long> authorIds; // Cần khi thực hiện chức năng Edit ở Inventory
-    private String publisherName;
-    private Long publisherId;
-
-    // --- Thông tin Quản lý (Inventory ưu tiên) ---
-    private Integer quantity; // Rất quan trọng cho Inventory [cite: 3]
-    private Integer publishYear;
     private Boolean isDeleted;
+    private Integer quantity;
 
-    // --- Thông tin chi tiết (Shop Detail ưu tiên) ---
-    private String description; // Dùng để hiện nội dung khi nhấn vào Card sách
-    private List<String> categoryNames;
-    private List<Long> categoryIds;
+    // Hứng các Object lồng nhau thay vì hứng String/Long
+    private PublisherDto publisher;
+    private List<AuthorDto> authors;
+    private List<CategoryDto> categories;
 
     // --- Getters & Setters ---
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
+    public Integer getPublishYear() { return publishYear; }
+    public void setPublishYear(Integer publishYear) { this.publishYear = publishYear; }
 
     public BigDecimal getSellPrice() { return sellPrice; }
     public void setSellPrice(BigDecimal sellPrice) { this.sellPrice = sellPrice; }
@@ -44,33 +35,53 @@ public class BookResponseDto {
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public List<String> getAuthorNames() { return authorNames; }
-    public void setAuthorNames(List<String> authorNames) { this.authorNames = authorNames; }
-
-    public List<Long> getAuthorIds() { return authorIds; }
-    public void setAuthorIds(List<Long> authorIds) { this.authorIds = authorIds; }
-
-    public String getPublisherName() { return publisherName; }
-    public void setPublisherName(String publisherName) { this.publisherName = publisherName; }
-
-    public Long getPublisherId() { return publisherId; }
-    public void setPublisherId(Long publisherId) { this.publisherId = publisherId; }
+    public Boolean getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
 
-    public Integer getPublishYear() { return publishYear; }
-    public void setPublishYear(Integer publishYear) { this.publishYear = publishYear; }
+    public PublisherDto getPublisher() { return publisher; }
+    public void setPublisher(PublisherDto publisher) { this.publisher = publisher; }
 
-    public Boolean getIsDeleted() { return isDeleted; }
-    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
+    public List<AuthorDto> getAuthors() { return authors; }
+    public void setAuthors(List<AuthorDto> authors) { this.authors = authors; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public List<CategoryDto> getCategories() { return categories; }
+    public void setCategories(List<CategoryDto> categories) { this.categories = categories; }
 
-    public List<String> getCategoryNames() { return categoryNames; }
-    public void setCategoryNames(List<String> categoryNames) { this.categoryNames = categoryNames; }
+    // ================= CLASS CON ĐỂ HỨNG DỮ LIỆU LỒNG NHAU =================
 
-    public List<Long> getCategoryIds() { return categoryIds; }
-    public void setCategoryIds(List<Long> categoryIds) { this.categoryIds = categoryIds; }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PublisherDto {
+        private Long id;
+        private String name;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class AuthorDto {
+        private Long id;
+        private String name;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CategoryDto {
+        private Long id;
+        private String name;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
 }

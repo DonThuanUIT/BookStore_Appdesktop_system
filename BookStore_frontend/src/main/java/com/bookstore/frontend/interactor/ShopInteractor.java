@@ -32,21 +32,32 @@ public class ShopInteractor {
                         book.setId(dto.getId());
                         book.setTitle(dto.getTitle());
 
-                        // Xử lý an toàn: Lấy tác giả đầu tiên nếu danh sách không rỗng
-                        book.setAuthorName(dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty() ? dto.getAuthorNames().get(0) : "Unknown");
+                        // Lấy Tên Tác giả từ danh sách đối tượng AuthorDto
+                        if (dto.getAuthors() != null && !dto.getAuthors().isEmpty()) {
+                            book.setAuthorName(dto.getAuthors().get(0).getName());
+                        } else {
+                            book.setAuthorName("Unknown");
+                        }
 
-                        // Chuyển BigDecimal sang Double cho giao diện
+                        // Lấy Tên Nhà Xuất Bản từ đối tượng PublisherDto (nếu bạn cần hiển thị)
+                        if (dto.getPublisher() != null) {
+                            book.setPublisherName(dto.getPublisher().getName());
+                        }
+
+                        // Lấy mô tả (Hiện tại JSON của bạn không có trường này, tạm set cứng hoặc bỏ qua)
+                        book.setDescription("Một cuốn sách rất hay và đáng đọc.");
+
+                        // Chuyển BigDecimal sang Double
                         book.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
                         book.setImageUrl(dto.getImageUrl());
-                        book.setDescription(dto.getDescription());
 
                         return book;
                     }).collect(Collectors.toList());
 
-                    // 2. Tạo một PageResponseDto mới bọc BookModel để trả về cho Controller
+                    // 2. Bọc lại vào PageResponseDto
                     PageResponseDto<BookModel> resultPage = new PageResponseDto<>();
                     resultPage.setContent(bookModels);
-                    resultPage.setLast(pageDto.isLast()); // Cờ báo hiệu trang cuối
+                    resultPage.setLast(pageDto.isLast());
                     resultPage.setTotalElements(pageDto.getTotalElements());
 
                     return resultPage;

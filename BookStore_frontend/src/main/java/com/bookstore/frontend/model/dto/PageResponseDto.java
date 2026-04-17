@@ -1,11 +1,14 @@
 package com.bookstore.frontend.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
 /**
  * Lớp DTO Generic dùng để hứng dữ liệu phân trang (Page<T>) từ Spring Boot Backend.
  * Chữ <T> đại diện cho bất kỳ kiểu DTO nào (Ví dụ: BookResponseDto, OrderDto...)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PageResponseDto<T> {
 
     // Chứa danh sách dữ liệu thực tế (Ví dụ: Danh sách 12 cuốn sách)
