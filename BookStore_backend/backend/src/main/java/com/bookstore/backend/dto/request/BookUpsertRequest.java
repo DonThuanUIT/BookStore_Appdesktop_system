@@ -6,11 +6,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-public record BookUpsertRequest(
+public record BookUpsertRequest (
         @NotBlank(message = "Tên sách không được để trống")
         @Size(max = 200, message = "Tên sách tối đa 200 ký tự")
         String title,
@@ -29,8 +32,8 @@ public record BookUpsertRequest(
         @Positive(message = "publisherId không hợp lệ")
         Long publisherId,
 
+        List<Long> authorIds,
         // "Loại sách" (category) - client gửi list id danh mục
         List<Long> categoryIds
-) {
-}
+){}
 
