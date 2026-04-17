@@ -5,37 +5,36 @@ import com.bookstore.frontend.model.LoginModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.utils.AlertUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.bookstore.frontend.util.UserSession; // Import Két sắt
+import com.fasterxml.jackson.databind.JsonNode; // Import thư viện parse JSON
+import com.fasterxml.jackson.databind.ObjectMapper; // Import thư viện parse JSON
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
 import java.net.URI;
-import com.bookstore.frontend.util.UserSession;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class LoginInteractor {
     private final LoginModel model;
-    private final HttpClient client = HttpClient.newHttpClient();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final HttpClient client = HttpClient.newBuilder().build();
+    private final ObjectMapper mapper = new ObjectMapper(); // Công cụ đọc JSON
 
-    public LoginInteractor(LoginModel model) {
-        this.model = model;
-    }
+    public LoginInteractor(LoginModel model) { this.model = model; }
 
     public void login() {
-        String username = model.usernameProperty().get();
-        String password = model.passwordProperty().get();
+        String user = model.usernameProperty().get();
+        String pass = model.passwordProperty().get();
 
-        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
-            AlertUtils.show(AlertType.WARNING, "Login Warning", "Please enter both username and password!");
+        if (user.isEmpty() || pass.isEmpty()) {
+            AlertUtils.show(AlertType.WARNING, "Input Required", "Please enter both username and password.");
             return;
         }
 
         model.loadingProperty().set(true);
-        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password);
+        model.messageProperty().set("");
 
+        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, pass);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/api/auth/login"))
                 .header("Content-Type", "application/json")
@@ -46,32 +45,35 @@ public class LoginInteractor {
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
+                        // --- ĐOẠN CODE KHÔI PHỤC LƯU TOKEN ---
                         try {
-                            // 1. Đọc dữ liệu JSON trả về (chứa Token)
+                            // 1. Đọc JSON trả về từ Backend
                             JsonNode jsonNode = mapper.readTree(res.body());
                             String token = jsonNode.get("token").asText();
 
-                            // 2. NẠP TOKEN VÀO KÉT SẮT USER SESSION ĐỂ DÙNG CHUNG TOÀN APP
-                            UserSession.getInstance().init(token, username);
+                            // 2. Cất Token vào két sắt dùng chung
+                            UserSession.getInstance().init(token, user);
+                            System.out.println("Đã khôi phục và lưu Token tự động cho user: " + user);
 
-                            System.out.println("Đã lưu Token tự động cho user: " + username);
-
-                            // 3. Chuyển sang trang Home
-                            navigateToHome(username);
-
+                            // 3. Chuyển trang
+                            navigateToHome(user);
                         } catch (Exception e) {
                             e.printStackTrace();
                             AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi khi xử lý dữ liệu đăng nhập.");
                         }
-                        AlertUtils.show(AlertType.INFORMATION, "Success", "Login Successful!");
+                        // --- KẾT THÚC ĐOẠN KHÔI PHỤC ---
                     } else {
-                        AlertUtils.show(AlertType.ERROR, "Authentication Failed", "Invalid username or password.");
+                        String errMsg = "Invalid username or password. Please try again.";
+                        model.messageProperty().set(errMsg);
+                        AlertUtils.show(AlertType.ERROR, "Login Failed", errMsg);
                     }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         model.loadingProperty().set(false);
-                        AlertUtils.show(AlertType.ERROR, "Connection Error", "Could not connect to the server.");
+                        String errMsg = "Server connection timed out.";
+                        model.messageProperty().set(errMsg);
+                        AlertUtils.show(AlertType.WARNING, "Connection Issue", "The system could not reach the server.");
                     });
                     return null;
                 });
@@ -79,37 +81,17 @@ public class LoginInteractor {
 
     private void navigateToHome(String username) {
         try {
-            System.out.println("1. Bắt đầu chuyển sang MainLayout...");
-            // Bước 1: Mở khung MainLayout (có thanh điều hướng)
             MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
+            NavigationService.getInstance().navigateTo(PageType.HOME, username);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
-            // Bước 2: Ép JavaFX phải đợi MainLayout vẽ xong xuôi rồi mới bơm HomeView vào
-            Platform.runLater(() -> {
-                try {
-                    System.out.println("2. Đã nạp MainLayout, bắt đầu bơm HomeView...");
-                    NavigationService.getInstance().navigateTo(PageType.HOME, username);
-                    System.out.println("3. Hoàn tất chu trình Đăng nhập!");
-                } catch (Exception e) {
-                    System.err.println("Lỗi nghiêm trọng khi bơm HomeView: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            });
-
-        } catch (Exception e) {
-            System.err.println("Lỗi khi load vỏ MainLayout: " + e.getMessage());
-            e.printStackTrace();
-        }
+    public void navigateToRegister() {
+        try { MainApplication.showView("RegisterView.fxml", "Register - BookStore"); }
+        catch (Exception e) { e.printStackTrace(); }
     }
 
     public void togglePasswordVisibility() {
         model.passwordVisibleProperty().set(!model.passwordVisibleProperty().get());
-    }
-
-    public void navigateToRegister() {
-        try {
-            MainApplication.showView("RegisterView.fxml", "BookStore - Register");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
