@@ -50,11 +50,24 @@ public class InventoryController implements Initializable {
     }
 
     private void loadDataFromApi() {
-        List<BookModel> mockData = interactor.fetchMockBooks();
+        // Chạy ngầm (Background Thread) để gọi API không làm đơ giao diện
+        new Thread(() -> {
+            try {
+                // Lấy dữ liệu thật từ Interactor
+                List<BookModel> realData = interactor.fetchAllBooks();
 
-        bookList.clear();
-        bookList.addAll(mockData);
-        System.out.println("Đã nạp " + bookList.size() + " cuốn sách giả vào bảng!");
+                // Đẩy dữ liệu lên luồng UI chính (Bắt buộc phải dùng Platform.runLater)
+                Platform.runLater(() -> {
+                    bookList.clear();
+                    bookList.addAll(realData);
+                    System.out.println("Đã tải thành công " + bookList.size() + " cuốn sách từ Database!");
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    System.err.println("Lỗi khi kéo API: " + e.getMessage());
+                });
+            }
+        }).start();
     }
 
     @FXML

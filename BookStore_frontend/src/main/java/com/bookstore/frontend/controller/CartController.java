@@ -1,7 +1,7 @@
 package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.interactor.CartInteractor;
-import com.bookstore.frontend.model.CartItemDTO;
+import com.bookstore.frontend.model.dto.CartItemDTO;
 import com.bookstore.frontend.model.CartModel;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -58,9 +58,19 @@ public class CartController extends BaseController{
         VBox infoBox = new VBox(5);
         Label title = new Label(item.getBook().getTitle());
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 18px;");
-        Label author = new Label(item.getBook().getAuthor());
-        Label price = new Label(item.getBook().getPrice());
+
+        // Sửa getAuthor() thành getAuthorName() và check null
+        String authorStr = item.getBook().getAuthorName() != null ? item.getBook().getAuthorName() : "Đang cập nhật";
+        Label author = new Label(authorStr);
+
+        // Convert Double sang String và format tiền tệ (Ví dụ: Rs. 900)
+        String priceStr = "Rs. 0";
+        if (item.getBook().getPrice() != null) {
+            priceStr = String.format("Rs. %,.0f", item.getBook().getPrice());
+        }
+        Label price = new Label(priceStr);
         price.setStyle("-fx-font-weight: bold; -fx-text-fill: -fx-accent-gold;");
+
         infoBox.getChildren().addAll(title, author, price);
 
         // 3. Spinner chọn số lượng (Gắn kết trực tiếp với Model)

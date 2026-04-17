@@ -1,46 +1,49 @@
 package com.bookstore.frontend.interactor;
 
 import com.bookstore.frontend.model.BookModel;
+import com.bookstore.frontend.model.dto.BookResponseDto;
+import com.bookstore.frontend.service.api.BookApiService;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryInteractor {
 
-    // Hàm tạo dữ liệu giả để test UI
-    public List<BookModel> fetchMockBooks() {
-        List<BookModel> mockList = new ArrayList<>();
+    private final BookApiService apiService;
 
-        BookModel book1 = new BookModel();
-        book1.setId(1L);
-        book1.setTitle("Sword Art Online Progressive Vol 7");
-        book1.setAuthorName("REKI KAWAHARA");
-        book1.setPublisherName("IPM, Hà Nội");
-        book1.setPrice(120000.0);
-        book1.setQuantity(50);
-        book1.setDescription("Dễ thấy Sword Art Online có không gian kể chuyện rất rộng...");
+    public InventoryInteractor() {
+        this.apiService = new BookApiService();
+    }
 
-        BookModel book2 = new BookModel();
-        book2.setId(2L);
-        book2.setTitle("Sword Art Online Progressive Vol 8");
-        book2.setAuthorName("REKI KAWAHARA");
-        book2.setPublisherName("IPM, Hà Nội");
-        book2.setPrice(125000.0);
-        book2.setQuantity(30);
-        book2.setDescription("Tiếp nối câu chuyện ở tầng 7 của Aincrad...");
+    public List<BookModel> fetchAllBooks() {
+        List<BookResponseDto> dtoList = apiService.getAllBooks();
+        List<BookModel> modelList = new ArrayList<>();
 
-        BookModel book3 = new BookModel();
-        book3.setId(3L);
-        book3.setTitle("Đắc Nhân Tâm");
-        book3.setAuthorName("Dale Carnegie");
-        book3.setPublisherName("First News");
-        book3.setPrice(85000.0);
-        book3.setQuantity(100);
-        book3.setDescription("Nghệ thuật thu phục lòng người...");
+        for (BookResponseDto dto : dtoList) {
+            BookModel model = new BookModel();
+            model.setId(dto.getId());
+            model.setTitle(dto.getTitle());
+            model.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
 
-        mockList.add(book1);
-        mockList.add(book2);
-        mockList.add(book3);
+            // Xử lý tạm thời gán Quantity = 0 (vì Backend chưa trả về field này)
+            model.setQuantity(0);
 
-        return mockList;
+            model.setPublisherName(dto.getPublisherName() != null ? dto.getPublisherName() : "Đang cập nhật");
+
+            // Xử lý danh sách Thể loại (Categories) thành 1 chuỗi cách nhau bằng dấu phẩy
+            if (dto.getCategoryNames() != null && !dto.getCategoryNames().isEmpty()) {
+                model.setDescription(String.join(", ", dto.getCategoryNames()));
+                // Tạm thời mượn cột Description để hiển thị Thể loại cho bảng đỡ trống
+            } else {
+                model.setDescription("Chưa phân loại");
+            }
+
+            // Tạm thời gán Tác giả (vì Backend chưa trả về tác giả trong API này)
+            model.setAuthorName("Nhiều tác giả");
+
+            modelList.add(model);
+        }
+
+        return modelList;
     }
 }

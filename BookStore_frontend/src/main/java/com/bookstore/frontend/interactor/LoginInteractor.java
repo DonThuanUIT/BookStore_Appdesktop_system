@@ -60,12 +60,24 @@ public class LoginInteractor {
 
     private void navigateToHome(String username) {
         try {
+            System.out.println("1. Bắt đầu chuyển sang MainLayout...");
             // Bước 1: Mở khung MainLayout (có thanh điều hướng)
             MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
 
-            // Bước 2: Dùng NavigationService nạp HomeView vào vùng giữa
-            NavigationService.getInstance().navigateTo(PageType.HOME, username);
+            // Bước 2: Ép JavaFX phải đợi MainLayout vẽ xong xuôi rồi mới bơm HomeView vào
+            Platform.runLater(() -> {
+                try {
+                    System.out.println("2. Đã nạp MainLayout, bắt đầu bơm HomeView...");
+                    NavigationService.getInstance().navigateTo(PageType.HOME, username);
+                    System.out.println("3. Hoàn tất chu trình Đăng nhập!");
+                } catch (Exception e) {
+                    System.err.println("Lỗi nghiêm trọng khi bơm HomeView: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+
         } catch (Exception e) {
+            System.err.println("Lỗi khi load vỏ MainLayout: " + e.getMessage());
             e.printStackTrace();
         }
     }

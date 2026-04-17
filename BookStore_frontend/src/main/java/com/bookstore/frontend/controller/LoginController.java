@@ -10,8 +10,9 @@ public class LoginController {
     @FXML private HBox rootNode;
     @FXML private TextField txtUsername;
     @FXML private PasswordField txtPassword;
-    @FXML private TextField txtPasswordVisible;
-    @FXML private Button btnTogglePassword;
+    //comment 2 file này để Trung sửa
+//    @FXML private TextField txtPasswordVisible;
+//    @FXML private Button btnTogglePassword;
     @FXML private Label lblMessage;
 
     private LoginModel model;
@@ -27,13 +28,13 @@ public class LoginController {
         txtUsername.textProperty().bindBidirectional(model.usernameProperty());
         lblMessage.textProperty().bind(model.messageProperty());
         txtPassword.textProperty().bindBidirectional(model.passwordProperty());
-        txtPasswordVisible.textProperty().bindBidirectional(model.passwordProperty());
+       // txtPasswordVisible.textProperty().bindBidirectional(model.passwordProperty());
 
-        txtPasswordVisible.visibleProperty().bind(model.passwordVisibleProperty());
+       // txtPasswordVisible.visibleProperty().bind(model.passwordVisibleProperty());
         txtPassword.visibleProperty().bind(model.passwordVisibleProperty().not());
 
         model.passwordVisibleProperty().addListener((observable, oldValue, newValue) -> {
-            btnTogglePassword.setText(newValue ? "🙈" : "👁");
+          //  btnTogglePassword.setText(newValue ? "🙈" : "👁");
         });
     }
 

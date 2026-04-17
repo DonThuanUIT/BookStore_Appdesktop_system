@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ScrollPane?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="800.0" prefWidth="1200.0"
@@ -63,10 +64,11 @@
     </top>
 
     <center>
-        <StackPane fx:id="contentArea"
-                   prefHeight="150.0" prefWidth="200.0"
-                   styleClass="bg-white"
-                   BorderPane.alignment="CENTER" />
+        <ScrollPane fitToWidth="true" style="-fx-background: white; -fx-border-color: transparent;" BorderPane.alignment="CENTER">
+            <content>
+                <StackPane fx:id="contentArea" alignment="TOP_CENTER" styleClass="bg-white" />
+            </content>
+        </ScrollPane>
     </center>
 
 </BorderPane>

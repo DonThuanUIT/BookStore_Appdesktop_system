@@ -17,7 +17,7 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         NavigationService.getInstance().setContentArea(contentArea);
 
-        NavigationService.getInstance().navigateTo(PageType.HOME);
+        //NavigationService.getInstance().navigateTo(PageType.HOME);
     }
 
     @FXML

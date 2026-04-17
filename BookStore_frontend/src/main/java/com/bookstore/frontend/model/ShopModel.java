@@ -4,9 +4,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class ShopModel {
-    private final ObservableList<BookDTO> books = FXCollections.observableArrayList();
+    private final ObservableList<BookModel> books = FXCollections.observableArrayList();
 
-    public ObservableList<BookDTO> getBooks() {
+    public ObservableList<BookModel> getBooks() {
         return books;
     }
 }
