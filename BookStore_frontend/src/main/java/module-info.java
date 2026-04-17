@@ -2,6 +2,7 @@ module com.bookstore.frontend {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.net.http;
+    requires okhttp3;
 
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;

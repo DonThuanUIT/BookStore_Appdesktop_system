@@ -1,6 +1,8 @@
 package com.bookstore.frontend.service.api;
 
 import com.bookstore.frontend.model.dto.BookResponseDto;
+import com.bookstore.frontend.model.dto.PageResponseDto;
+import com.bookstore.frontend.util.UserSession; // Import Két sắt chứa Token của bạn
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -9,8 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class BookApiService {
 
@@ -25,25 +26,41 @@ public class BookApiService {
         this.objectMapper = new ObjectMapper();
     }
 
-    public List<BookResponseDto> getAllBooks() {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL))
-                    .GET()
-                    // .header("Authorization", "Bearer " + token) // Mở ra khi ráp xác thực Login
-                    .build();
+    /**
+     * Lấy danh sách sách có phân trang (Chạy ngầm không làm đơ UI)
+     */
+    public CompletableFuture<PageResponseDto<BookResponseDto>> fetchBooks(int page, int size) {
+        String url = String.format("%s?page=%d&size=%d", BASE_URL, page, size);
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET();
 
-            if (response.statusCode() == 200) {
-                return objectMapper.readValue(response.body(), new TypeReference<List<BookResponseDto>>() {});
-            } else {
-                System.err.println("API Error: Lỗi HTTP " + response.statusCode());
-                return new ArrayList<>();
-            }
-        } catch (Exception e) {
-            System.err.println("Network Error khi gọi API Book: " + e.getMessage());
-            return new ArrayList<>();
+        // NẾU API CẦN BẢO MẬT: Tự động thò tay vào UserSession lấy Token
+        String token = UserSession.getInstance().getToken();
+        if (token != null && !token.isEmpty()) {
+            requestBuilder.header("Authorization", "Bearer " + token);
         }
+
+        HttpRequest request = requestBuilder.build();
+
+        // Gửi request BẤT ĐỒNG BỘ (Asynchronous)
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    // Kiểm tra HTTP Status
+                    if (response.statusCode() != 200) {
+                        throw new RuntimeException("Lỗi máy chủ: HTTP " + response.statusCode());
+                    }
+
+                    // Parse JSON sang PageResponseDto
+                    try {
+                        return objectMapper.readValue(
+                                response.body(),
+                                new TypeReference<PageResponseDto<BookResponseDto>>() {}
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException("Lỗi khi đọc dữ liệu JSON: " + e.getMessage(), e);
+                    }
+                });
     }
 }

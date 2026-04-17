@@ -2,7 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
@@ -12,18 +12,21 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="1600.0" prefWidth="1000.0" spacing="20.0" styleClass="bg-white" stylesheets="@../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
+<VBox prefHeight="800.0" prefWidth="1100.0" spacing="20.0" styleClass="bg-white" stylesheets="@../css/theme.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.ShopController">
 
     <children>
-        <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 5 0 0 0;">
+        <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 10 0 10 0;">
             <children>
                 <Label style="-fx-text-fill: -fx-accent-gold;" text="Explore All Books Here">
                     <font>
                         <Font name="System Bold" size="32.0" />
                     </font>
                 </Label>
-
-                <Label style="-fx-text-fill: #666666;" text="Browse your favorite books, discover classics, and explore more beyond the featured collection." textAlignment="CENTER" wrapText="true">
+                <Label style="-fx-text-fill: #666666;"
+                       text="Browse your favorite books, discover classics, and explore more beyond the featured collection."
+                       textAlignment="CENTER" wrapText="true">
                     <font>
                         <Font size="14.0" />
                     </font>
@@ -31,52 +34,52 @@
             </children>
         </VBox>
 
-        <HBox alignment="CENTER" spacing="10.0" style="-fx-padding: 5 0 5 0;">
+        <HBox alignment="CENTER" spacing="15.0" style="-fx-padding: 10 0 10 0;">
             <children>
-                <TextField prefWidth="420.0" promptText="Search by title, author, or keyword..." style="-fx-background-radius: 20; -fx-padding: 10 16 10 16;" />
-                <Button mnemonicParsing="false" styleClass="btn-primary" text="Search" />
+                <ComboBox fx:id="comboSearchType" prefWidth="150.0" promptText="Search By"
+                          style="-fx-background-radius: 20; -fx-padding: 5 10 5 10; -fx-background-color: white; -fx-border-color: #d8c27a; -fx-border-radius: 20;" />
+
+                <TextField fx:id="txtSearch" prefWidth="450.0" promptText="Enter keywords..."
+                           style="-fx-background-radius: 20; -fx-padding: 10 20 10 20; -fx-border-color: #e5e5e5; -fx-border-radius: 20;" />
+
+                <Button onAction="#onSearch" mnemonicParsing="false" prefWidth="100.0"
+                        styleClass="btn-primary" text="Search" />
             </children>
         </HBox>
 
-        <HBox alignment="CENTER" spacing="20.0" style="-fx-padding: 6 0 10 0;">
+        <HBox alignment="CENTER_LEFT" spacing="15.0"
+              style="-fx-background-color: #faf7ef; -fx-background-radius: 12; -fx-padding: 15 25 15 25;">
             <children>
-                <CheckBox selected="true" style="-fx-font-size: 13;" text="All" />
-                <CheckBox style="-fx-font-size: 13;" text="Fantasy" />
-                <CheckBox style="-fx-font-size: 13;" text="Classic" />
-                <CheckBox style="-fx-font-size: 13;" text="Mystery" />
-                <CheckBox style="-fx-font-size: 13;" text="Self-help" />
-                <CheckBox style="-fx-font-size: 13;" text="Other" />
-            </children>
-        </HBox>
-
-        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #faf7ef; -fx-background-radius: 10; -fx-padding: 12 18 12 18;">
-            <children>
-                <Label style="-fx-text-fill: #666666;" text="12 books available">
+                <Label fx:id="lblBookCount" style="-fx-text-fill: #666666;" text="0 books available">
                     <font>
-                        <Font size="13.0" />
+                        <Font name="System Italic" size="14.0" />
                     </font>
                 </Label>
+
                 <Region HBox.hgrow="ALWAYS" />
+
                 <Label style="-fx-text-fill: -fx-primary-black;" text="Sort by:">
                     <font>
-                        <Font name="System Bold" size="13.0" />
+                        <Font name="System Bold" size="14.0" />
                     </font>
                 </Label>
-                <Button mnemonicParsing="false" style="-fx-background-color: white; -fx-border-color: #d8c27a; -fx-border-radius: 16; -fx-background-radius: 16;" text="Popular" />
-                <Button mnemonicParsing="false" style="-fx-background-color: white; -fx-border-color: #d8c27a; -fx-border-radius: 16; -fx-background-radius: 16;" text="Newest" />
-                <Button mnemonicParsing="false" style="-fx-background-color: white; -fx-border-color: #d8c27a; -fx-border-radius: 16; -fx-background-radius: 16;" text="Price" />
+                <Button mnemonicParsing="false" styleClass="btn-sort" text="Popular" />
+                <Button mnemonicParsing="false" styleClass="btn-sort" text="Newest" />
+                <Button mnemonicParsing="false" styleClass="btn-sort" text="Price" />
             </children>
         </HBox>
 
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;" VBox.vgrow="ALWAYS">
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;"
+                    VBox.vgrow="ALWAYS">
             <content>
-                <FlowPane fx:id="bookContainer" alignment="TOP_CENTER" hgap="25.0" prefHeight="1300.0" prefWrapLength="900.0" style="-fx-padding: 20 10 20 10;" vgap="25.0" />
+                <FlowPane fx:id="bookContainer" alignment="TOP_CENTER" hgap="30.0" vgap="30.0"
+                          style="-fx-padding: 25 15 25 15; -fx-background-color: white;" />
             </content>
         </ScrollPane>
 
     </children>
 
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="25.0" left="30.0" right="30.0" top="25.0" />
     </padding>
 </VBox>

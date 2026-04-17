@@ -37,12 +37,9 @@
                                 styleClass="nav-button" text="Shop" />
                         <Button mnemonicParsing="false" onAction="#onCartClick"
                                 styleClass="nav-button" text="Cart" />
-                        <Button mnemonicParsing="false" onAction="#onAboutClick"
-                                styleClass="nav-button" text="About" />
-                        <Button mnemonicParsing="false" onAction="#onDeliveryClick"
-                                styleClass="nav-button" text="Delivery Team" />
-                        <Button mnemonicParsing="false" onAction="#onSellersClick"
-                                styleClass="nav-button" text="Sellers" />
+                        <Button mnemonicParsing="false" onAction="#onInventoryClick"
+                                styleClass="nav-button" text="Inventory" />
+
                     </children>
                 </HBox>
 

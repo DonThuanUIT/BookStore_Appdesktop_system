@@ -5,9 +5,12 @@ import com.bookstore.frontend.model.LoginModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.utils.AlertUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
 import java.net.URI;
+import com.bookstore.frontend.util.UserSession;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -15,6 +18,7 @@ import java.net.http.HttpResponse;
 public class LoginInteractor {
     private final LoginModel model;
     private final HttpClient client = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public LoginInteractor(LoginModel model) {
         this.model = model;
@@ -42,9 +46,24 @@ public class LoginInteractor {
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
+                        try {
+                            // 1. Đọc dữ liệu JSON trả về (chứa Token)
+                            JsonNode jsonNode = mapper.readTree(res.body());
+                            String token = jsonNode.get("token").asText();
+
+                            // 2. NẠP TOKEN VÀO KÉT SẮT USER SESSION ĐỂ DÙNG CHUNG TOÀN APP
+                            UserSession.getInstance().init(token, username);
+
+                            System.out.println("Đã lưu Token tự động cho user: " + username);
+
+                            // 3. Chuyển sang trang Home
+                            navigateToHome(username);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi khi xử lý dữ liệu đăng nhập.");
+                        }
                         AlertUtils.show(AlertType.INFORMATION, "Success", "Login Successful!");
-                        // CHỈ THỰC HIỆN CHUYỂN TRANG TỪ ĐÂY
-                        navigateToHome(username);
                     } else {
                         AlertUtils.show(AlertType.ERROR, "Authentication Failed", "Invalid username or password.");
                     }
