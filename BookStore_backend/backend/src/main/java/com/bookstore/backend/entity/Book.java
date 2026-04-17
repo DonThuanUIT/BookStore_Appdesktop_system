@@ -9,12 +9,15 @@ import java.util.Set;
 @Entity @Table(name = "books")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Book extends BaseEntity {
-    @Column (nullable = false)
+    @Column(nullable = false)
     private String title;
     private Integer publishYear;
     private BigDecimal sellPrice;
     private String imageUrl;
     private Boolean isDeleted = false;
+
+    @Column(nullable = false)
+    private Integer quantity = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "publisher_id")
