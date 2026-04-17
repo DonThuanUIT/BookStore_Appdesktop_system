@@ -1,98 +1,104 @@
-@import "colors.css";
-
-.bg-black { -fx-background-color: -fx-primary-black; }
-.bg-white { -fx-background-color: -fx-primary-white; }
-
-/* Typography */
-.text-title-gold {
-    -fx-font-size: 26px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-accent-gold;
-    -fx-font-family: "Serif";
-    -fx-text-alignment: center;
+/* --- Root Colors & Fonts --- */
+.root {
+    -fx-accent-gold: #d8c27a;
+    -fx-primary-black: #061a2b;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
 }
 
-.text-subtitle-gold {
-    -fx-font-size: 22px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-bright-gold;
-    -fx-font-family: "Serif";
-    -fx-text-alignment: center;
+/* --- Helpers --- */
+.bg-white { -fx-background-color: white; }
+.bg-black { -fx-background-color: #061a2b; }
+
+/* --- Login Glassmorphism --- */
+.overlay {
+    -fx-background-color: rgba(6, 26, 43, 0.55);
 }
 
-.text-description {
-    -fx-text-fill: -text-description;
-    -fx-font-size: 13px;
-    -fx-line-spacing: 3px;
-    -fx-font-family: "Sans-serif";
-    -fx-text-alignment: center;
-}
-
-/* Input Fields */
-.custom-input {
-    -fx-background-color: -fx-input-yellow;
-    -fx-background-radius: 10;
-    -fx-pref-height: 48;
-    -fx-text-fill: -fx-primary-black;
-    -fx-prompt-text-fill: -text-placeholder;
-    -fx-font-size: 14px;
-    -fx-padding: 0 45 0 20; /* Chừa khoảng trống bên phải cho icon/eye button */
-    -fx-border-color: transparent;
-}
-
-.custom-input:focused {
-    -fx-border-color: -fx-accent-gold;
-    -fx-border-radius: 10;
+.login-box {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 25;
+    -fx-border-radius: 25;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
     -fx-border-width: 1.5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 60, 0, 0, 0);
 }
 
-/* Buttons */
-.btn-login {
-    -fx-background-color: -fx-button-gold;
+/* --- Loading Indicator --- */
+.loading-container {
+    -fx-background-color: rgba(6, 26, 43, 0.85);
+    -fx-background-radius: 25;
+}
+
+.progress-indicator {
+    -fx-progress-color: #00bcd4;
+}
+
+.progress-indicator .percentage {
+    -fx-fill: transparent;
+}
+
+/* --- Form Fields --- */
+.custom-text-field, .custom-input {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #999;
+    -fx-border-color: transparent transparent rgba(0, 188, 212, 0.6) transparent;
+    -fx-border-width: 0 0 1.5 0;
+    -fx-padding: 12;
+}
+
+/* --- Buttons (Nâng cấp to hơn) --- */
+.login-button, .btn-primary {
+    -fx-background-color: #d8c27a;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 10;
+    -fx-background-radius: 25;
     -fx-cursor: hand;
-    -fx-font-size: 15px;
-}
-
-.btn-login:hover {
-    -fx-background-color: -fx-accent-gold;
-}
-
-.btn-eye {
-    -fx-background-color: transparent;
-    -fx-cursor: hand;
-    -fx-text-fill: #444444;
     -fx-font-size: 16px;
+    -fx-padding: 14 0 14 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(216, 194, 122, 0.3), 10, 0, 0, 0);
 }
 
-/* Navigation */
-.nav-bar {
-    -fx-background-color: -fx-secondary-black;
-    -fx-border-color: transparent transparent -fx-accent-gold transparent;
+.login-button:hover {
+    -fx-background-color: #e5cf8b;
+}
+
+/* --- Custom ComboBox Style --- */
+.custom-combo-box {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 5;
+    -fx-border-color: transparent transparent rgba(0, 188, 212, 0.5) transparent;
     -fx-border-width: 0 0 1 0;
+    -fx-padding: 8;
+    -fx-cursor: default;
 }
 
-.nav-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: -fx-primary-white;
-    -fx-font-size: 14px;
+.custom-combo-box .list-cell {
+    -fx-text-fill: #d8c27a; /* Màu gold cho chữ CUSTOMER */
     -fx-font-weight: bold;
-    -fx-cursor: hand;
+    -fx-background-color: transparent;
 }
 
-.nav-button-active {
-    -fx-text-fill: -fx-accent-gold;
-    -fx-border-color: transparent transparent -fx-accent-gold transparent;
-    -fx-border-width: 0 0 2 0;
+/* Ẩn mũi tên xuống vì là Read-only */
+.custom-combo-box .arrow-button {
+    -fx-padding: 0;
+    -fx-shape: "";
+}
+.custom-combo-box .arrow {
+    -fx-background-color: transparent;
 }
 
-/* Cards */
-.book-card {
-    -fx-background-color: white;
-    -fx-border-color: -custom-border-color;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
+/* Đồng bộ các TextField để không bị quá cao */
+.custom-text-field {
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+    -fx-text-fill: white;
+    -fx-padding: 10;
+    -fx-border-color: transparent transparent rgba(0, 188, 212, 0.5) transparent;
 }
+
+/* --- Labels & Links --- */
+.login-title { -fx-font-size: 45; -fx-font-weight: 900; -fx-text-fill: white; }
+.login-subtitle { -fx-font-size: 14; -fx-text-fill: rgba(255, 255, 255, 0.7); }
+.forgot-link, .register-link { -fx-text-fill: #00bcd4; -fx-underline: false; }
+.register-link { -fx-text-fill: #d8c27a; -fx-font-weight: bold; }
+.register-label { -fx-text-fill: white; -fx-opacity: 0.8; }

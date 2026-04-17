@@ -1,52 +1,29 @@
 package com.bookstore.frontend.model;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 public class RegisterModel {
-    private final StringProperty fullName = new SimpleStringProperty("");
+    private final StringProperty username = new SimpleStringProperty("");
     private final StringProperty email = new SimpleStringProperty("");
+    private final StringProperty address = new SimpleStringProperty("");
+    private final StringProperty role = new SimpleStringProperty("CUSTOMER");
     private final StringProperty password = new SimpleStringProperty("");
     private final StringProperty confirmPassword = new SimpleStringProperty("");
     private final StringProperty message = new SimpleStringProperty("");
+    private final BooleanProperty loading = new SimpleBooleanProperty(false);
 
-    public StringProperty fullNameProperty() {
-        return fullName;
-    }
+    // Hai biến độc lập cho hai ô mật khẩu
+    private final BooleanProperty passwordVisible = new SimpleBooleanProperty(false);
+    private final BooleanProperty confirmVisible = new SimpleBooleanProperty(false);
 
-    public StringProperty emailProperty() {
-        return email;
-    }
-
-    public StringProperty passwordProperty() {
-        return password;
-    }
-
-    public StringProperty confirmPasswordProperty() {
-        return confirmPassword;
-    }
-
-    public StringProperty messageProperty() {
-        return message;
-    }
-
-    public String getFullName() {
-        return fullName.get();
-    }
-
-    public String getEmail() {
-        return email.get();
-    }
-
-    public String getPassword() {
-        return password.get();
-    }
-
-    public String getConfirmPassword() {
-        return confirmPassword.get();
-    }
-
-    public void setMessage(String value) {
-        message.set(value);
-    }
+    public StringProperty usernameProperty() { return username; }
+    public StringProperty emailProperty() { return email; }
+    public StringProperty addressProperty() { return address; }
+    public StringProperty roleProperty() { return role; }
+    public StringProperty passwordProperty() { return password; }
+    public StringProperty confirmPasswordProperty() { return confirmPassword; }
+    public StringProperty messageProperty() { return message; }
+    public BooleanProperty loadingProperty() { return loading; }
+    public BooleanProperty passwordVisibleProperty() { return passwordVisible; }
+    public BooleanProperty confirmVisibleProperty() { return confirmVisible; }
 }
