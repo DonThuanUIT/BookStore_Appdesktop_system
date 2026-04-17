@@ -14,24 +14,23 @@ import java.net.http.HttpResponse;
 
 public class LoginInteractor {
     private final LoginModel model;
-    private final HttpClient client = HttpClient.newHttpClient();
+    private final HttpClient client = HttpClient.newBuilder().build();
 
-    public LoginInteractor(LoginModel model) {
-        this.model = model;
-    }
+    public LoginInteractor(LoginModel model) { this.model = model; }
 
     public void login() {
-        String username = model.usernameProperty().get();
-        String password = model.passwordProperty().get();
+        String user = model.usernameProperty().get();
+        String pass = model.passwordProperty().get();
 
-        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
-            AlertUtils.show(AlertType.WARNING, "Login Warning", "Please enter both username and password!");
+        if (user.isEmpty() || pass.isEmpty()) {
+            AlertUtils.show(AlertType.WARNING, "Input Required", "Please enter both username and password.");
             return;
         }
 
         model.loadingProperty().set(true);
-        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password);
+        model.messageProperty().set("");
 
+        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, pass);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/api/auth/login"))
                 .header("Content-Type", "application/json")
@@ -42,17 +41,20 @@ public class LoginInteractor {
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
-                        AlertUtils.show(AlertType.INFORMATION, "Success", "Login Successful!");
-                        // CHỈ THỰC HIỆN CHUYỂN TRANG TỪ ĐÂY
-                        navigateToHome(username);
+                        // Không cần alert ở đây để chuyển trang nhanh hơn, hoặc có thể thêm "Welcome back"
+                        navigateToHome(user);
                     } else {
-                        AlertUtils.show(AlertType.ERROR, "Authentication Failed", "Invalid username or password.");
+                        String errMsg = "Invalid username or password. Please try again.";
+                        model.messageProperty().set(errMsg);
+                        AlertUtils.show(AlertType.ERROR, "Login Failed", errMsg);
                     }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         model.loadingProperty().set(false);
-                        AlertUtils.show(AlertType.ERROR, "Connection Error", "Could not connect to the server.");
+                        String errMsg = "Server connection timed out.";
+                        model.messageProperty().set(errMsg);
+                        AlertUtils.show(AlertType.WARNING, "Connection Issue", "The system could not reach the server.");
                     });
                     return null;
                 });
@@ -60,25 +62,17 @@ public class LoginInteractor {
 
     private void navigateToHome(String username) {
         try {
-            // Bước 1: Mở khung MainLayout (có thanh điều hướng)
             MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
-
-            // Bước 2: Dùng NavigationService nạp HomeView vào vùng giữa
             NavigationService.getInstance().navigateTo(PageType.HOME, username);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public void navigateToRegister() {
+        try { MainApplication.showView("RegisterView.fxml", "Register - BookStore"); }
+        catch (Exception e) { e.printStackTrace(); }
     }
 
     public void togglePasswordVisibility() {
         model.passwordVisibleProperty().set(!model.passwordVisibleProperty().get());
-    }
-
-    public void navigateToRegister() {
-        try {
-            MainApplication.showView("RegisterView.fxml", "BookStore - Register");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
