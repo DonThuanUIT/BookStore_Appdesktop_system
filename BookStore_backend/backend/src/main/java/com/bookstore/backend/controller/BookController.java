@@ -2,11 +2,13 @@ package com.bookstore.backend.controller;
 
 import com.bookstore.backend.dto.request.BookUpsertRequest;
 import com.bookstore.backend.dto.response.BookResponse;
+import com.bookstore.backend.entity.Book;
 import com.bookstore.backend.service.BookService;
 import com.bookstore.backend.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +25,10 @@ import java.util.stream.Collectors;
 @Tag(name = "Books")
 public class BookController {
 
-    @GetMapping
-    public ResponseEntity<List<BookResponse>> getAll() {
-        return ResponseEntity.ok(bookService.getAll());
-    }
+//    @GetMapping
+//    public ResponseEntity<List<BookResponse>> getAll() {
+//        return ResponseEntity.ok(bookService.getAll());
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<BookResponse> getById(@PathVariable Long id) {
@@ -81,6 +83,15 @@ public class BookController {
                 .filter(s -> !s.isEmpty())
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
+    }
+    @GetMapping
+    public ResponseEntity<Page<Book>> getBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        return ResponseEntity.ok(bookService.getAllBooks(page, size, sortBy, direction));
     }
 
 

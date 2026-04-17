@@ -10,6 +10,10 @@ import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.CategoryRepository;
 import com.bookstore.backend.repository.PublisherRepository;
 import com.bookstore.backend.repository.AuthorRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -233,6 +237,12 @@ public class BookService {
             throw new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy tác giả sách");
         }
         return authors;
+    }
+
+    public Page<Book> getAllBooks(int page, int size, String sortBy, String direction){
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending(): Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return bookRepository.findAll(pageable);
     }
 }
 
