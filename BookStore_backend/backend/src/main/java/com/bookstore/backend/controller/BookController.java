@@ -41,10 +41,13 @@ public class BookController {
         this.imageService = imageService;
     }
 
-    @PostMapping
+    @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<BookResponse> create(@Valid @RequestBody BookUpsertRequest request) {
-        BookResponse created = bookService.create(request);
+    public ResponseEntity<BookResponse> create(
+            @RequestPart(value = "data", required = false) @Valid BookUpsertRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        BookResponse created = bookService.create(request, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -64,21 +67,6 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    @Operation(summary = "New books with cover art added.")
-    public ResponseEntity<BookResponse> addBook(
-            @RequestPart("title") String title,
-            @RequestPart("image") MultipartFile image,
-            @RequestPart(value = "categoryIds", required = false) String categoryIdsRaw) {
-        String imageUrl = imageService.uploadImage(image);
-
-        List<Long> categoryIds = parseCategoryIds(categoryIdsRaw);
-        BookResponse created = bookService.create(
-                new BookUpsertRequest(title, null, null, imageUrl, null, categoryIds)
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
 
     private List<Long> parseCategoryIds(String categoryIdsRaw) {
         if (categoryIdsRaw == null || categoryIdsRaw.isBlank()) {

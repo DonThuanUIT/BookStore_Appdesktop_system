@@ -10,8 +10,11 @@ public record BookResponse(
         BigDecimal sellPrice,
         String imageUrl,
         Boolean isDeleted,
+        Integer quantity,
         Long publisherId,
         String publisherName,
+        List<Long> authorIds,
+        List<String> authorNames,
         List<Long> categoryIds,
         List<String> categoryNames
 ) {
