@@ -2,6 +2,18 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.request.BookUpsertRequest;
 import com.bookstore.backend.dto.response.BookResponse;
+import com.bookstore.backend.entity.Book;
+import com.bookstore.backend.entity.Category;
+import com.bookstore.backend.entity.Publisher;
+import com.bookstore.backend.entity.Author;
+import com.bookstore.backend.repository.BookRepository;
+import com.bookstore.backend.repository.CategoryRepository;
+import com.bookstore.backend.repository.PublisherRepository;
+import com.bookstore.backend.repository.AuthorRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import com.bookstore.backend.entity.*;
 import com.bookstore.backend.exception.AppException;
 import com.bookstore.backend.repository.*;
@@ -202,4 +214,12 @@ public class BookService {
         }
         return authors;
     }
+
+    public Page<Book> getAllBooks(int page, int size, String sortBy, String direction){
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending(): Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return bookRepository.findAll(pageable);
+    }
+}
+
 }
