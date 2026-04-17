@@ -31,7 +31,9 @@
 
                   <StackPane>
                      <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-text-field" />
-                     <TextField fx:id="txtPasswordVisible" managed="false" visible="false" styleClass="custom-text-field" />
+                     <TextField fx:id="txtPasswordVisible" managed="false" visible="false"
+                                promptText="Password" styleClass="custom-text-field" />
+
                      <Button fx:id="btnTogglePassword" onAction="#togglePassword" text="👁"
                              StackPane.alignment="CENTER_RIGHT"
                              style="-fx-background-color: transparent; -fx-text-fill: #00bcd4; -fx-cursor: hand;" />

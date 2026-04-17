@@ -41,7 +41,6 @@ public class LoginInteractor {
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
-                        // Không cần alert ở đây để chuyển trang nhanh hơn, hoặc có thể thêm "Welcome back"
                         navigateToHome(user);
                     } else {
                         String errMsg = "Invalid username or password. Please try again.";

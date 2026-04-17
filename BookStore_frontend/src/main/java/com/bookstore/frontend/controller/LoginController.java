@@ -31,12 +31,17 @@ public class LoginController {
         backgroundImage.fitWidthProperty().bind(rootStackPane.widthProperty());
         backgroundImage.fitHeightProperty().bind(rootStackPane.heightProperty());
 
+        // Binding Username và Message
         txtUsername.textProperty().bindBidirectional(model.usernameProperty());
         lblMessage.textProperty().bind(model.messageProperty());
 
-        // Xử lý mật khẩu thông minh
+        // FIX: Binding mật khẩu trực tiếp vào Model để Interactor có thể lấy được giá trị
+        txtPassword.textProperty().bindBidirectional(model.passwordProperty());
+
+        // Xử lý mật khẩu thông minh (Hàm này tự động bind txtPassword với txtPasswordVisible)
         setupSmartVisibility(txtPassword, txtPasswordVisible, btnTogglePassword, model.passwordVisibleProperty());
 
+        // Logic ẩn/hiện Loading
         model.loadingProperty().addListener((obs, old, isLoading) -> {
             btnLogin.setVisible(!isLoading);
             btnLogin.setManaged(!isLoading);
@@ -44,19 +49,29 @@ public class LoginController {
             loadingContainer.setManaged(isLoading);
             txtUsername.setDisable(isLoading);
             txtPassword.setDisable(isLoading);
+            txtPasswordVisible.setDisable(isLoading);
         });
     }
 
     private void setupSmartVisibility(PasswordField pf, TextField tf, Button btn, BooleanProperty visibleProp) {
+        // Đồng bộ dữ liệu giữa ô ẩn và ô hiện
         tf.textProperty().bindBidirectional(pf.textProperty());
+
         Runnable updateUI = () -> {
-            boolean showText = visibleProp.get() && (pf.getText() != null && !pf.getText().isEmpty());
+            boolean isVisible = visibleProp.get();
+            boolean hasText = pf.getText() != null && !pf.getText().isEmpty();
+
+            // Chỉ hiện TextField khi người dùng nhấn "mắt" VÀ có chữ
+            boolean showText = isVisible && hasText;
+
             tf.setVisible(showText);
             tf.setManaged(showText);
             pf.setVisible(!showText);
             pf.setManaged(!showText);
-            btn.setText(visibleProp.get() ? "🙈" : "👁");
+
+            btn.setText(isVisible ? "🙈" : "👁");
         };
+
         visibleProp.addListener((obs, old, newVal) -> updateUI.run());
         pf.textProperty().addListener((obs, old, newVal) -> updateUI.run());
     }
