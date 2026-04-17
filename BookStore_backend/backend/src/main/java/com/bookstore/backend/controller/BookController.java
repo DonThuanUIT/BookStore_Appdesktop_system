@@ -43,13 +43,12 @@ public class BookController {
         this.imageService = imageService;
     }
 
-    @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<BookResponse> create(
-            @RequestPart(value = "data", required = false) @Valid BookUpsertRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile image
+            @RequestBody @Valid BookUpsertRequest request
     ) {
-        BookResponse created = bookService.create(request, image);
+        BookResponse created = bookService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
