@@ -102,3 +102,72 @@
 .forgot-link, .register-link { -fx-text-fill: #00bcd4; -fx-underline: false; }
 .register-link { -fx-text-fill: #d8c27a; -fx-font-weight: bold; }
 .register-label { -fx-text-fill: white; -fx-opacity: 0.8; }
+
+
+/* =========================================
+   1. UTILITY CLASSES (Dùng để thay thế hardcode)
+   ========================================= */
+.text-accent-gold { -fx-text-fill: #d8c27a; }
+.text-primary-black { -fx-text-fill: #061a2b; }
+.text-gray-500 { -fx-text-fill: #777777; }
+.bg-secondary-white { -fx-background-color: #F5F5F5; }
+.bg-accent-gold { -fx-background-color: #d8c27a; }
+
+
+.nav-bar {
+    -fx-background-color: #0d1b2a; /* Màu nền đen nhám giống Figma */
+    -fx-padding: 15 30 15 30;
+}
+
+/* Biến nút bấm thành dạng Text (Giống thẻ <a> trên Web) */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 18px;
+    -fx-font-family: "Serif";
+    -fx-cursor: hand;
+    -fx-padding: 5 15 5 15;
+}
+
+/* Hiệu ứng khi di chuột qua */
+.nav-button:hover {
+    -fx-text-fill: #d8c27a;
+}
+
+/* Khi đang ở trang hiện tại (Màu Vàng) */
+.nav-button-active {
+    -fx-text-fill: #d8c27a;
+    -fx-font-weight: bold;
+}
+
+
+/* Button */
+.btn-primary {
+    -fx-background-color: #d8c27a;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-padding: 10 25 10 25;
+    -fx-effect: dropshadow(gaussian, rgba(216, 194, 122, 0.4), 8, 0, 0, 2);
+}
+
+.btn-primary:hover {
+    -fx-background-color: #e5cf8b;
+}
+
+/* Button Add to Cart */
+.btn-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: #d8c27a;
+    -fx-border-radius: 8;
+    -fx-text-fill: #061a2b;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 20 8 20;
+}
+
+.btn-outline:hover {
+    -fx-background-color: #faf7ef;
+}

@@ -5,7 +5,7 @@
 <?import javafx.geometry.Insets?>
 
 <StackPane fx:id="rootStackPane" prefHeight="650.0" prefWidth="1000.0"
-           stylesheets="@../css/theme.css"
+           stylesheets="@../css/colors.css, @../css/theme.css"
            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.bookstore.frontend.controller.LoginController">
    <children>
@@ -36,12 +36,13 @@
 
                      <Button fx:id="btnTogglePassword" onAction="#togglePassword" text="👁"
                              StackPane.alignment="CENTER_RIGHT"
-                             style="-fx-background-color: transparent; -fx-text-fill: #00bcd4; -fx-cursor: hand;" />
+                             styleClass="text-link"
+                             style="-fx-background-color: transparent; -fx-cursor: hand;" />
                   </StackPane>
 
                   <HBox alignment="CENTER_LEFT">
                      <children>
-                        <CheckBox mnemonicParsing="false" styleClass="custom-checkbox" text="Remember me" textFill="WHITE" />
+                        <CheckBox mnemonicParsing="false" styleClass="custom-checkbox" text="Remember me" />
                         <Region HBox.hgrow="ALWAYS" />
                         <Hyperlink onAction="#handleNavigateToRegister" styleClass="forgot-link" text="Forgot password?" />
                      </children>
@@ -55,7 +56,7 @@
                         <VBox fx:id="loadingContainer" alignment="CENTER" spacing="5.0" visible="false" managed="false">
                            <children>
                               <ProgressIndicator prefHeight="40.0" prefWidth="40.0" />
-                              <Label text="Authenticating..." textFill="#d8c27a" style="-fx-font-size: 12px;" />
+                              <Label text="Authenticating..." styleClass="text-accent-gold" style="-fx-font-size: 12px;" />
                            </children>
                         </VBox>
                      </children>
@@ -71,7 +72,7 @@
                </children>
             </VBox>
 
-            <Label fx:id="lblMessage" textAlignment="CENTER" textFill="#ff6b6b" wrapText="true" />
+            <Label fx:id="lblMessage" textAlignment="CENTER" styleClass="text-error" wrapText="true" />
          </children>
          <padding>
             <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />

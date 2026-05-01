@@ -110,10 +110,10 @@ public class ShopController extends BaseController implements Initializable {
     }
 
     private VBox createBookCard(BookModel book) {
-        VBox card = new VBox(10);
+        VBox card = new VBox(8); // Giảm khoảng cách cho gọn
         card.getStyleClass().add("book-card-item");
         card.setPrefWidth(200);
-        card.setAlignment(Pos.CENTER);
+        card.setAlignment(Pos.CENTER_LEFT); // Figma căn lề trái
 
         ImageView imageView = new ImageView();
         if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
@@ -126,12 +126,28 @@ public class ShopController extends BaseController implements Initializable {
         Label title = new Label(book.getTitle());
         title.getStyleClass().add("book-title-label");
         title.setWrapText(true);
-        title.setTextAlignment(TextAlignment.CENTER);
+        title.setTextAlignment(TextAlignment.LEFT);
 
-        Label price = new Label(String.format("%,.0fđ", book.getPrice()));
-        price.setStyle("-fx-text-fill: -fx-accent-gold; -fx-font-weight: bold;");
+        Label author = new Label(book.getAuthorName());
+        author.getStyleClass().add("text-gray-500");
+        author.setStyle("-fx-font-size: 12px;");
 
-        card.getChildren().addAll(imageView, title, price);
+        Label price = new Label(String.format("Rs. %,.0f/-", book.getPrice()));
+        price.getStyleClass().add("text-accent-gold"); // Không hard code
+        price.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+//        // Dòng trạng thái (Available across all branches)
+//        Label status = new Label("Available across all branches");
+//        status.getStyleClass().add("text-gray-500");
+//        status.setStyle("-fx-font-size: 10px;");
+//
+//        // Nút Add to Cart (Dùng class btn-outline vừa tạo)
+//        Button btnAddToCart = new Button("Add to Cart");
+//        btnAddToCart.getStyleClass().add("btn-outline");
+//        btnAddToCart.setMaxWidth(Double.MAX_VALUE); // Cho nút dài ra
+
+        //card.getChildren().addAll(imageView, title, author, price, status, btnAddToCart);
+        card.getChildren().addAll(imageView, title,  author, price);
         card.setOnMouseClicked(event -> showBookDetail(book));
 
         return card;

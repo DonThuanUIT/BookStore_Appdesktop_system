@@ -7,7 +7,7 @@
 <?import java.lang.String?>
 
 <StackPane fx:id="rootStackPane" prefHeight="650.0" prefWidth="1000.0"
-           stylesheets="@../css/theme.css"
+           stylesheets="@../css/colors.css, @../css/theme.css"
            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.bookstore.frontend.controller.RegisterController">
     <children>
@@ -30,7 +30,7 @@
                         <TextField fx:id="txtAddress" promptText="Address" styleClass="custom-text-field" />
 
                         <VBox spacing="3">
-                            <Label text="Account Role:" textFill="WHITE" style="-fx-font-size: 11; -fx-opacity: 0.7;" />
+                            <Label text="Account Role:" styleClass="register-label" style="-fx-font-size: 11; -fx-opacity: 0.7;" />
                             <ComboBox fx:id="cbRole" maxWidth="Infinity" styleClass="custom-combo-box"
                                       mouseTransparent="true" focusTraversable="false">
                                 <items>
@@ -47,14 +47,16 @@
                             <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-text-field" />
                             <TextField fx:id="txtPasswordVisible" managed="false" visible="false" promptText="Password" styleClass="custom-text-field" />
                             <Button fx:id="btnTogglePassword" onAction="#togglePassword" text="👁" StackPane.alignment="CENTER_RIGHT"
-                                    style="-fx-background-color: transparent; -fx-text-fill: #00bcd4; -fx-cursor: hand;" />
+                                    styleClass="text-link"
+                                    style="-fx-background-color: transparent; -fx-cursor: hand;" />
                         </StackPane>
 
                         <StackPane>
                             <PasswordField fx:id="txtConfirmPassword" promptText="Confirm Password" styleClass="custom-text-field" />
                             <TextField fx:id="txtConfirmPasswordVisible" managed="false" visible="false" promptText="Confirm Password" styleClass="custom-text-field" />
                             <Button fx:id="btnToggleConfirm" onAction="#toggleConfirm" text="👁" StackPane.alignment="CENTER_RIGHT"
-                                    style="-fx-background-color: transparent; -fx-text-fill: #00bcd4; -fx-cursor: hand;" />
+                                    styleClass="text-link"
+                                    style="-fx-background-color: transparent; -fx-cursor: hand;" />
                         </StackPane>
 
                         <StackPane>
@@ -64,7 +66,7 @@
                                 <VBox fx:id="loadingProgress" alignment="CENTER" spacing="5.0" visible="false" managed="false">
                                     <children>
                                         <ProgressIndicator prefHeight="35.0" prefWidth="35.0" />
-                                        <Label text="Creating account..." textFill="#d8c27a" style="-fx-font-size: 11px;" />
+                                        <Label text="Creating account..." styleClass="text-accent-gold" style="-fx-font-size: 11px;" />
                                     </children>
                                 </VBox>
                             </children>
@@ -79,7 +81,7 @@
                         </HBox>
                     </children>
                 </VBox>
-                <Label fx:id="lblMessage" textAlignment="CENTER" textFill="#ff6b6b" wrapText="true" style="-fx-font-size: 11;" />
+                <Label fx:id="lblMessage" textAlignment="CENTER" styleClass="text-error" wrapText="true" style="-fx-font-size: 11;" />
             </children>
             <padding>
                 <Insets bottom="20.0" left="40.0" right="40.0" top="20.0" />
