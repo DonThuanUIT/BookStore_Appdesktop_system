@@ -5,6 +5,9 @@ import com.bookstore.frontend.model.LoginModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.utils.AlertUtils;
+import com.bookstore.frontend.util.UserSession; // Import Két sắt
+import com.fasterxml.jackson.databind.JsonNode; // Import thư viện parse JSON
+import com.fasterxml.jackson.databind.ObjectMapper; // Import thư viện parse JSON
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
 import java.net.URI;
@@ -15,6 +18,7 @@ import java.net.http.HttpResponse;
 public class LoginInteractor {
     private final LoginModel model;
     private final HttpClient client = HttpClient.newBuilder().build();
+    private final ObjectMapper mapper = new ObjectMapper(); // Công cụ đọc JSON
 
     public LoginInteractor(LoginModel model) { this.model = model; }
 
@@ -41,7 +45,23 @@ public class LoginInteractor {
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
-                        navigateToHome(user);
+                        // --- ĐOẠN CODE KHÔI PHỤC LƯU TOKEN ---
+                        try {
+                            // 1. Đọc JSON trả về từ Backend
+                            JsonNode jsonNode = mapper.readTree(res.body());
+                            String token = jsonNode.get("token").asText();
+
+                            // 2. Cất Token vào két sắt dùng chung
+                            UserSession.getInstance().init(token, user);
+                            System.out.println("Đã khôi phục và lưu Token tự động cho user: " + user);
+
+                            // 3. Chuyển trang
+                            navigateToHome(user);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi khi xử lý dữ liệu đăng nhập.");
+                        }
+                        // --- KẾT THÚC ĐOẠN KHÔI PHỤC ---
                     } else {
                         String errMsg = "Invalid username or password. Please try again.";
                         model.messageProperty().set(errMsg);

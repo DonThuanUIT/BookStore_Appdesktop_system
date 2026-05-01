@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox spacing="25.0" styleClass="bg-white" stylesheets="@../css/theme.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.BookDetailController"
+      prefWidth="650.0" prefHeight="400.0">
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <ImageView fx:id="imgLargePreview" fitHeight="340.0" fitWidth="240.0"
+               preserveRatio="true" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);"/>
+
+    <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+        <Label fx:id="lblTitle" style="-fx-font-size: 24; -fx-font-weight: bold;" wrapText="true"/>
+        <Label fx:id="lblAuthor" style="-fx-text-fill: #666666; -fx-font-size: 16;"/>
+        <Separator/>
+        <Label fx:id="lblDescription" VBox.vgrow="ALWAYS" wrapText="true"
+               style="-fx-text-fill: #444444; -fx-font-size: 14;" text="No description available."/>
+        <Region VBox.vgrow="ALWAYS"/>
+        <HBox alignment="CENTER_LEFT" spacing="20.0">
+            <Label fx:id="lblPrice" style="-fx-text-fill: -fx-accent-gold; -fx-font-size: 22; -fx-font-weight: bold;"/>
+            <Button onAction="#onAddToCart" text="Add to Cart" styleClass="btn-primary" prefWidth="150.0"/>
+        </HBox>
+    </VBox>
+</HBox>

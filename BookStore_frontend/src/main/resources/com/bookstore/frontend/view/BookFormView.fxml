@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15.0" styleClass="bg-white" stylesheets="@../css/theme.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.BookFormController"
+      prefWidth="500.0">
+
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+    </padding>
+
+    <children>
+        <Label fx:id="lblHeader" text="Add New Book" styleClass="text-title-gold">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+
+        <Separator />
+
+        <GridPane hgap="15.0" vgap="15.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="120.0" prefWidth="120.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
+            </columnConstraints>
+            <children>
+                <Label text="Book Title:" GridPane.rowIndex="0" />
+                <TextField fx:id="txtTitle" promptText="Enter book title" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label text="Author Name:" GridPane.rowIndex="1" />
+                <TextField fx:id="txtAuthorName" promptText="Enter author name" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label text="Publisher Name:" GridPane.rowIndex="2" />
+                <TextField fx:id="txtPublisherName" promptText="Enter publisher name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                <Label text="Price (VNĐ):" GridPane.rowIndex="3" />
+                <TextField fx:id="txtPrice" promptText="0.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                <Label text="Quantity:" GridPane.rowIndex="4" />
+                <TextField fx:id="txtQuantity" promptText="0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                <Label text="Category (Optional):" GridPane.rowIndex="5" />
+                <TextField fx:id="txtCategoryNames" promptText="e.g. Science, Novel" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            </children>
+        </GridPane>
+
+        <VBox spacing="10.0" alignment="CENTER">
+            <children>
+                <Label text="Book Cover Image:" alignment="CENTER_LEFT" maxWidth="Infinity" />
+                <HBox spacing="15.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Button onAction="#onChooseImage" text="Choose File..." styleClass="btn-outline" />
+                        <Label fx:id="lblFileName" text="No file selected" textOverrun="CENTER_ELLIPSIS" maxWidth="200.0" />
+                    </children>
+                </HBox>
+                <StackPane prefHeight="180.0" prefWidth="130.0" style="-fx-border-color: #e5e5e5; -fx-border-radius: 5; -fx-background-color: #f9f9f9;">
+                    <children>
+                        <ImageView fx:id="imgPreview" fitHeight="170.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                    </children>
+                </StackPane>
+            </children>
+        </VBox>
+
+        <HBox alignment="CENTER_RIGHT" spacing="15.0" style="-fx-padding: 10 0 0 0;">
+            <children>
+                <Button onAction="#onCancel" text="Cancel" prefWidth="100.0" styleClass="btn-outline" />
+                <Button fx:id="btnSave" onAction="#onSave" text="Save Book" prefWidth="120.0" styleClass="btn-primary" />
+            </children>
+        </HBox>
+    </children>
+</VBox>

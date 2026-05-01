@@ -8,6 +8,7 @@ public class BookModel {
     private Double price;
     private Integer quantity;
     private String description;
+    private String imageUrl;
 
     public BookModel() {}
 
@@ -31,4 +32,12 @@ public class BookModel {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

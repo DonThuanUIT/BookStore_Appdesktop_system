@@ -31,7 +31,7 @@ public class ImportDetailQuantityListener {
         Long sum = importDetailRepository.sumQuantityByBookId(bookId);
         int quantity = sum == null ? 0 : sum.intValue();
         bookRepository.findById(bookId).ifPresent(book -> {
-            book.setQuantity(quantity);
+         //   book.setQuantity(quantity);
             bookRepository.save(book);
         });
     }
