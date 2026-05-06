@@ -1,21 +1,29 @@
+
 .root {
-    /* Main Colors */
+    /* --- Bảng màu Nền Cơ bản (Backgrounds) --- */
     -fx-primary-black: #110000;
-    -fx-secondary-black: #0d1b2a;
+    -fx-secondary-black: #0a0a0a;
     -fx-primary-white: #FFFFFF;
     -fx-secondary-white: #F5F5F5;
 
-    /* Gold Theme */
+    /* --- Bảng màu Glassmorphism (Kính mờ) --- */
+    -fx-glass-overlay: rgba(10, 10, 10, 0.75);
+    -fx-glass-surface: rgba(17, 0, 0, 0.85);
+    -fx-glass-border: rgba(255, 255, 255, 0.15);
+    -fx-glass-shadow-dark: rgba(0, 0, 0, 0.8);
+
+    /* --- Bảng màu Chủ đạo (Accent Gold) --- */
     -fx-accent-gold: #FFCC00;
-    -fx-button-gold: #DAA520;
-    -fx-input-yellow: #C5C183;
+    -fx-accent-gold-hover: #FFD633;
+    -fx-accent-gold-shadow: rgba(255, 204, 0, 0.3);
+    -fx-accent-gold-shadow-hover: rgba(255, 204, 0, 0.5);
 
-    /* Text Colors */
-    -text-primary: #FFFFFF;
-    -text-description: #AAAAAA;
-    -text-placeholder: #484848;
+    /* --- Bảng màu Chữ & Viền (Text & Borders) --- */
+    -text-primary-dark: #110000;
+    -text-primary-light: #FFFFFF;
+    -text-muted: #AAAAAA;
 
-    /* State Colors */
+    /* --- Bảng màu Trạng thái (States) --- */
     -fx-error-red: #ff5555;
-    -custom-border-color: #E0E0E0;
+    -fx-info-blue: #00bcd4;
 }

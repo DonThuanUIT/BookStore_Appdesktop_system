@@ -1,85 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<VBox prefHeight="800.0" prefWidth="1100.0" spacing="20.0" styleClass="bg-white" stylesheets="@../css/theme.css"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.bookstore.frontend.controller.ShopController">
+<HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0" style="-fx-background-color: -fx-primary-black;" stylesheets="@../css/colors.css,@../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
 
-    <children>
-        <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 10 0 10 0;">
-            <children>
-                <Label style="-fx-text-fill: -fx-accent-gold;" text="Explore All Books Here">
-                    <font>
-                        <Font name="System Bold" size="32.0" />
-                    </font>
-                </Label>
-                <Label style="-fx-text-fill: #666666;"
-                       text="Browse your favorite books, discover classics, and explore more beyond the featured collection."
-                       textAlignment="CENTER" wrapText="true">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Label>
-            </children>
+    <padding>
+        <Insets top="30.0" right="40.0" bottom="30.0" left="40.0"/>
+    </padding>
+
+    <!-- CỘT TRÁI: Bộ lọc (Sidebar) -->
+    <VBox minWidth="260.0" prefWidth="260.0" spacing="25.0" styleClass="sidebar-panel">
+        <padding>
+            <Insets top="25.0" right="20.0" bottom="25.0" left="20.0"/>
+        </padding>
+
+        <Label text="Filters" styleClass="login-title" style="-fx-font-size: 24px;"/>
+        <Separator style="-fx-background-color: rgba(255,255,255,0.1);"/>
+
+        <!-- Lọc Thể loại -->
+        <VBox spacing="15.0">
+            <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
+            <VBox spacing="10.0">
+                <CheckBox text="Fantasy" styleClass="custom-checkbox"/>
+                <CheckBox text="Mystery &amp; Thriller" styleClass="custom-checkbox" selected="true"/>
+                <CheckBox text="Classics" styleClass="custom-checkbox"/>
+                <CheckBox text="Science Fiction" styleClass="custom-checkbox"/>
+            </VBox>
         </VBox>
 
-        <HBox alignment="CENTER" spacing="15.0" style="-fx-padding: 10 0 10 0;">
-            <children>
-                <ComboBox fx:id="comboSearchType" prefWidth="150.0" promptText="Search By"
-                          style="-fx-background-radius: 20; -fx-padding: 5 10 5 10; -fx-background-color: white; -fx-border-color: #d8c27a; -fx-border-radius: 20;" />
+        <!-- Lọc Khoảng giá -->
+        <VBox spacing="15.0">
+            <Label text="Price" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <TextField promptText="Min" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+                <Label text="-" style="-fx-text-fill: white;"/>
+                <TextField promptText="Max" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+            </HBox>
+        </VBox>
 
-                <TextField fx:id="txtSearch" prefWidth="450.0" promptText="Enter keywords..."
-                           style="-fx-background-radius: 20; -fx-padding: 10 20 10 20; -fx-border-color: #e5e5e5; -fx-border-radius: 20;" />
+        <!-- Lọc Tác giả -->
+        <VBox spacing="15.0">
+            <Label text="Author" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
+            <TextField promptText="Search authors..." styleClass="custom-text-field" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+        </VBox>
+    </VBox>
 
-                <Button onAction="#onSearch" mnemonicParsing="false" prefWidth="100.0"
-                        styleClass="btn-primary" text="Search" />
-            </children>
+    <!-- CỘT PHẢI: Hiển thị Sách -->
+    <VBox HBox.hgrow="ALWAYS" spacing="20.0">
+
+        <!-- Top Bar: Tiêu đề & Sort -->
+        <HBox alignment="BOTTOM_LEFT">
+            <VBox spacing="5.0">
+                <Label text="All Books" styleClass="login-title" style="-fx-font-size: 32px;"/>
+                <Label fx:id="lblBookCount" text="Showing 1-12 of 124 results" styleClass="login-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <ComboBox fx:id="comboSearchType" promptText="Default Sorting" styleClass="custom-combo-box" style="-fx-background-color: rgba(255,255,255,0.05); -fx-border-color: rgba(255,255,255,0.1);"/>
         </HBox>
 
-        <HBox alignment="CENTER_LEFT" spacing="15.0"
-              style="-fx-background-color: #faf7ef; -fx-background-radius: 12; -fx-padding: 15 25 15 25;">
-            <children>
-                <Label fx:id="lblBookCount" style="-fx-text-fill: #666666;" text="0 books available">
-                    <font>
-                        <Font name="System Italic" size="14.0" />
-                    </font>
-                </Label>
-
-                <Region HBox.hgrow="ALWAYS" />
-
-                <Label style="-fx-text-fill: -fx-primary-black;" text="Sort by:">
-                    <font>
-                        <Font name="System Bold" size="14.0" />
-                    </font>
-                </Label>
-                <Button mnemonicParsing="false" styleClass="btn-sort" text="Popular" />
-                <Button mnemonicParsing="false" styleClass="btn-sort" text="Newest" />
-                <Button mnemonicParsing="false" styleClass="btn-sort" text="Price" />
-            </children>
-        </HBox>
-
-        <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;"
-                    VBox.vgrow="ALWAYS">
+        <!-- Khung chứa lưới sách (FlowPane) -->
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
             <content>
-                <FlowPane fx:id="bookContainer" alignment="TOP_CENTER" hgap="30.0" vgap="30.0"
-                          style="-fx-padding: 25 15 25 15; -fx-background-color: white;" />
+                <!-- Dùng hgap và vgap lớn để tạo độ thoáng cho Grid -->
+                <FlowPane fx:id="bookContainer" hgap="25.0" vgap="30.0" alignment="TOP_LEFT">
+                    <padding>
+                        <Insets top="10.0" right="10.0" bottom="20.0" left="0.0"/>
+                    </padding>
+                </FlowPane>
             </content>
         </ScrollPane>
 
-    </children>
+        <!-- Phân trang (Pagination) -->
+        <HBox alignment="CENTER" spacing="10.0">
+            <padding>
+                <Insets top="15.0"/>
+            </padding>
+            <Button text="&lt; Prev" styleClass="btn-page"/>
+            <Button text="1" styleClass="btn-page, btn-page-active"/>
+            <Button text="2" styleClass="btn-page"/>
+            <Button text="3" styleClass="btn-page"/>
+            <Label text="..." style="-fx-text-fill: white; -fx-padding: 0 5;"/>
+            <Button text="Next &gt;" styleClass="btn-page"/>
+        </HBox>
 
-    <padding>
-        <Insets bottom="25.0" left="30.0" right="30.0" top="25.0" />
-    </padding>
-</VBox>
+    </VBox>
+</HBox>

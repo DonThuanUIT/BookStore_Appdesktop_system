@@ -90,6 +90,10 @@ public class LoginInteractor {
         try { MainApplication.showView("RegisterView.fxml", "Register - BookStore"); }
         catch (Exception e) { e.printStackTrace(); }
     }
+    public void navigateToForgotPassword() {
+        try { MainApplication.showView("ForgotPasswordView.fxml", "Forgot Password - BookStore"); }
+        catch (Exception e) { e.printStackTrace(); }
+    }
 
     public void togglePasswordVisibility() {
         model.passwordVisibleProperty().set(!model.passwordVisibleProperty().get());
