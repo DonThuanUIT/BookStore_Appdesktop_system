@@ -3,20 +3,15 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.ShopInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.ShopModel;
-import com.bookstore.frontend.model.dto.PageResponseDto;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -30,7 +25,6 @@ public class ShopController extends BaseController implements Initializable {
     @FXML private ScrollPane scrollPane;
     @FXML private FlowPane bookContainer;
     @FXML private ComboBox<String> comboSearchType;
-    @FXML private TextField txtSearch;
     @FXML private Label lblBookCount;
 
     private final ShopModel model;
@@ -48,12 +42,12 @@ public class ShopController extends BaseController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        comboSearchType.setItems(FXCollections.observableArrayList("Title", "Author", "Category"));
+        // Cập nhật các tùy chọn sắp xếp cho giống giao diện mới
+        comboSearchType.setItems(FXCollections.observableArrayList("Popularity", "Price: Low to High", "Newest"));
         comboSearchType.getSelectionModel().selectFirst();
 
-        // Bắt sự kiện cuộn chuột
+        // Vẫn GIỮ LẠI tính năng Infinite Scroll xịn xò của bạn
         scrollPane.vvalueProperty().addListener((obs, oldVal, newVal) -> {
-            // Nếu cuộn gần đáy (98%) + Không tải dở + CHƯA PHẢI TRANG CUỐI
             if (newVal.doubleValue() >= 0.98 && !isLoading && !isLastPage) {
                 loadMoreBooks();
             }
@@ -63,7 +57,7 @@ public class ShopController extends BaseController implements Initializable {
     @Override
     public void onNavigate(Object data) {
         resetShop();
-        loadMoreBooks();
+        loadMoreBooks(); // Khi vừa vào trang sẽ tự động tải trang đầu tiên
     }
 
     private void resetShop() {
@@ -83,87 +77,75 @@ public class ShopController extends BaseController implements Initializable {
                     List<BookModel> newBooks = pageDto.getContent();
 
                     if (newBooks != null && !newBooks.isEmpty()) {
-                        // Lưu vào Model
                         if (currentPage == 0) model.setBooks(newBooks);
                         else model.addBooks(newBooks);
 
-                        // Vẽ Thẻ sách
+                        // Vòng lặp: Nhồi Component BookCard vào Grid
                         for (BookModel book : newBooks) {
-                            bookContainer.getChildren().add(createBookCard(book));
+                            Node cardNode = createBookCard(book);
+                            if (cardNode != null) {
+                                bookContainer.getChildren().add(cardNode);
+                            }
                         }
                         currentPage++;
                         updateBookCount();
                     }
 
-                    // CẬP NHẬT CỜ: Đã hết sách chưa?
                     isLastPage = pageDto.isLast();
                     isLoading = false;
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         isLoading = false;
-                        System.err.println("Lỗi khi tải sách: " + ex.getMessage());
-                        // Có thể gọi AlertUtils ở đây để báo lỗi lên màn hình
+                        System.err.println("Lỗi khi tải sách từ server: " + ex.getMessage());
                     });
                     return null;
                 });
     }
 
-    private VBox createBookCard(BookModel book) {
-        VBox card = new VBox(8); // Giảm khoảng cách cho gọn
-        card.getStyleClass().add("book-card-item");
-        card.setPrefWidth(200);
-        card.setAlignment(Pos.CENTER_LEFT); // Figma căn lề trái
+    /**
+     * TRÁI TIM CỦA REFACTORING: Tái sử dụng Component thay vì hardcode VBox
+     */
+    private Node createBookCard(BookModel book) {
+        try {
+            // LƯU Ý: Đảm bảo đường dẫn này khớp với nơi bạn lưu file BookCard.fxml
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/components/BookCard.fxml"));
+            Node cardNode = loader.load();
 
-        ImageView imageView = new ImageView();
-        if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-            imageView.setImage(new Image(book.getImageUrl(), true)); // Load ảnh nền
+            BookCardController cardController = loader.getController();
+
+            // Format giá tiền cho đẹp
+            String formattedPrice = String.format("$%.2f", book.getPrice());
+
+            // Nạp dữ liệu vào thẻ sách
+            cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, book.getImageUrl());
+
+            // Gắn sự kiện (Callback)
+            cardController.setCallbacks(
+                    () -> showBookDetail(book), // Click vào thẻ -> Mở bảng chi tiết
+                    () -> handleAddToCart(book) // Click vào nút Add to Cart
+            );
+
+            return cardNode;
+        } catch (Exception e) {
+            System.err.println("Lỗi nạp UI thẻ sách cho: " + book.getTitle());
+            e.printStackTrace();
+            return null;
         }
-        imageView.setFitWidth(160);
-        imageView.setFitHeight(220);
-        imageView.setPreserveRatio(true);
-
-        Label title = new Label(book.getTitle());
-        title.getStyleClass().add("book-title-label");
-        title.setWrapText(true);
-        title.setTextAlignment(TextAlignment.LEFT);
-
-        Label author = new Label(book.getAuthorName());
-        author.getStyleClass().add("text-gray-500");
-        author.setStyle("-fx-font-size: 12px;");
-
-        Label price = new Label(String.format("Rs. %,.0f/-", book.getPrice()));
-        price.getStyleClass().add("text-accent-gold"); // Không hard code
-        price.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-
-//        // Dòng trạng thái (Available across all branches)
-//        Label status = new Label("Available across all branches");
-//        status.getStyleClass().add("text-gray-500");
-//        status.setStyle("-fx-font-size: 10px;");
-//
-//        // Nút Add to Cart (Dùng class btn-outline vừa tạo)
-//        Button btnAddToCart = new Button("Add to Cart");
-//        btnAddToCart.getStyleClass().add("btn-outline");
-//        btnAddToCart.setMaxWidth(Double.MAX_VALUE); // Cho nút dài ra
-
-        //card.getChildren().addAll(imageView, title, author, price, status, btnAddToCart);
-        card.getChildren().addAll(imageView, title,  author, price);
-        card.setOnMouseClicked(event -> showBookDetail(book));
-
-        return card;
-    }
-
-    @FXML
-    private void onSearch() {
-        resetShop();
-        loadMoreBooks();
     }
 
     private void updateBookCount() {
-        lblBookCount.setText(bookContainer.getChildren().size() + " books available");
+        int currentCount = bookContainer.getChildren().size();
+        lblBookCount.setText("Showing " + currentCount + " results");
+    }
+
+    private void handleAddToCart(BookModel book) {
+        // TODO: Chuyển logic này sang Interactor để lưu vào Giỏ hàng thực tế
+        System.out.println(">>> ĐÃ THÊM VÀO GIỎ HÀNG: " + book.getTitle() + " | Giá: " + book.getPrice());
     }
 
     private void showBookDetail(BookModel book) {
+        // Giữ nguyên logic cũ của bạn (Mở popup cửa sổ mới)
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/BookDetailView.fxml"));
             Scene scene = new Scene(loader.load());

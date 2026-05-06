@@ -1,173 +1,292 @@
-/* --- Root Colors & Fonts --- */
 .root {
-    -fx-accent-gold: #d8c27a;
-    -fx-primary-black: #061a2b;
-    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
 }
 
-/* --- Helpers --- */
-.bg-white { -fx-background-color: white; }
-.bg-black { -fx-background-color: #061a2b; }
-
-/* --- Login Glassmorphism --- */
+/* LOGIN - REGISTER */
 .overlay {
-    -fx-background-color: rgba(6, 26, 43, 0.55);
+    -fx-background-color: -fx-glass-overlay;
 }
 
 .login-box {
-    -fx-background-color: rgba(255, 255, 255, 0.08);
-    -fx-background-radius: 25;
-    -fx-border-radius: 25;
-    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-background-color: -fx-glass-surface;
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: -fx-glass-border;
     -fx-border-width: 1.5;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 60, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, -fx-glass-shadow-dark, 40, 0, 0, 10);
 }
 
-/* --- Loading Indicator --- */
-.loading-container {
-    -fx-background-color: rgba(6, 26, 43, 0.85);
-    -fx-background-radius: 25;
+/* TYPOGRAPHY  */
+.login-title {
+    -fx-font-family: "Noto Serif", serif;
+    -fx-font-size: 45px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -text-primary-light;
 }
 
-.progress-indicator {
-    -fx-progress-color: #00bcd4;
+.login-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-muted;
 }
 
-.progress-indicator .percentage {
-    -fx-fill: transparent;
+.text-error {
+    -fx-text-fill: -fx-error-red;
+    -fx-font-size: 12px;
 }
 
-/* --- Form Fields --- */
+/* INPUT FIELDS */
 .custom-text-field, .custom-input {
-    -fx-background-color: rgba(0, 0, 0, 0.5);
-    -fx-text-fill: white;
-    -fx-prompt-text-fill: #999;
-    -fx-border-color: transparent transparent rgba(0, 188, 212, 0.6) transparent;
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-primary-light;
+    -fx-prompt-text-fill: -text-muted;
+    -fx-border-color: transparent transparent -text-muted transparent;
     -fx-border-width: 0 0 1.5 0;
-    -fx-padding: 12;
+    -fx-padding: 12 5 12 5;
 }
 
-/* --- Buttons (Nâng cấp to hơn) --- */
+.custom-text-field:focused, .custom-input:focused {
+    -fx-border-color: transparent transparent -fx-accent-gold transparent;
+}
+
+/* BUTTONS */
 .login-button, .btn-primary {
-    -fx-background-color: #d8c27a;
-    -fx-text-fill: white;
+    -fx-background-color: -fx-accent-gold;
+    -fx-text-fill: -text-primary-dark;
     -fx-font-weight: bold;
-    -fx-background-radius: 25;
+    -fx-font-size: 18px;
+    -fx-background-radius: 12;
+    -fx-padding: 12 25;
     -fx-cursor: hand;
-    -fx-font-size: 16px;
-    -fx-padding: 14 0 14 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(216, 194, 122, 0.3), 10, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, -fx-accent-gold-shadow, 15, 0, 0, 4);
+    -fx-transition: all 0.3s ease;
 }
 
-.login-button:hover {
-    -fx-background-color: #e5cf8b;
+.login-button:hover, .btn-primary:hover {
+    -fx-background-color: -fx-accent-gold-hover;
+    -fx-effect: dropshadow(gaussian, -fx-accent-gold-shadow-hover, 20, 0, 0, 6);
+    -fx-translate-y: -2px;
 }
 
-/* --- Custom ComboBox Style --- */
-.custom-combo-box {
+/* ICON ẩn hiện mật khẩu */
+.btn-icon {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-muted;
+    -fx-cursor: hand;
+}
+.btn-icon:hover {
+    -fx-text-fill: -fx-accent-gold;
+}
+
+/* LINKS & CHECKBOX */
+.text-link {
+    -fx-text-fill: -fx-accent-gold;
+    -fx-cursor: hand;
+}
+.text-link:hover {
+    -fx-text-fill: -fx-accent-gold-hover;
+    -fx-underline: true;
+}
+
+.custom-checkbox {
+    -fx-text-fill: -text-muted;
+}
+.custom-checkbox .box {
     -fx-background-color: rgba(255, 255, 255, 0.1);
-    -fx-background-radius: 5;
-    -fx-border-color: transparent transparent rgba(0, 188, 212, 0.5) transparent;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 8;
-    -fx-cursor: default;
+    -fx-border-color: -text-muted;
+    -fx-border-radius: 3;
 }
-
+.custom-checkbox:selected .box {
+    -fx-background-color: -fx-accent-gold;
+    -fx-border-color: -fx-accent-gold;
+}
+.custom-checkbox:selected .mark {
+    -fx-background-color: -text-primary-dark;
+}
+/* COMBOBOX(riêng cho màn hình đăng ký) */
+.custom-combo-box {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -text-muted transparent;
+    -fx-border-width: 0 0 1.5 0;
+    -fx-padding: 5;
+}
 .custom-combo-box .list-cell {
-    -fx-text-fill: #d8c27a; /* Màu gold cho chữ CUSTOMER */
+    -fx-text-fill: -fx-accent-gold;
     -fx-font-weight: bold;
     -fx-background-color: transparent;
 }
-
-/* Ẩn mũi tên xuống vì là Read-only */
-.custom-combo-box .arrow-button {
-    -fx-padding: 0;
-    -fx-shape: "";
-}
-.custom-combo-box .arrow {
+.custom-combo-box .arrow-button, .custom-combo-box .arrow {
     -fx-background-color: transparent;
+    -fx-padding: 0;
 }
-
-/* Đồng bộ các TextField để không bị quá cao */
-.custom-text-field {
-    -fx-background-color: rgba(0, 0, 0, 0.3);
-    -fx-text-fill: white;
-    -fx-padding: 10;
-    -fx-border-color: transparent transparent rgba(0, 188, 212, 0.5) transparent;
-}
-
-/* --- Labels & Links --- */
-.login-title { -fx-font-size: 45; -fx-font-weight: 900; -fx-text-fill: white; }
-.login-subtitle { -fx-font-size: 14; -fx-text-fill: rgba(255, 255, 255, 0.7); }
-.forgot-link, .register-link { -fx-text-fill: #00bcd4; -fx-underline: false; }
-.register-link { -fx-text-fill: #d8c27a; -fx-font-weight: bold; }
-.register-label { -fx-text-fill: white; -fx-opacity: 0.8; }
-
-
-/* =========================================
-   1. UTILITY CLASSES (Dùng để thay thế hardcode)
-   ========================================= */
-.text-accent-gold { -fx-text-fill: #d8c27a; }
-.text-primary-black { -fx-text-fill: #061a2b; }
-.text-gray-500 { -fx-text-fill: #777777; }
-.bg-secondary-white { -fx-background-color: #F5F5F5; }
-.bg-accent-gold { -fx-background-color: #d8c27a; }
-
-
+/* NAVIGATION BAR & BUTTONS */
 .nav-bar {
-    -fx-background-color: #0d1b2a; /* Màu nền đen nhám giống Figma */
-    -fx-padding: 15 30 15 30;
+    -fx-background-color: -fx-secondary-black;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
+    -fx-border-width: 0 0 1 0;
 }
 
-/* Biến nút bấm thành dạng Text (Giống thẻ <a> trên Web) */
 .nav-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 18px;
-    -fx-font-family: "Serif";
+    -fx-text-fill: -text-primary-light;
+    -fx-font-family: "Noto Serif", serif;
+    -fx-font-size: 16px;
     -fx-cursor: hand;
-    -fx-padding: 5 15 5 15;
+    -fx-padding: 8 15;
+    -fx-transition: all 0.3s ease;
 }
 
-/* Hiệu ứng khi di chuột qua */
 .nav-button:hover {
-    -fx-text-fill: #d8c27a;
+    -fx-text-fill: -fx-accent-gold;
 }
 
-/* Khi đang ở trang hiện tại (Màu Vàng) */
 .nav-button-active {
-    -fx-text-fill: #d8c27a;
+    -fx-text-fill: -fx-accent-gold;
     -fx-font-weight: bold;
+    -fx-border-color: transparent transparent -fx-accent-gold transparent;
+    -fx-border-width: 0 0 2 0;
 }
 
+/* HOME & BOOK CARD (STOREFRONT) */
 
-/* Button */
-.btn-primary {
-    -fx-background-color: #d8c27a;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 8;
+.search-bar-hero {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 25;
+    -fx-text-fill: -text-primary-light;
+    -fx-prompt-text-fill: -text-muted;
+    -fx-padding: 12 20;
+    -fx-border-color: transparent;
+}
+.search-bar-hero:focused {
+    -fx-border-color: -fx-accent-gold;
+    -fx-border-radius: 25;
+}
+
+.book-card {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 5);
     -fx-cursor: hand;
-    -fx-font-size: 14px;
-    -fx-padding: 10 25 10 25;
-    -fx-effect: dropshadow(gaussian, rgba(216, 194, 122, 0.4), 8, 0, 0, 2);
+    -fx-transition: all 0.3s ease;
 }
 
-.btn-primary:hover {
-    -fx-background-color: #e5cf8b;
+.book-card:hover {
+    -fx-border-color: -fx-accent-gold;
+    -fx-translate-y: -5px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 204, 0, 0.3), 15, 0, 0, 5);
 }
 
-/* Button Add to Cart */
-.btn-outline {
+/* Chữ trong Thẻ sách */
+.book-card-title {
+    -fx-font-family: "Noto Serif", serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary-light;
+}
+
+.book-card-author {
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-muted;
+}
+
+.book-card-price {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-accent-gold;
+}
+
+/* Nút "Add" */
+.btn-outline-small {
     -fx-background-color: transparent;
-    -fx-border-color: #d8c27a;
-    -fx-border-radius: 8;
-    -fx-text-fill: #061a2b;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-radius: 20;
+    -fx-border-width: 1.5;
+    -fx-text-fill: -text-primary-light;
     -fx-font-weight: bold;
+    -fx-padding: 4 12;
     -fx-cursor: hand;
-    -fx-padding: 8 20 8 20;
+}
+.btn-outline-small:hover {
+    -fx-border-color: -fx-accent-gold;
+    -fx-text-fill: -fx-accent-gold;
+}
+/* Bảng thông tin chi tiết (Side Panel) bên phải */
+.side-panel {
+    -fx-background-color: -fx-secondary-black;
+    -fx-border-color: transparent transparent transparent rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 0 1;
 }
 
-.btn-outline:hover {
-    -fx-background-color: #faf7ef;
+/* CUSTOM SCROLLBAR  */
+.scroll-bar:horizontal, .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.scroll-bar:horizontal .track, .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.scroll-bar:horizontal .thumb, .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 10;
+}
+.scroll-bar:horizontal .thumb:hover, .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+}
+
+/* SHOP VIEW (FILTERS & PAGINATION) */
+.sidebar-panel {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 16;
+}
+
+/* Custom Checkbox (Nền đen, tick vàng) */
+.custom-checkbox .box {
+    -fx-background-color: transparent;
+    -fx-border-color: -text-muted;
+    -fx-border-radius: 4;
+}
+.custom-checkbox:selected .box {
+    -fx-background-color: -fx-accent-gold;
+    -fx-border-color: -fx-accent-gold;
+}
+.custom-checkbox:selected .mark {
+    -fx-background-color: -fx-primary-black;
+}
+.custom-checkbox {
+    -fx-text-fill: -text-primary-light;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+/* Pagination Buttons */
+.btn-page {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-primary-light;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-font-weight: bold;
+}
+.btn-page:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+.btn-page-active {
+    -fx-background-color: -fx-accent-gold;
+    -fx-text-fill: -fx-primary-black;
+    -fx-border-color: -fx-accent-gold;
 }

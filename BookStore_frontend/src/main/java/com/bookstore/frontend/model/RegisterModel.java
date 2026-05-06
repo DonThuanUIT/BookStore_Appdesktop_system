@@ -4,9 +4,6 @@ import javafx.beans.property.*;
 
 public class RegisterModel {
     private final StringProperty username = new SimpleStringProperty("");
-    private final StringProperty email = new SimpleStringProperty("");
-    private final StringProperty address = new SimpleStringProperty("");
-    private final StringProperty role = new SimpleStringProperty("CUSTOMER");
     private final StringProperty password = new SimpleStringProperty("");
     private final StringProperty confirmPassword = new SimpleStringProperty("");
     private final StringProperty message = new SimpleStringProperty("");
@@ -17,9 +14,6 @@ public class RegisterModel {
     private final BooleanProperty confirmVisible = new SimpleBooleanProperty(false);
 
     public StringProperty usernameProperty() { return username; }
-    public StringProperty emailProperty() { return email; }
-    public StringProperty addressProperty() { return address; }
-    public StringProperty roleProperty() { return role; }
     public StringProperty passwordProperty() { return password; }
     public StringProperty confirmPasswordProperty() { return confirmPassword; }
     public StringProperty messageProperty() { return message; }

@@ -53,7 +53,6 @@ public class InventoryInteractor {
                 book.setTitle((String) b.get("title"));
 
                 List<String> authors = (List<String>) b.get("authorNames");
-                book.setAuthorName(authors != null && !authors.isEmpty() ? authors.get(0) : "Unknown");
 
                 book.setPublisherName((String) b.get("publisherName"));
                 book.setPrice(b.get("sellPrice") != null ? ((Number) b.get("sellPrice")).doubleValue() : 0.0);

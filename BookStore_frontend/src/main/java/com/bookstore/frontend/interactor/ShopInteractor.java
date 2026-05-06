@@ -34,9 +34,7 @@ public class ShopInteractor {
 
                         // Lấy Tên Tác giả từ danh sách đối tượng AuthorDto
                         if (dto.getAuthors() != null && !dto.getAuthors().isEmpty()) {
-                            book.setAuthorName(dto.getAuthors().get(0).getName());
                         } else {
-                            book.setAuthorName("Unknown");
                         }
 
                         // Lấy Tên Nhà Xuất Bản từ đối tượng PublisherDto (nếu bạn cần hiển thị)

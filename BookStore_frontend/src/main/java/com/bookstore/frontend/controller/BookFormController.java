@@ -47,7 +47,6 @@ public class BookFormController {
         try {
             // Cập nhật ngược lại Model từ các TextField
             book.setTitle(txtTitle.getText().trim());
-            book.setAuthorName(txtAuthorName.getText().trim());
             book.setPublisherName(txtPublisherName.getText().trim());
             book.setPrice(Double.parseDouble(txtPrice.getText()));
             book.setQuantity(Integer.parseInt(txtQuantity.getText()));

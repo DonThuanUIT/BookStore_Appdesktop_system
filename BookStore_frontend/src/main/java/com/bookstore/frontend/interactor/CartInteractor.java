@@ -18,7 +18,6 @@ public class CartInteractor {
         BookModel book = new BookModel();
         book.setId(2L); // ID bây giờ là kiểu Long
         book.setTitle("Manikkawatha");
-        book.setAuthorName("Mahinda Prasad Masimbula");
         book.setPrice(900.0); // Truyền trực tiếp số Double, không còn String "Rs. 900/="
 
         CartItemDTO item = new CartItemDTO(book, 1);

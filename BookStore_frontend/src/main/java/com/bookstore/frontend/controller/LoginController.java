@@ -79,4 +79,8 @@ public class LoginController {
     @FXML public void handleLogin() { interactor.login(); }
     @FXML public void togglePassword() { interactor.togglePasswordVisibility(); }
     @FXML public void handleNavigateToRegister() { interactor.navigateToRegister(); }
+    @FXML
+    public void handleNavigateToForgotPassword() {
+        interactor.navigateToForgotPassword();
+    }
 }

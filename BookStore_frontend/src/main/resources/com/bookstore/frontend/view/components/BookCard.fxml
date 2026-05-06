@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+
+<VBox fx:id="rootCard" prefWidth="200.0" prefHeight="340.0" spacing="10.0"
+      styleClass="book-card" stylesheets="@../css/theme.css,@../css/colors.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.BookCardController">
+
+    <!-- Khu vực ảnh bìa sách -->
+    <StackPane prefHeight="220.0" style="-fx-background-color: rgba(0, 0, 0, 0.3); -fx-background-radius: 12 12 0 0;">
+        <ImageView fx:id="imgCover" fitHeight="200.0" fitWidth="140.0" preserveRatio="true" />
+    </StackPane>
+
+    <!-- Khu vực thông tin sách -->
+    <VBox spacing="4.0">
+        <padding>
+            <Insets left="15.0" right="15.0" bottom="15.0" />
+        </padding>
+        <children>
+            <!-- Tên sách & Tác giả -->
+            <Label fx:id="lblTitle" text="Book Title" styleClass="book-card-title" wrapText="true" prefHeight="45.0" alignment="TOP_LEFT"/>
+            <Label fx:id="lblAuthor" text="Author Name" styleClass="book-card-author" />
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <!-- Dòng cuối: Giá tiền & Nút Add -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <children>
+                    <Label fx:id="lblPrice" text="\$0.00" styleClass="book-card-price" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnAdd" onAction="#handleAddToCart" text="🛒 Add" styleClass="btn-outline-small" />
+                </children>
+                <VBox.margin>
+                    <Insets top="8.0" />
+                </VBox.margin>
+            </HBox>
+        </children>
+    </VBox>
+</VBox>

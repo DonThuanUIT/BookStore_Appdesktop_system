@@ -20,7 +20,7 @@ public class MainApplication extends Application {
         primaryStage = stage;
         try {
             showView("LoginView.fxml", "BookStore - Login");
-           // showView("MainLayout.fxml", "BookStore - Main");
+            //showView("MainLayout.fxml", "BookStore - Main");
         } catch (IOException e) {
             e.printStackTrace();
         }

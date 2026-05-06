@@ -46,14 +46,24 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
+
+                        // Categories
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers("/api/categories/**").hasAnyRole("ADMIN", "STAFF")
+
+                        // Admin
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
+                        // Các request còn lại của Books (POST, PUT, DELETE) và Orders bị chặn
                         .requestMatchers("/api/books/**", "/api/orders/**").hasAnyRole("ADMIN", "STAFF")
+
+                        // Cart & Test
                         .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/test/admin").hasRole("ADMIN")
                         .requestMatchers("/api/test/staff").hasRole("STAFF")
                         .requestMatchers("/api/test/customer").hasRole("CUSTOMER")
+
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 

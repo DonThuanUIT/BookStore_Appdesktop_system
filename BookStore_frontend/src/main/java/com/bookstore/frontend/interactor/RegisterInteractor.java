@@ -2,6 +2,7 @@ package com.bookstore.frontend.interactor;
 
 import com.bookstore.frontend.MainApplication;
 import com.bookstore.frontend.model.RegisterModel;
+import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class RegisterInteractor {
     private final RegisterModel model;
@@ -22,37 +24,27 @@ public class RegisterInteractor {
         model.loadingProperty().set(true);
         model.messageProperty().set("");
 
-        String json = String.format(
-                "{\"username\":\"%s\", \"password\":\"%s\", \"email\":\"%s\", \"address\":\"%s\", \"role\":\"%s\"}",
-                model.usernameProperty().get(), model.passwordProperty().get(),
-                model.emailProperty().get(), model.addressProperty().get(), model.roleProperty().get()
+        Map<String, String> payload = Map.of(
+                "username", model.usernameProperty().get(),
+                "password", model.passwordProperty().get()
         );
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/api/auth/register"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        ApiClient.getInstance().post("/auth/register", payload)
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
-                    if (res.statusCode() == 201 || res.statusCode() == 200) {
-                        // Thông báo thành công bằng Alert
+                    if (res.statusCode() == 200 || res.statusCode() == 201) {
                         AlertUtils.show(AlertType.INFORMATION, "Registration Successful", "Welcome! Your account has been created.");
                         navigateToLogin();
                     } else {
-                        String errMsg = "Username already exists or data is invalid.";
-                        model.messageProperty().set(errMsg);
-                        AlertUtils.show(AlertType.ERROR, "Registration Failed", errMsg);
+                        model.messageProperty().set("Registration failed.");
+                        AlertUtils.show(AlertType.ERROR, "Registration Failed", "Username already exists or data is invalid.");
                     }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         model.loadingProperty().set(false);
-                        String errMsg = "Cannot connect to server. Please check if your backend is running.";
                         model.messageProperty().set("Connection error.");
-                        AlertUtils.show(AlertType.WARNING, "Server Error", errMsg);
+                        AlertUtils.show(AlertType.WARNING, "Server Error", "Cannot connect to server. Is Backend running?");
                     });
                     return null;
                 });
