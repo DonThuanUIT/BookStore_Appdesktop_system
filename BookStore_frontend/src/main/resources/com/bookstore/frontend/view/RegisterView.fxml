@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
 
 <StackPane fx:id="rootStackPane" prefHeight="700.0" prefWidth="1100.0"
            stylesheets="@../css/colors.css, @../css/theme.css"
@@ -19,8 +18,9 @@
 
         <Pane styleClass="overlay" />
 
+        <!-- Đã giảm prefHeight từ 620.0 xuống 500.0 để form ôm khít các ô input hơn -->
         <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
-              prefHeight="620.0" prefWidth="450.0" spacing="10.0" styleClass="login-box">
+              prefHeight="500.0" prefWidth="450.0" spacing="10.0" styleClass="login-box">
 
             <children>
                 <VBox fx:id="registerForm" alignment="CENTER" spacing="15.0">
@@ -31,22 +31,7 @@
                             <Label styleClass="login-subtitle" text="Join our literary community." />
                         </VBox>
 
-                        <TextField fx:id="txtUsername" promptText="Full Name / Username" styleClass="custom-text-field" />
-                        <TextField fx:id="txtEmail" promptText="Email Address" styleClass="custom-text-field" />
-                        <TextField fx:id="txtAddress" promptText="Home Address" styleClass="custom-text-field" />
-
-                        <VBox spacing="3.0">
-                            <Label text="Account Role:" styleClass="login-subtitle" style="-fx-font-size: 12px; -fx-opacity: 0.8;" />
-                            <ComboBox fx:id="cbRole" maxWidth="Infinity" styleClass="custom-combo-box">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="CUSTOMER" />
-                                        <String fx:value="STAFF" />
-                                        <String fx:value="ADMIN" />
-                                    </FXCollections>
-                                </items>
-                            </ComboBox>
-                        </VBox>
+                        <TextField fx:id="txtUsername" promptText="Username" styleClass="custom-text-field" />
 
                         <StackPane>
                             <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-text-field" />

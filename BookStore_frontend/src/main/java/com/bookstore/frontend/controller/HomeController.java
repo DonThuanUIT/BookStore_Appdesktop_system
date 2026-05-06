@@ -1,6 +1,7 @@
 package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.interactor.HomeInteractor;
+import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.HomeModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
@@ -38,7 +39,7 @@ public class HomeController extends BaseController {
         lblWelcome.textProperty().bind(model.welcomeMessageProperty());
 
         // Tạm thời gọi hàm tạo dữ liệu giả lập (Mock Data)
-        loadMockBooks();
+        loadBooks();
     }
 
     @Override
@@ -50,41 +51,44 @@ public class HomeController extends BaseController {
     /**
      * Hàm giả lập tải dữ liệu sách. Sau này bạn sẽ thay bằng việc lấy Data từ Database/API.
      */
-    private void loadMockBooks() {
-        // Mảng dữ liệu test (Bạn có thể đổi tên file ảnh cho khớp với resource của bạn)
-        String[][] mockBooks = {
-                {"The Architecture of Shadows", "Eleanor Vance", "$24.99", "/image/book_shadows.png"},
-                {"Whispers in the Glass", "Jonathan Reed", "$18.50", "/image/book_glass.png"},
-                {"Echoes of the Forgotten", "Sarah Lin", "$32.00", "/image/book_echoes.png"},
-                {"The Clockwork Heart", "David Alastair", "$21.95", "/image/book_clockwork.png"},
-                {"The Great Gatsby", "F. Scott Fitzgerald", "$15.00", "/image/great_gatsby.png"}
-        };
+    private void loadBooks() {
+        interactor.getLatestBooks().thenAccept(books -> {
+            // Update UI phải luôn chạy trên JavaFX Application Thread
+            javafx.application.Platform.runLater(() -> {
+                booksContainer.getChildren().clear(); // Xóa sạch rác cũ nếu có
 
-        try {
-            for (String[] book : mockBooks) {
-                // 1. Tải giao diện của một cuốn sách (Component)
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/components/BookCard.fxml"));
-                Node cardNode = loader.load();
+                if (books.isEmpty()) {
+                    System.out.println("Không có sách nào được trả về từ Backend!");
+                    return;
+                }
 
-                // 2. Lấy Controller của thẻ sách đó để truyền dữ liệu
-                BookCardController cardController = loader.getController();
-                cardController.setBookData(book[0], book[1], book[2], book[3]);
+                for (BookModel book : books) {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/components/BookCard.fxml"));
+                        javafx.scene.Node cardNode = loader.load();
 
-                // 3. Gắn sự kiện (Callback) khi người dùng click vào thẻ sách này
-                cardController.setCallbacks(
-                        // Hàm chạy khi click vào Thẻ sách (Mở chi tiết)
-                        () -> openSidePanel(book[0], book[1], book[2], book[3]),
-                        // Hàm chạy khi bấm nút Add to Cart
-                        () -> System.out.println("Đã thêm vào giỏ: " + book[0])
-                );
+                        // Định dạng tiền tệ
+                        String formattedPrice = String.format("$%.2f", book.getPrice());
+                        // Thay ảnh null bằng ảnh mặc định nếu backend chưa có ảnh
+                        String imagePath = (book.getImageUrl() != null) ? book.getImageUrl() : "/image/default_book.png";
 
-                // 4. Nhét thẻ sách vào khung chứa
-                booksContainer.getChildren().add(cardNode);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Lỗi nạp Component Thẻ sách. Kiểm tra lại đường dẫn FXML!");
-        }
+                        BookCardController cardController = loader.getController();
+                        cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath);
+
+                        // Gắn sự kiện click
+                        cardController.setCallbacks(
+                                () -> openSidePanel(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath),
+                                () -> System.out.println("Đã thêm vào giỏ: " + book.getTitle())
+                        );
+
+                        booksContainer.getChildren().add(cardNode);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println("Lỗi nạp UI thẻ sách cho cuốn: " + book.getTitle());
+                    }
+                }
+            });
+        });
     }
 
     /**

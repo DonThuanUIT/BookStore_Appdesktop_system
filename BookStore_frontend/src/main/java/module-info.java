@@ -8,7 +8,7 @@ module com.bookstore.frontend {
     requires com.fasterxml.jackson.core;
 
     opens com.bookstore.frontend.controller to javafx.fxml;
-    opens com.bookstore.frontend.model to javafx.base;
+    opens com.bookstore.frontend.model to javafx.base, com.fasterxml.jackson.databind;
     opens com.bookstore.frontend.model.dto to javafx.base, com.fasterxml.jackson.databind;
 
     exports com.bookstore.frontend;

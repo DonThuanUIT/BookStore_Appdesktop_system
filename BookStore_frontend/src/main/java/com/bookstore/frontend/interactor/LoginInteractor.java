@@ -4,21 +4,16 @@ import com.bookstore.frontend.MainApplication;
 import com.bookstore.frontend.model.LoginModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
+import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.utils.AlertUtils;
-import com.bookstore.frontend.util.UserSession; // Import Két sắt
-import com.fasterxml.jackson.databind.JsonNode; // Import thư viện parse JSON
-import com.fasterxml.jackson.databind.ObjectMapper; // Import thư viện parse JSON
+import com.bookstore.frontend.util.UserSession;
+import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class LoginInteractor {
     private final LoginModel model;
-    private final HttpClient client = HttpClient.newBuilder().build();
-    private final ObjectMapper mapper = new ObjectMapper(); // Công cụ đọc JSON
 
     public LoginInteractor(LoginModel model) { this.model = model; }
 
@@ -34,46 +29,35 @@ public class LoginInteractor {
         model.loadingProperty().set(true);
         model.messageProperty().set("");
 
-        String json = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, pass);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/api/auth/login"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
+        // Đóng gói data bằng Map, ApiClient sẽ tự convert thành JSON an toàn
+        Map<String, String> payload = Map.of("username", user, "password", pass);
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        ApiClient.getInstance().post("/auth/login", payload)
                 .thenAccept(res -> Platform.runLater(() -> {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
-                        // --- ĐOẠN CODE KHÔI PHỤC LƯU TOKEN ---
                         try {
-                            // 1. Đọc JSON trả về từ Backend
-                            JsonNode jsonNode = mapper.readTree(res.body());
+                            // Dùng Mapper dùng chung từ ApiClient
+                            JsonNode jsonNode = ApiClient.getInstance().getMapper().readTree(res.body());
                             String token = jsonNode.get("token").asText();
 
-                            // 2. Cất Token vào két sắt dùng chung
                             UserSession.getInstance().init(token, user);
-                            System.out.println("Đã khôi phục và lưu Token tự động cho user: " + user);
-
-                            // 3. Chuyển trang
+                            System.out.println("Login thành công. Token: " + token);
                             navigateToHome(user);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi khi xử lý dữ liệu đăng nhập.");
+                            AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi xử lý phản hồi từ server.");
                         }
-                        // --- KẾT THÚC ĐOẠN KHÔI PHỤC ---
                     } else {
-                        String errMsg = "Invalid username or password. Please try again.";
-                        model.messageProperty().set(errMsg);
-                        AlertUtils.show(AlertType.ERROR, "Login Failed", errMsg);
+                        model.messageProperty().set("Invalid username or password.");
+                        AlertUtils.show(AlertType.ERROR, "Login Failed", "Invalid username or password. Please try again.");
                     }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         model.loadingProperty().set(false);
-                        String errMsg = "Server connection timed out.";
-                        model.messageProperty().set(errMsg);
-                        AlertUtils.show(AlertType.WARNING, "Connection Issue", "The system could not reach the server.");
+                        model.messageProperty().set("Server connection timed out.");
+                        AlertUtils.show(AlertType.WARNING, "Connection Issue", "Could not reach the server.");
                     });
                     return null;
                 });
