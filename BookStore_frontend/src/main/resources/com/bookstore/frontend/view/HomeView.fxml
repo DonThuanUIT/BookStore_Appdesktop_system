@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 
 <HBox fx:id="rootLayout" prefHeight="800.0" prefWidth="1200.0"
-      style="-fx-background-color: -fx-primary-black;"
+      style="-fx-background-color: transparent;"
       stylesheets="@../css/colors.css,@../css/theme.css"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bookstore.frontend.controller.HomeController">

@@ -146,6 +146,14 @@
     -fx-border-width: 0 0 2 0;
 }
 
+/* --- BACKGROUND CHUNG CHO TOÀN BỘ APP --- */
+.main-background {
+    -fx-background-image: url('../image/libraryBackground.jpg');
+    -fx-background-size: cover;
+    -fx-background-position: center;
+}
+
+
 /* HOME & BOOK CARD (STOREFRONT) */
 
 .search-bar-hero {
