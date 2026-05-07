@@ -84,7 +84,7 @@ public class BookController {
                 .collect(Collectors.toList());
     }
     @GetMapping
-    public ResponseEntity<Page<Book>> getBooks(
+    public ResponseEntity<Page<BookResponse>> getBooks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,

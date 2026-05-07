@@ -42,7 +42,7 @@
                     <HBox alignment="CENTER_LEFT">
                         <Label text="New Arrivals" styleClass="login-title" style="-fx-font-size: 24px;"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Hyperlink text="View All →" styleClass="text-link" style="-fx-font-size: 14px;"/>
+                        <Hyperlink onAction="#handleViewAll" text="View All →" styleClass="text-link" style="-fx-font-size: 14px;"/>
                     </HBox>
 
                     <!-- FlowPane: Tự động rớt dòng khi thay đổi kích thước cửa sổ -->
