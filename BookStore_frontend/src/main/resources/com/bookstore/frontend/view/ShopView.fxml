@@ -4,8 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0" style="-fx-background-color: -fx-primary-black;" stylesheets="@../css/colors.css,@../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
-
+<HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0" style="-fx-background-color: -fx-primary-black;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
     <padding>
         <Insets top="30.0" right="40.0" bottom="30.0" left="40.0"/>
     </padding>
@@ -19,6 +18,25 @@
         <Label text="Filters" styleClass="login-title" style="-fx-font-size: 24px;"/>
         <Separator style="-fx-background-color: rgba(255,255,255,0.1);"/>
 
+        <!-- Tìm kiếm Tên / Tác giả -->
+        <VBox spacing="15.0">
+            <Label text="Search" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
+            <!-- Đã thêm fx:id="txtSearch" -->
+            <TextField fx:id="txtSearch" promptText="Search title or author..." styleClass="custom-text-field" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+        </VBox>
+
+        <!-- Lọc Khoảng giá -->
+        <VBox spacing="15.0">
+            <Label text="Price Range" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <!-- Đã thêm fx:id="txtMinPrice" -->
+                <TextField fx:id="txtMinPrice" promptText="Min $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+                <Label text="-" style="-fx-text-fill: white;"/>
+                <!-- Đã thêm fx:id="txtMaxPrice" -->
+                <TextField fx:id="txtMaxPrice" promptText="Max $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+            </HBox>
+        </VBox>
+
         <!-- Lọc Thể loại -->
         <VBox spacing="15.0">
             <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
@@ -30,21 +48,6 @@
             </VBox>
         </VBox>
 
-        <!-- Lọc Khoảng giá -->
-        <VBox spacing="15.0">
-            <Label text="Price" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <TextField promptText="Min" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
-                <Label text="-" style="-fx-text-fill: white;"/>
-                <TextField promptText="Max" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
-            </HBox>
-        </VBox>
-
-        <!-- Lọc Tác giả -->
-        <VBox spacing="15.0">
-            <Label text="Author" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <TextField promptText="Search authors..." styleClass="custom-text-field" style="-fx-background-color: rgba(255,255,255,0.05);"/>
-        </VBox>
     </VBox>
 
     <!-- CỘT PHẢI: Hiển thị Sách -->
@@ -54,17 +57,16 @@
         <HBox alignment="BOTTOM_LEFT">
             <VBox spacing="5.0">
                 <Label text="All Books" styleClass="login-title" style="-fx-font-size: 32px;"/>
-                <Label fx:id="lblBookCount" text="Showing 1-12 of 124 results" styleClass="login-subtitle"/>
+                <Label fx:id="lblStatus" text="Showing results..." styleClass="login-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <ComboBox fx:id="comboSearchType" promptText="Default Sorting" styleClass="custom-combo-box" style="-fx-background-color: rgba(255,255,255,0.05); -fx-border-color: rgba(255,255,255,0.1);"/>
+            <ComboBox fx:id="cbSort" promptText="Default Sorting" styleClass="custom-combo-box" style="-fx-background-color: rgba(255,255,255,0.05); -fx-border-color: rgba(255,255,255,0.1);"/>
         </HBox>
 
         <!-- Khung chứa lưới sách (FlowPane) -->
         <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
             <content>
-                <!-- Dùng hgap và vgap lớn để tạo độ thoáng cho Grid -->
-                <FlowPane fx:id="bookContainer" hgap="25.0" vgap="30.0" alignment="TOP_LEFT">
+                <FlowPane fx:id="booksContainer" hgap="25.0" vgap="30.0" alignment="TOP_LEFT">
                     <padding>
                         <Insets top="10.0" right="10.0" bottom="20.0" left="0.0"/>
                     </padding>
@@ -72,7 +74,7 @@
             </content>
         </ScrollPane>
 
-        <!-- Phân trang (Pagination) -->
+        <!-- Phân trang (Pagination) - Hiện tại Backend chưa xong API lọc nên ta để giao diện này chờ -->
         <HBox alignment="CENTER" spacing="10.0">
             <padding>
                 <Insets top="15.0"/>

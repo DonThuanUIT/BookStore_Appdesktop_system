@@ -15,9 +15,18 @@ import java.util.Map;
 public class ImageService {
     @Autowired
     private Cloudinary cloudinary;
+    public ImageService(Cloudinary cloudinary) {
+        this.cloudinary = cloudinary;
+    }
+
+    @SuppressWarnings("unchecked")
     public String uploadImage(MultipartFile file) {
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            Map<String, Object> options = ObjectUtils.asMap(
+                    "folder", "bookstore/books",
+                    "resource_type", "auto"
+            );
+            Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(), options);
             return uploadResult.get("secure_url").toString();
         } catch (IOException e) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "error uploading photo: " + e.getMessage());

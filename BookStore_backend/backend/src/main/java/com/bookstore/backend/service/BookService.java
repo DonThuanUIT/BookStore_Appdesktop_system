@@ -215,10 +215,13 @@ public class BookService {
         return authors;
     }
 
-    public Page<Book> getAllBooks(int page, int size, String sortBy, String direction){
+    public Page<BookResponse> getAllBooks(int page, int size, String sortBy, String direction){
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending(): Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return bookRepository.findAll(pageable);
+
+        Page<Book> bookPage = bookRepository.findAll(pageable);
+
+        return bookPage.map(this::toResponse);
     }
 }
 
