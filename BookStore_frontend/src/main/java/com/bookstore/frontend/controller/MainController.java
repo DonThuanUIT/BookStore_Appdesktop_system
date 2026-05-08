@@ -2,6 +2,7 @@ package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -23,58 +24,51 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         NavigationService.getInstance().setContentArea(contentArea);
 
-        //NavigationService.getInstance().navigateTo(PageType.HOME);
-        setActiveButton(btnHome);
+        NavigationService.getInstance().currentPageProperty().addListener((obs, oldPage, newPage) -> {
+            Platform.runLater(() -> {
+                updateNavbarActiveState(newPage);
+            });
+        });
+
+
+        NavigationService.getInstance().navigateTo(PageType.HOME);
     }
 
-    private void setActiveButton(Button activeButton) {
-        // Gỡ trạng thái active của tất cả
+
+    private void updateNavbarActiveState(PageType pageType) {
         btnHome.getStyleClass().remove("nav-button-active");
         btnShop.getStyleClass().remove("nav-button-active");
         btnCart.getStyleClass().remove("nav-button-active");
         btnInventory.getStyleClass().remove("nav-button-active");
 
-        // Gắn trạng thái active cho nút được chọn
-        if (activeButton != null && !activeButton.getStyleClass().contains("nav-button-active")) {
-            activeButton.getStyleClass().add("nav-button-active");
+        if (pageType == null) return;
+
+        switch (pageType) {
+            case HOME -> btnHome.getStyleClass().add("nav-button-active");
+            case SHOP -> btnShop.getStyleClass().add("nav-button-active");
+            case CART -> btnCart.getStyleClass().add("nav-button-active");
+            case INVENTORY -> btnInventory.getStyleClass().add("nav-button-active");
         }
     }
 
+
     @FXML
     void onHomeClick() {
-        setActiveButton(btnHome);
         NavigationService.getInstance().navigateTo(PageType.HOME);
     }
 
     @FXML
-    void onAboutClick() {
-        // Tạm thời để trống hoặc in ra log để test
-        System.out.println("About clicked");
-    }
-
-    @FXML
     void onShopNavClick() {
-        setActiveButton(btnShop);
         NavigationService.getInstance().navigateTo(PageType.SHOP);
     }
 
     @FXML
-    void onDeliveryClick() {
-        System.out.println("Delivery clicked");
+    void onCartClick() {
+        NavigationService.getInstance().navigateTo(PageType.CART);
     }
 
     @FXML
-    void onSellersClick() {
-        System.out.println("Sellers clicked");
-    }
-    @FXML
-    void onCartClick() {
-        setActiveButton(btnCart);
-        NavigationService.getInstance().navigateTo(PageType.CART);
-    }
-    @FXML
     void onInventoryClick() {
-        setActiveButton(btnInventory);
         NavigationService.getInstance().navigateTo(PageType.INVENTORY);
     }
 }

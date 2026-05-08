@@ -18,14 +18,13 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    // Tuân thủ SOLID: Constructor Injection
     public ImageController(ImageService imageService) {
         this.imageService = imageService;
     }
 
     @Operation(summary = "Upload a new image", description = "Receive file from client and return image URL after successfully uploading to Cloudinary")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')") // tạm thời để Customer để test
     public ResponseEntity<Map<String, String>> upload(@RequestParam("file") MultipartFile file) {
         String url = imageService.uploadImage(file);
 

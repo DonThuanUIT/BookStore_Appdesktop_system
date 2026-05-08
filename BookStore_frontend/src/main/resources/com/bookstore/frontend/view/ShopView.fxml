@@ -4,7 +4,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0" style="-fx-background-color: -fx-primary-black;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
+<HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0"
+      style="-fx-background-color: transparent;"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
     <padding>
         <Insets top="30.0" right="40.0" bottom="30.0" left="40.0"/>
     </padding>

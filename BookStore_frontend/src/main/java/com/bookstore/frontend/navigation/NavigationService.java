@@ -1,5 +1,7 @@
 package com.bookstore.frontend.navigation;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
@@ -13,6 +15,8 @@ public class NavigationService {
 
     private static volatile NavigationService instance;
     private StackPane contentArea;
+
+    private final ObjectProperty<PageType> currentPage = new SimpleObjectProperty<>();
 
     private static class CachedView {
         final Node node;
@@ -41,6 +45,10 @@ public class NavigationService {
 
     public void setContentArea(StackPane contentArea) {
         this.contentArea = contentArea;
+    }
+
+    public ObjectProperty<PageType> currentPageProperty() {
+        return currentPage;
     }
 
     public void navigateTo(PageType pageType) {
@@ -77,6 +85,8 @@ public class NavigationService {
         }
 
         contentArea.getChildren().setAll(view.node);
+
+        currentPage.set(pageType);
     }
 
     public void clearCache() {
