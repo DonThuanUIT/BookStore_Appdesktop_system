@@ -6,9 +6,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ImportDetailRepository extends JpaRepository<ImportDetail, Long> {
 
     @Query("SELECT COALESCE(SUM(d.quantity), 0) FROM ImportDetail d WHERE d.book.id = :bookId")
     Long sumQuantityByBookId(@Param("bookId") Long bookId);
+
+    List<ImportDetail> findByImportOrderId(Long importId);
+
+    void deleteByImportOrderId(Long importId);
 }
