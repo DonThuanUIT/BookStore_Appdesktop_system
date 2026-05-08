@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -75,10 +76,8 @@ public class BookService {
             book.setPublishYear(request.publishYear());
         }
 
-        // Price
-        if (request.sellPrice() != null) {
-            book.setSellPrice(request.sellPrice());
-        }
+        book.setQuantity(0);
+        book.setSellPrice(BigDecimal.ZERO);
 
         // Image URL
         if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
@@ -118,10 +117,6 @@ public class BookService {
 
         if (request.publishYear() != null) {
             book.setPublishYear(request.publishYear());
-        }
-
-        if (request.sellPrice() != null) {
-            book.setSellPrice(request.sellPrice());
         }
 
         if (request.imageUrl() != null && !request.imageUrl().isBlank()) {

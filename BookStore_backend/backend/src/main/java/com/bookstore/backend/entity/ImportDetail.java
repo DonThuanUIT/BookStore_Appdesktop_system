@@ -1,8 +1,6 @@
 package com.bookstore.backend.entity;
 
-import com.bookstore.backend.listener.ImportDetailQuantityListener;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -10,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@EntityListeners(ImportDetailQuantityListener.class)
 @Table(name = "import_details")
 @Getter
 @Setter
