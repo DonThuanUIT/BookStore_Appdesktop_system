@@ -25,6 +25,8 @@ public class ShopController {
     @FXML private FlowPane booksContainer;
     @FXML private Label lblStatus;
 
+    @FXML private BookDetailSidePanelController bookDetailSidePanelController;
+
     private ShopModel model;
     private ShopInteractor interactor;
     private List<BookModel> originalBooksList = new ArrayList<>();
@@ -107,7 +109,13 @@ public class ShopController {
                 cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imageUrl);
 
                 cardController.setCallbacks(
-                        () -> System.out.println("Opening book details ID: " + book.getId()),
+                        () -> {
+                            if (bookDetailSidePanelController != null) {
+                                bookDetailSidePanelController.setBookDetailDataAndShow(book);
+                            } else {
+                                System.err.println("Lỗi: Component bookSidePanel chưa được nạp (Null)!");
+                            }
+                        },
                         () -> System.out.println("Added to cart: " + book.getTitle())
                 );
 

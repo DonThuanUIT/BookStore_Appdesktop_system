@@ -11,7 +11,6 @@
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bookstore.frontend.controller.HomeController">
 
-    <!-- CỘT TRÁI: Khu vực chính (Tự động cuộn và co giãn) -->
     <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS" style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;">
         <content>
             <VBox spacing="40.0">
@@ -19,7 +18,6 @@
                     <Insets top="40.0" right="40.0" bottom="50.0" left="40.0"/>
                 </padding>
 
-                <!-- 1. Hero Section (Lời chào & Search) -->
                 <VBox alignment="CENTER" spacing="20.0">
                     <VBox alignment="CENTER" spacing="5.0">
                         <Label fx:id="lblWelcome" text="Welcome to Neth Bookpoint" styleClass="login-title" style="-fx-font-size: 36px;"/>
@@ -27,9 +25,7 @@
                                styleClass="login-subtitle" wrapText="true" textAlignment="CENTER" maxWidth="600"/>
                     </VBox>
 
-                    <!-- Thanh Search dạng Pill-shape -->
                     <HBox alignment="CENTER_LEFT" maxWidth="550.0" style="-fx-background-color: rgba(255, 255, 255, 0.08); -fx-background-radius: 30; -fx-padding: 4;">
-                        <!-- Custom text field bỏ viền dưới để hòa vào khối nền -->
                         <TextField fx:id="txtSearch" promptText="Search by title, author, or ISBN..."
                                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-prompt-text-fill: #AAAAAA; -fx-padding: 10 20; -fx-font-size: 14px;"
                                    HBox.hgrow="ALWAYS"/>
@@ -37,7 +33,6 @@
                     </HBox>
                 </VBox>
 
-                <!-- 2. Danh mục Sách (Grid) -->
                 <VBox spacing="20.0">
                     <HBox alignment="CENTER_LEFT">
                         <Label text="New Arrivals" styleClass="login-title" style="-fx-font-size: 24px;"/>
@@ -45,63 +40,12 @@
                         <Hyperlink onAction="#handleViewAll" text="View All →" styleClass="text-link" style="-fx-font-size: 14px;"/>
                     </HBox>
 
-                    <!-- FlowPane: Tự động rớt dòng khi thay đổi kích thước cửa sổ -->
                     <FlowPane fx:id="booksContainer" hgap="25.0" vgap="30.0" alignment="CENTER" />
                 </VBox>
             </VBox>
         </content>
     </ScrollPane>
 
-    <!-- CỘT PHẢI: Book Details Side Panel (Bị ẩn mặc định) -->
-    <VBox fx:id="sidePanel" prefWidth="380.0" minWidth="380.0" styleClass="side-panel" spacing="20.0" visible="false" managed="false">
-        <padding>
-            <Insets top="25.0" right="25.0" bottom="25.0" left="25.0"/>
-        </padding>
+    <fx:include fx:id="bookDetailSidePanel" source="components/BookDetailSidePanelView.fxml" />
 
-        <!-- Header của Side Panel -->
-        <HBox alignment="CENTER_LEFT">
-            <Label text="Book Details" styleClass="login-title" style="-fx-font-size: 20px;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <!-- Nút đóng Panel -->
-            <Button text="✕" onAction="#closeSidePanel" styleClass="btn-icon" style="-fx-font-size: 20px; -fx-padding: 0;"/>
-        </HBox>
-
-        <!-- Nội dung chi tiết (Có thanh cuộn riêng nếu nội dung quá dài) -->
-        <ScrollPane fitToWidth="true" vbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-            <VBox spacing="20.0">
-
-                <!-- Khung Ảnh Bìa sách -->
-                <StackPane style="-fx-background-color: #F5F5F5; -fx-background-radius: 12;" prefHeight="280.0">
-                    <!-- Fix: ImageView cần có fx:id để nhồi ảnh vào -->
-                    <ImageView fx:id="detailCover" fitHeight="250.0" preserveRatio="true"/>
-                </StackPane>
-
-                <!-- Thông tin cơ bản -->
-                <VBox spacing="5.0">
-                    <Label fx:id="detailTitle" text="Title Here" styleClass="login-title" style="-fx-font-size: 24px;" wrapText="true"/>
-                    <Label fx:id="detailAuthor" text="By Author" styleClass="book-card-author" style="-fx-font-size: 15px;"/>
-                </VBox>
-
-                <!-- Giá & Tình trạng -->
-                <HBox alignment="CENTER_LEFT" spacing="15.0">
-                    <Label fx:id="detailPrice" text="\$0.00" styleClass="login-title" style="-fx-font-size: 26px; -fx-text-fill: -fx-accent-gold;"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="In Stock" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: -fx-secondary-white; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px;"/>
-                </HBox>
-
-                <!-- Nút Thao tác -->
-                <VBox spacing="10.0">
-                    <Button text="🛒 Add to Cart" maxWidth="Infinity" styleClass="btn-primary" style="-fx-background-radius: 8; -fx-padding: 12;"/>
-                    <Button text="♡ Add to Wishlist" maxWidth="Infinity" styleClass="btn-outline-small" style="-fx-border-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8;"/>
-                </VBox>
-
-                <!-- Tóm tắt nội dung (Synopsis) -->
-                <VBox spacing="8.0">
-                    <Label text="Synopsis" styleClass="login-title" style="-fx-font-size: 18px;"/>
-                    <Label text="In the dimly lit corridors of an ancient academy..."
-                           styleClass="login-subtitle" wrapText="true" style="-fx-text-fill: #CCCCCC; -fx-line-spacing: 4px;"/>
-                </VBox>
-            </VBox>
-        </ScrollPane>
-    </VBox>
 </HBox>

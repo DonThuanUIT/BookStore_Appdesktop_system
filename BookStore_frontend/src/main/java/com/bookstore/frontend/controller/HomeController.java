@@ -17,12 +17,7 @@ public class HomeController extends BaseController {
 
     @FXML private Label lblWelcome;
     @FXML private FlowPane booksContainer;
-
-    @FXML private VBox sidePanel;
-    @FXML private ImageView detailCover;
-    @FXML private Label detailTitle;
-    @FXML private Label detailAuthor;
-    @FXML private Label detailPrice;
+    @FXML private BookDetailSidePanelController bookDetailSidePanelController;
 
     private final HomeModel model;
     private final HomeInteractor interactor;
@@ -72,8 +67,8 @@ public class HomeController extends BaseController {
                         cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath);
 
                         cardController.setCallbacks(
-                                () -> openSidePanel(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath),
-                                () -> System.out.println("Added to cart: " + book.getTitle())
+                                () -> bookDetailSidePanelController.setBookDetailDataAndShow(book),
+                                () -> System.out.println("Đã thêm vào giỏ: " + book.getTitle())
                         );
 
                         booksContainer.getChildren().add(cardNode);
@@ -85,32 +80,6 @@ public class HomeController extends BaseController {
         });
     }
 
-
-    private void openSidePanel(String title, String author, String price, String imgUrl) {
-        detailTitle.setText(title);
-        detailAuthor.setText("By " + author);
-        detailPrice.setText(price);
-
-        try {
-            if (imgUrl != null && !imgUrl.isBlank()) {
-                Image image = new Image(imgUrl, true);
-                detailCover.setImage(image);
-            } else {
-                detailCover.setImage(null);
-            }
-        } catch (Exception e) {
-            System.err.println("SidePanel - Error loading Cloudinary images: " + imgUrl);
-        }
-
-        sidePanel.setVisible(true);
-        sidePanel.setManaged(true);
-    }
-
-    @FXML
-    public void closeSidePanel() {
-        sidePanel.setVisible(false);
-        sidePanel.setManaged(false);
-    }
 
     @FXML
     public void handleViewAll() {

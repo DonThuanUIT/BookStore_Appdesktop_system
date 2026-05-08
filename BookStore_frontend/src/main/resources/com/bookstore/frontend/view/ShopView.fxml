@@ -6,12 +6,13 @@
 
 <HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0"
       style="-fx-background-color: transparent;"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ShopController">
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.ShopController">
+
     <padding>
         <Insets top="30.0" right="40.0" bottom="30.0" left="40.0"/>
     </padding>
 
-    <!-- CỘT TRÁI: Bộ lọc (Sidebar) -->
     <VBox minWidth="260.0" prefWidth="260.0" spacing="25.0" styleClass="sidebar-panel">
         <padding>
             <Insets top="25.0" right="20.0" bottom="25.0" left="20.0"/>
@@ -20,26 +21,20 @@
         <Label text="Filters" styleClass="login-title" style="-fx-font-size: 24px;"/>
         <Separator style="-fx-background-color: rgba(255,255,255,0.1);"/>
 
-        <!-- Tìm kiếm Tên / Tác giả -->
         <VBox spacing="15.0">
             <Label text="Search" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <!-- Đã thêm fx:id="txtSearch" -->
             <TextField fx:id="txtSearch" promptText="Search title or author..." styleClass="custom-text-field" style="-fx-background-color: rgba(255,255,255,0.05);"/>
         </VBox>
 
-        <!-- Lọc Khoảng giá -->
         <VBox spacing="15.0">
             <Label text="Price Range" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <!-- Đã thêm fx:id="txtMinPrice" -->
                 <TextField fx:id="txtMinPrice" promptText="Min $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
                 <Label text="-" style="-fx-text-fill: white;"/>
-                <!-- Đã thêm fx:id="txtMaxPrice" -->
                 <TextField fx:id="txtMaxPrice" promptText="Max $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
             </HBox>
         </VBox>
 
-        <!-- Lọc Thể loại -->
         <VBox spacing="15.0">
             <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
             <VBox spacing="10.0">
@@ -49,13 +44,9 @@
                 <CheckBox text="Science Fiction" styleClass="custom-checkbox"/>
             </VBox>
         </VBox>
-
     </VBox>
 
-    <!-- CỘT PHẢI: Hiển thị Sách -->
     <VBox HBox.hgrow="ALWAYS" spacing="20.0">
-
-        <!-- Top Bar: Tiêu đề & Sort -->
         <HBox alignment="BOTTOM_LEFT">
             <VBox spacing="5.0">
                 <Label text="All Books" styleClass="login-title" style="-fx-font-size: 32px;"/>
@@ -65,7 +56,6 @@
             <ComboBox fx:id="cbSort" promptText="Default Sorting" styleClass="custom-combo-box" style="-fx-background-color: rgba(255,255,255,0.05); -fx-border-color: rgba(255,255,255,0.1);"/>
         </HBox>
 
-        <!-- Khung chứa lưới sách (FlowPane) -->
         <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
             <content>
                 <FlowPane fx:id="booksContainer" hgap="25.0" vgap="30.0" alignment="TOP_LEFT">
@@ -76,11 +66,8 @@
             </content>
         </ScrollPane>
 
-        <!-- Phân trang (Pagination) - Hiện tại Backend chưa xong API lọc nên ta để giao diện này chờ -->
         <HBox alignment="CENTER" spacing="10.0">
-            <padding>
-                <Insets top="15.0"/>
-            </padding>
+            <padding><Insets top="15.0"/></padding>
             <Button text="&lt; Prev" styleClass="btn-page"/>
             <Button text="1" styleClass="btn-page, btn-page-active"/>
             <Button text="2" styleClass="btn-page"/>
@@ -88,6 +75,8 @@
             <Label text="..." style="-fx-text-fill: white; -fx-padding: 0 5;"/>
             <Button text="Next &gt;" styleClass="btn-page"/>
         </HBox>
-
     </VBox>
+
+    <fx:include fx:id="bookDetailSidePanel" source="components/BookDetailSidePanelView.fxml" />
+
 </HBox>
