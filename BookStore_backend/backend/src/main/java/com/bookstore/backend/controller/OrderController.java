@@ -1,5 +1,6 @@
 package com.bookstore.backend.controller;
 
+import com.bookstore.backend.dto.request.UpdateOrderStatusRequest;
 import com.bookstore.backend.dto.response.OrderResponse;
 import com.bookstore.backend.entity.Order;
 import com.bookstore.backend.service.OrderService;
@@ -8,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -28,5 +26,11 @@ public class OrderController {
             @RequestParam(defaultValue = "desc") String direction) {
 
         return ResponseEntity.ok(orderService.getAllOrders(page, size, sortBy, direction));
+    }
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OrderResponse> updateStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateOrderStatusRequest request) {
+        return ResponseEntity.ok(orderService.updateStatus(id, request.status()));
     }
 }
