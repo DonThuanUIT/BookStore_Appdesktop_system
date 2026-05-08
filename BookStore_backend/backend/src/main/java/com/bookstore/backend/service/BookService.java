@@ -102,6 +102,12 @@ public class BookService {
             book.setAuthors(resolveAuthors(request.authorIds()));
         }
 
+        // Quantity (Mặc định là 0 nếu không truyền)
+        if (request.quantity() != null) {
+            book.setQuantity(request.quantity());
+        } else {
+            book.setQuantity(0);
+        }
         Book saved = bookRepository.save(book);
         return toResponse(saved);
     }
@@ -140,6 +146,10 @@ public class BookService {
 
         if (request.authorIds() != null) {
             book.setAuthors(resolveAuthors(request.authorIds()));
+        }
+
+        if (request.quantity() != null) {
+            book.setQuantity(request.quantity());
         }
 
         return toResponse(bookRepository.save(book));

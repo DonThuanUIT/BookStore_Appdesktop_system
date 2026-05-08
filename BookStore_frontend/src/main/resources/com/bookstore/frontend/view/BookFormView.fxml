@@ -4,74 +4,53 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15.0" styleClass="bg-white" stylesheets="@../css/theme.css"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.bookstore.frontend.controller.BookFormController"
-      prefWidth="500.0">
-
+<VBox prefWidth="700.0" spacing="20.0" styleClass="login-box" stylesheets="@../css/colors.css, @../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.BookFormController">
     <padding>
-        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
 
-    <children>
-        <Label fx:id="lblHeader" text="Add New Book" styleClass="text-title-gold">
-            <font>
-                <Font name="System Bold" size="20.0" />
-            </font>
-        </Label>
+    <HBox alignment="CENTER_LEFT">
+        <Label fx:id="lblFormTitle" style="-fx-font-size: 24px;" styleClass="login-title" text="Edit Book Details" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button mnemonicParsing="false" onAction="#handleCancel" style="-fx-font-size: 18px;" styleClass="btn-icon" text="✕" />
+    </HBox>
 
-        <Separator />
+    <Separator style="-fx-background-color: rgba(255,255,255,0.1);" />
 
-        <GridPane hgap="15.0" vgap="15.0">
-            <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="120.0" prefWidth="120.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
-            </columnConstraints>
-            <children>
-                <Label text="Book Title:" GridPane.rowIndex="0" />
-                <TextField fx:id="txtTitle" promptText="Enter book title" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+    <HBox spacing="40.0">
 
-                <Label text="Author Name:" GridPane.rowIndex="1" />
-                <TextField fx:id="txtAuthorName" promptText="Enter author name" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                <Label text="Publisher Name:" GridPane.rowIndex="2" />
-                <TextField fx:id="txtPublisherName" promptText="Enter publisher name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                <Label text="Price (VNĐ):" GridPane.rowIndex="3" />
-                <TextField fx:id="txtPrice" promptText="0.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-                <Label text="Quantity:" GridPane.rowIndex="4" />
-                <TextField fx:id="txtQuantity" promptText="0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-                <Label text="Category (Optional):" GridPane.rowIndex="5" />
-                <TextField fx:id="txtCategoryNames" promptText="e.g. Science, Novel" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-            </children>
-        </GridPane>
-
-        <VBox spacing="10.0" alignment="CENTER">
-            <children>
-                <Label text="Book Cover Image:" alignment="CENTER_LEFT" maxWidth="Infinity" />
-                <HBox spacing="15.0" alignment="CENTER_LEFT">
-                    <children>
-                        <Button onAction="#onChooseImage" text="Choose File..." styleClass="btn-outline" />
-                        <Label fx:id="lblFileName" text="No file selected" textOverrun="CENTER_ELLIPSIS" maxWidth="200.0" />
-                    </children>
-                </HBox>
-                <StackPane prefHeight="180.0" prefWidth="130.0" style="-fx-border-color: #e5e5e5; -fx-border-radius: 5; -fx-background-color: #f9f9f9;">
-                    <children>
-                        <ImageView fx:id="imgPreview" fitHeight="170.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                    </children>
-                </StackPane>
-            </children>
+        <VBox alignment="CENTER" spacing="15.0">
+            <StackPane style="-fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 12; -fx-background-radius: 12; -fx-background-color: rgba(0,0,0,0.5); -fx-padding: 5;">
+                <ImageView fx:id="imgCover" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="false" />
+            </StackPane>
+            <Button mnemonicParsing="false" onAction="#handleChangeImage" styleClass="btn-outline-small" text="📂 Change Cover Image" />
         </VBox>
 
-        <HBox alignment="CENTER_RIGHT" spacing="15.0" style="-fx-padding: 10 0 0 0;">
-            <children>
-                <Button onAction="#onCancel" text="Cancel" prefWidth="100.0" styleClass="btn-outline" />
-                <Button fx:id="btnSave" onAction="#onSave" text="Save Book" prefWidth="120.0" styleClass="btn-primary" />
-            </children>
-        </HBox>
-    </children>
+        <VBox spacing="25.0" HBox.hgrow="ALWAYS">
+            <VBox spacing="8.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1px;" text="BOOK TITLE" />
+                <TextField fx:id="txtTitle" styleClass="custom-text-field" />
+            </VBox>
+
+            <VBox spacing="8.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1px;" text="AUTHOR" />
+                <ComboBox fx:id="cbAuthor" maxWidth="Infinity" styleClass="custom-combo-box" />
+            </VBox>
+
+            <VBox spacing="8.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1px;" text="SELL PRICE ($)" />
+                <TextField fx:id="txtPrice" promptText="\$" styleClass="custom-text-field" />
+            </VBox>
+        </VBox>
+
+    </HBox>
+
+    <Separator style="-fx-background-color: rgba(255,255,255,0.1);" />
+
+    <HBox alignment="CENTER_RIGHT" spacing="15.0">
+        <Button mnemonicParsing="false" onAction="#handleCancel" styleClass="btn-outline-small" style="-fx-padding: 10 25; -fx-font-size: 14px;" text="Cancel" />
+        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#handleSave" styleClass="btn-primary" style="-fx-padding: 10 25; -fx-font-size: 14px;" text="Update Book" />
+    </HBox>
+
 </VBox>

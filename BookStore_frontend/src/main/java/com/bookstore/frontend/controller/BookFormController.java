@@ -3,6 +3,7 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.model.BookModel;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -13,67 +14,106 @@ import javafx.stage.Stage;
 import java.io.File;
 
 public class BookFormController {
-    @FXML private Label lblHeader;
-    @FXML private TextField txtTitle, txtAuthorName, txtPublisherName, txtPrice, txtQuantity, txtCategoryNames;
-    @FXML private Label lblFileName;
-    @FXML private ImageView imgPreview;
+
+    @FXML private Label lblFormTitle;
+    @FXML private ImageView imgCover;
+    @FXML private TextField txtTitle;
+    @FXML private ComboBox<String> cbAuthor;
+    @FXML private TextField txtPrice;
     @FXML private Button btnSave;
 
+    private BookModel currentBook;
     private File selectedImageFile;
     private boolean saveClicked = false;
-    private BookModel book;
+
+    @FXML
+    public void initialize() {
+        // TODO: Chuẩn bị thay thế bằng dữ liệu gọi từ API
+        cbAuthor.getItems().addAll("Carlos Ruiz Zafón", "Nguyễn Nhật Ánh", "M. Scott Peck", "F. Scott Fitzgerald", "Unknown Author");
+    }
 
     public void setBook(BookModel book, boolean isEdit) {
-        this.book = book;
+        this.currentBook = book;
+
         if (isEdit) {
-            lblHeader.setText("Edit Book Details");
+            lblFormTitle.setText("Edit Book Details");
             btnSave.setText("Update Book");
 
-            // Đổ dữ liệu từ Model vào UI
             txtTitle.setText(book.getTitle());
-            txtAuthorName.setText(book.getAuthorName());
-            txtPublisherName.setText(book.getPublisherName());
-            txtPrice.setText(book.getPrice() != null ? String.valueOf(book.getPrice()) : "0");
-            txtQuantity.setText(book.getQuantity() != null ? String.valueOf(book.getQuantity()) : "0");
+            cbAuthor.setValue(book.getAuthorName());
+            txtPrice.setText(String.valueOf(book.getPrice()));
 
             if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-                imgPreview.setImage(new Image(book.getImageUrl(), true));
+                try {
+                    imgCover.setImage(new Image(book.getImageUrl(), true));
+                } catch (Exception e) {
+                    System.err.println("Không thể load ảnh từ URL: " + book.getImageUrl());
+                }
             }
+        } else {
+            lblFormTitle.setText("Add New Book");
+            btnSave.setText("Save Book");
         }
     }
 
     @FXML
-    private void onSave() {
-        try {
-            // Cập nhật ngược lại Model từ các TextField
-            book.setTitle(txtTitle.getText().trim());
-            book.setPublisherName(txtPublisherName.getText().trim());
-            book.setPrice(Double.parseDouble(txtPrice.getText()));
-            book.setQuantity(Integer.parseInt(txtQuantity.getText()));
-
-            saveClicked = true;
-            closeStage();
-        } catch (NumberFormatException e) {
-            // Bạn có thể dùng AlertUtils ở đây để báo nhập sai định dạng số
-            System.err.println("Lỗi: Giá hoặc số lượng phải là số!");
-        }
-    }
-
-    @FXML
-    private void onChooseImage() {
+    private void handleChangeImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Book Cover Image");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg"));
-        File file = fileChooser.showOpenDialog(btnSave.getScene().getWindow());
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        Stage stage = (Stage) btnSave.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
         if (file != null) {
             this.selectedImageFile = file;
-            lblFileName.setText(file.getName());
-            imgPreview.setImage(new Image(file.toURI().toString()));
+            Image image = new Image(file.toURI().toString());
+            imgCover.setImage(image);
         }
     }
 
-    @FXML private void onCancel() { closeStage(); }
-    private void closeStage() { ((Stage) btnSave.getScene().getWindow()).close(); }
-    public boolean isSaveClicked() { return saveClicked; }
-    public File getSelectedImageFile() { return selectedImageFile; }
+    @FXML
+    private void handleSave() {
+        currentBook.setTitle(txtTitle.getText());
+        currentBook.setAuthorName(cbAuthor.getValue());
+
+        try {
+            String rawPrice = txtPrice.getText().replaceAll("[^\\d.]", "");
+
+            if (rawPrice.isEmpty()) {
+                System.err.println("Giá bán không được để trống!");
+                return;
+            }
+
+            currentBook.setPrice(Double.parseDouble(rawPrice));
+
+        } catch (NumberFormatException e) {
+            System.err.println("Giá bán nhập vào không hợp lệ!");
+            return;
+        }
+
+        this.saveClicked = true;
+        closeDialog();
+    }
+
+    @FXML
+    private void handleCancel() {
+        this.saveClicked = false;
+        closeDialog();
+    }
+
+    private void closeDialog() {
+        Stage stage = (Stage) btnSave.getScene().getWindow();
+        stage.close();
+    }
+
+    public boolean isSaveClicked() {
+        return saveClicked;
+    }
+
+    public File getSelectedImageFile() {
+        return selectedImageFile;
+    }
 }

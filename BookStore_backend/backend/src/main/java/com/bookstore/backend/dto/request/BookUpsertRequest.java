@@ -23,6 +23,9 @@ public record BookUpsertRequest (
         @Max(value = 2100, message = "Năm xuất bản không hợp lệ")
         Integer publishYear,
 
+        @PositiveOrZero(message = "Số lượng tồn kho không hợp lệ")
+        Integer quantity,
+
         @PositiveOrZero(message = "Giá bán không hợp lệ")
         BigDecimal sellPrice,
 

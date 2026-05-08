@@ -24,6 +24,18 @@ public class BookModel {
 
     private String authorName;
 
+    public String getAuthorName() {
+        if (authorName != null) return authorName;
+        if (authorNamesList != null && !authorNamesList.isEmpty()) {
+            return String.join(", ", authorNamesList);
+        }
+        return "Unknown Author";
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
     public BookModel() {}
 
     public Long getId() { return id; }
@@ -47,11 +59,5 @@ public class BookModel {
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getAuthorName() {
-        if (authorName != null) return authorName;
-        if (authorNamesList != null && !authorNamesList.isEmpty()) {
-            return String.join(", ", authorNamesList);
-        }
-        return "Unknown Author";
-    }
+
 }
