@@ -49,6 +49,9 @@ public class AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        return ResponseEntity.ok(new UserProfileResponse(authentication.getName(), roles));
+        return ResponseEntity.ok(UserProfileResponse.builder()
+                .username(authentication.getName())
+                .roles(roles)
+                .build());
     }
 }
