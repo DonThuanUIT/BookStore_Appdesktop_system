@@ -47,12 +47,25 @@ public class OrderService {
 
         return OrderResponse.builder()
                 .id(order.getId())
-                // Ép kiểu BigDecimal sang Double để khớp với DTO
                 .totalAmount(order.getTotalAmount() != null ? order.getTotalAmount().doubleValue() : 0.0)
                 .discount(order.getDiscount() != null ? order.getDiscount().doubleValue() : 0.0)
                 .finalAmount(order.getFinalAmount() != null ? order.getFinalAmount().doubleValue() : 0.0)
                 .status(order.getStatus())
                 .user(userDto)
                 .build();
+    }
+    public OrderResponse updateStatus(Long id, String newStatus) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No order found."));
+        String currentStatus = order.getStatus();
+
+        if (!"PENDING".equalsIgnoreCase(currentStatus)) {
+            throw new RuntimeException("Only PENDING orders can have their status updated.");
+        }
+        if (!"SHIPPING".equalsIgnoreCase(newStatus) && !"CANCELED".equalsIgnoreCase(newStatus)) {
+            throw new RuntimeException("New status is invalid (Only accepting SHIPPING or CANCELED orders)");
+        }
+        order.setStatus(newStatus.toUpperCase());
+        return convertToResponse(orderRepository.save(order));
     }
 }
