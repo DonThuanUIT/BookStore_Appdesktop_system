@@ -46,7 +46,6 @@ public class InventoryController extends BaseController {
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        // Định dạng cột số lượng (Cảnh báo đỏ)
         colQty.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(Integer item, boolean empty) {
@@ -106,9 +105,13 @@ public class InventoryController extends BaseController {
             VBox page = loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Edit Book");
+
+            dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
-            dialogStage.setScene(new Scene(page));
+
+            Scene scene = new Scene(page);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+            dialogStage.setScene(scene);
 
             BookFormController controller = loader.getController();
             controller.setBook(selectedBook, true);
