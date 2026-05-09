@@ -38,10 +38,6 @@
                 <ComboBox fx:id="cbAuthor" maxWidth="Infinity" styleClass="custom-combo-box" />
             </VBox>
 
-            <VBox spacing="8.0">
-                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1px;" text="SELL PRICE ($)" />
-                <TextField fx:id="txtPrice" promptText="\$" styleClass="custom-text-field" />
-            </VBox>
         </VBox>
 
     </HBox>

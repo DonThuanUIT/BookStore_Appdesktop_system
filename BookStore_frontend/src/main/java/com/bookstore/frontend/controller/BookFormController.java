@@ -19,7 +19,6 @@ public class BookFormController {
     @FXML private ImageView imgCover;
     @FXML private TextField txtTitle;
     @FXML private ComboBox<String> cbAuthor;
-    @FXML private TextField txtPrice;
     @FXML private Button btnSave;
 
     private BookModel currentBook;
@@ -41,7 +40,6 @@ public class BookFormController {
 
             txtTitle.setText(book.getTitle());
             cbAuthor.setValue(book.getAuthorName());
-            txtPrice.setText(String.valueOf(book.getPrice()));
 
             if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
                 try {
@@ -78,21 +76,6 @@ public class BookFormController {
     private void handleSave() {
         currentBook.setTitle(txtTitle.getText());
         currentBook.setAuthorName(cbAuthor.getValue());
-
-        try {
-            String rawPrice = txtPrice.getText().replaceAll("[^\\d.]", "");
-
-            if (rawPrice.isEmpty()) {
-                System.err.println("Giá bán không được để trống!");
-                return;
-            }
-
-            currentBook.setPrice(Double.parseDouble(rawPrice));
-
-        } catch (NumberFormatException e) {
-            System.err.println("Giá bán nhập vào không hợp lệ!");
-            return;
-        }
 
         this.saveClicked = true;
         closeDialog();

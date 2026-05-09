@@ -6,7 +6,6 @@ import com.bookstore.frontend.service.api.ApiClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -18,7 +17,7 @@ public class InventoryInteractor {
         this.model = model;
     }
 
-    // get books:
+    // --- 1. LẤY DANH SÁCH SÁCH (READ) ---
     public void loadInventoryData(int page, int size) {
         String endpoint = String.format("/books?page=%d&size=%d", page, size);
 
@@ -35,6 +34,7 @@ public class InventoryInteractor {
                         BookModel book = new BookModel();
                         book.setId(node.get("id").asLong());
                         book.setTitle(node.get("title").asText());
+                        // Vẫn giữ lệnh parse price và quantity để HIỂN THỊ trên bảng TableView
                         book.setPrice(node.get("sellPrice").asDouble());
                         book.setQuantity(node.get("quantity").asInt());
                         book.setImageUrl(node.has("imageUrl") && !node.get("imageUrl").isNull() ? node.get("imageUrl").asText() : null);
@@ -63,7 +63,7 @@ public class InventoryInteractor {
         });
     }
 
-    // update books
+    // --- 2. CẬP NHẬT SÁCH (UPDATE) ---
     public CompletableFuture<Boolean> updateBook(BookModel book, File imageFile) {
         if (imageFile != null) {
             try {
@@ -89,13 +89,12 @@ public class InventoryInteractor {
         }
     }
 
-    // Nhịp 2: Cập nhật JSON Sách
+    // Gửi Request Cập nhật JSON Sách
     private CompletableFuture<Boolean> sendUpdateRequest(BookModel book, String imageUrl) {
         try {
             ObjectNode requestData = ApiClient.getInstance().getMapper().createObjectNode();
             requestData.put("title", book.getTitle());
-            requestData.put("sellPrice", book.getPrice());
-            requestData.put("quantity", book.getQuantity());
+
             if (imageUrl != null) requestData.put("imageUrl", imageUrl);
 
             // TODO: Nâng cấp lấy ID động từ ComboBox ở bước tiếp theo
