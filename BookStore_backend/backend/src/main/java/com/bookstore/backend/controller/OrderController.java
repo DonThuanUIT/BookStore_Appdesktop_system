@@ -9,7 +9,7 @@ import com.bookstore.backend.service.OrderService;
 import com.bookstore.backend.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +44,7 @@ public class OrderController {
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<OrderResponse> createOrder(
+            @Valid
             @RequestBody CreateOrderRequest request,
             Authentication authentication) {
 
