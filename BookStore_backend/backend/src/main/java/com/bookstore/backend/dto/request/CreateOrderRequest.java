@@ -1,3 +1,7 @@
 package com.bookstore.backend.dto.request;
 
-public record CreateOrderRequest(java.util.List<OrderItemRequest> items) {}
+import jakarta.validation.Valid;import jakarta.validation.constraints.NotEmpty;import java.util.List;public record CreateOrderRequest(
+        @NotEmpty(message = "The list of items cannot be left blank.")
+        @Valid
+        List<OrderItemRequest> items
+) {}

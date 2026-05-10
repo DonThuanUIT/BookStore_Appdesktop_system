@@ -8,6 +8,7 @@ import com.bookstore.backend.entity.Book;
 import com.bookstore.backend.entity.Order;
 import com.bookstore.backend.entity.OrderDetail;
 import com.bookstore.backend.entity.User;
+import com.bookstore.backend.exception.AppException;
 import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.OrderDetailRepository;
 import com.bookstore.backend.repository.OrderRepository;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -95,9 +97,15 @@ public class OrderService {
         BigDecimal total = BigDecimal.ZERO;
 
         for (OrderItemRequest item : request.items()) {
-            Book book = bookRepository.findById(item.bookId())
-                    .orElseThrow(() -> new RuntimeException("No book found!"));
+            Book book = bookRepository.findByIdActive(item.bookId())
+                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sách với ID: " + item.bookId()));
 
+            if(book.getQuantity() < item.quantity()){
+                throw new AppException(HttpStatus.BAD_REQUEST,
+                        "Sách '" + book.getTitle() + "' không đủ số lượng. Kho còn: " + book.getQuantity());
+            }
+            book.setQuantity(book.getQuantity() - item.quantity());
+            bookRepository.save(book);
             OrderDetail detail = OrderDetail.builder()
                     .order(savedOrder)
                     .book(book)
