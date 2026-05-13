@@ -24,11 +24,11 @@ public class JwtConfig {
 //    public SecretKey jwtSecretKey(JwtProperties jwtProperties) {
 //        return new SecretKeySpec(jwtProperties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 //    }
-        @Bean
-        public SecretKey jwtSecretKey() {
-            String secret = "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#";
-            return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        }
+//        @Bean
+//        public SecretKey jwtSecretKey() {
+//            String secret = "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#";
+//            return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+//        }
 
    // @Bean
   //  public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {

@@ -124,4 +124,22 @@ public class OrderService {
 
         return convertToResponse(orderRepository.save(savedOrder));
     }
+    public Page<OrderResponse> getOrderHistory (User user, int page, int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Order> orderPage = orderRepository.findByUserId(user.getId(), pageable);
+        return orderPage.map(this::convertToResponse);
+    }
+    @Transactional
+    public OrderResponse confirmReceived(Long orderId, User user) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"No orders with ID found: " +orderId ));
+        if (order.getUser() == null || !order.getUser().getId().equals(user.getId())) {
+            throw new AppException(HttpStatus.FORBIDDEN, "You do not have the authority to confirm this order!");
+        }
+        if (!"SHIPPING".equalsIgnoreCase(order.getStatus())) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Only orders currently in transit (SHIPPING) can be confirmed as received. Current status:" + order.getStatus());
+        }
+        order.setStatus("COMPLETED");
+        return convertToResponse(orderRepository.save(order));
+    }
 }
