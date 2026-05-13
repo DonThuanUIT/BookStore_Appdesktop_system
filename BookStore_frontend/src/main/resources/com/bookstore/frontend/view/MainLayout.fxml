@@ -31,6 +31,8 @@
                             <Button fx:id="btnShop" onAction="#onShopNavClick" styleClass="nav-button" text="Shop" />
                             <Button fx:id="btnCart" onAction="#onCartClick" styleClass="nav-button" text="Cart" />
                             <Button fx:id="btnInventory" onAction="#onInventoryClick" styleClass="nav-button" text="Inventory" />
+
+                            <Button fx:id="btnImport" onAction="#onImportClick" styleClass="nav-button" text="Import" />
                         </children>
                     </HBox>
                     <Region HBox.hgrow="ALWAYS" />
