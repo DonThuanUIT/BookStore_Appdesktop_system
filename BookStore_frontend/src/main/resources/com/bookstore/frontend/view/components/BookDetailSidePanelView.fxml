@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox fx:id="rootPanel" visible="false" managed="false" prefWidth="380.0" minWidth="380.0"
+      styleClass="sidebar-panel" style="-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 0 0 0 1; -fx-background-color: #1A1A1A;"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.BookDetailSidePanelController">
+
+    <padding>
+        <Insets top="25.0" right="25.0" bottom="25.0" left="25.0"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Book Details" styleClass="login-title" style="-fx-font-size: 20px;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="✕" onAction="#handleClose" styleClass="btn-icon" style="-fx-font-size: 18px; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-background-color: transparent;"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" vbarPolicy="NEVER" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+        <VBox spacing="20.0" style="-fx-padding: 15 0 0 0;">
+
+            <HBox alignment="CENTER">
+                <ImageView fx:id="imgCover" fitWidth="220.0" fitHeight="320.0" preserveRatio="true" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 15, 0, 0, 5);"/>
+            </HBox>
+
+            <VBox spacing="5.0">
+                <Label fx:id="lblTitle" wrapText="true" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label fx:id="lblAuthor" style="-fx-font-size: 15px; -fx-text-fill: #AAAAAA;"/>
+            </VBox>
+
+            <Label text="★★★★☆ (128 Reviews)" style="-fx-text-fill: -fx-accent-gold; -fx-font-size: 13px;"/>
+
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+                <Label fx:id="lblPrice" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -fx-accent-gold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblStock" text="In Stock" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: #AAAAAA; -fx-padding: 5 12; -fx-background-radius: 6; -fx-font-size: 12px;"/>
+            </HBox>
+
+            <VBox spacing="12.0">
+                <Button text="🛒 Add to Cart" maxWidth="Infinity" styleClass="btn-primary" style="-fx-background-radius: 8; -fx-padding: 12; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand; -fx-text-fill: black;"/>
+                <Button text="♡ Add to Wishlist" maxWidth="Infinity" styleClass="btn-outline-small" style="-fx-border-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8; -fx-background-color: transparent; -fx-cursor: hand;"/>
+            </VBox>
+
+            <Separator style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 5 0;"/>
+
+            <VBox spacing="8.0">
+                <Label text="Synopsis" style="-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Label fx:id="lblDescription" text="Description goes here..." wrapText="true" style="-fx-text-fill: #CCCCCC; -fx-line-spacing: 5px; -fx-font-size: 13px;"/>
+            </VBox>
+
+            <GridPane hgap="20" vgap="15" style="-fx-padding: 10 0;">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+
+                <VBox spacing="2" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="Publisher" style="-fx-text-fill: #888888; -fx-font-size: 12px;"/>
+                    <Label fx:id="lblPublisher" text="Neth Press" style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+                </VBox>
+
+                <VBox spacing="2" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="Publication Date" style="-fx-text-fill: #888888; -fx-font-size: 12px;"/>
+                    <Label text="Oct 12, 2023" style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+                </VBox>
+            </GridPane>
+
+        </VBox>
+    </ScrollPane>
+</VBox>

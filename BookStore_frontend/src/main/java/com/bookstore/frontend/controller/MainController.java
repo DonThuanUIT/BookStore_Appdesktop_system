@@ -19,6 +19,7 @@ public class MainController implements Initializable {
     @FXML private Button btnShop;
     @FXML private Button btnCart;
     @FXML private Button btnInventory;
+    @FXML private Button btnImport;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -40,6 +41,7 @@ public class MainController implements Initializable {
         btnShop.getStyleClass().remove("nav-button-active");
         btnCart.getStyleClass().remove("nav-button-active");
         btnInventory.getStyleClass().remove("nav-button-active");
+        btnImport.getStyleClass().remove("nav-button-active");
 
         if (pageType == null) return;
 
@@ -48,6 +50,7 @@ public class MainController implements Initializable {
             case SHOP -> btnShop.getStyleClass().add("nav-button-active");
             case CART -> btnCart.getStyleClass().add("nav-button-active");
             case INVENTORY -> btnInventory.getStyleClass().add("nav-button-active");
+            case IMPORT -> btnImport.getStyleClass().add("nav-button-active");
         }
     }
 
@@ -70,5 +73,10 @@ public class MainController implements Initializable {
     @FXML
     void onInventoryClick() {
         NavigationService.getInstance().navigateTo(PageType.INVENTORY);
+    }
+
+    @FXML
+    void onImportClick() {
+        NavigationService.getInstance().navigateTo(PageType.IMPORT);
     }
 }

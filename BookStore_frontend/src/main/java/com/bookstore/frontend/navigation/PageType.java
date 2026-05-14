@@ -5,7 +5,9 @@ public enum PageType {
     SHOP("/com/bookstore/frontend/view/ShopView.fxml"),
     ADMIN_DASHBOARD("/com/bookstore/frontend/view/AdminDashboard.fxml"),
     CART("/com/bookstore/frontend/view/CartView.fxml"),
-    INVENTORY("/com/bookstore/frontend/view/InventoryView.fxml");
+    INVENTORY("/com/bookstore/frontend/view/InventoryView.fxml"),
+    IMPORT("/com/bookstore/frontend/view/ImportHistoryView.fxml"),
+    IMPORT_CREATE("/com/bookstore/frontend/view/ImportCreateView.fxml");
 
     private final String fxmlPath;
 

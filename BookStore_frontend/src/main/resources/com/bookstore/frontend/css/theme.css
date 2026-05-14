@@ -298,3 +298,59 @@
     -fx-text-fill: -fx-primary-black;
     -fx-border-color: -fx-accent-gold;
 }
+
+/* ===================================================================== */
+/* STYLING CHO BẢNG INVENTORY (TABLEVIEW) */
+/* ===================================================================== */
+
+/* 1. Tùy chỉnh toàn bộ Bảng */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-font-size: 15px; /* Tăng font size tổng thể lên 15px */
+    -fx-fixed-cell-size: 50px; /* Tăng chiều cao của mỗi dòng (Row) cho thoáng */
+    -fx-border-color: transparent;
+}
+
+/* 2. Tùy chỉnh Dòng tiêu đề (Header) */
+.table-view .column-header-background {
+    -fx-background-color: rgba(0, 0, 0, 0.5); /* Nền đen mờ cho thanh tiêu đề */
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 0 0 5 0;
+}
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.1) transparent;
+}
+.table-view .column-header .label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-accent-gold; /* Chữ vàng chuẩn thiết kế */
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 10;
+}
+
+/* 3. Tùy chỉnh Ô dữ liệu (Cell) */
+.table-view .table-cell {
+    -fx-text-fill: -text-primary-light; /* Chữ trắng */
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent; /* Đường kẻ ngang siêu mờ */
+    -fx-padding: 0 10 0 10;
+    -fx-alignment: center-left;
+}
+
+/* 4. Tùy chỉnh Dòng (Row) - Xóa nền trắng mặc định của JavaFX */
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* 5. Hiệu ứng Hover khi trượt chuột qua từng dòng */
+.table-row-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08); /* Sáng lên nhẹ khi đưa chuột vào */
+    -fx-cursor: hand;
+}
+
+/* Loại bỏ viền xanh khó chịu khi focus vào bảng */
+.table-view:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}

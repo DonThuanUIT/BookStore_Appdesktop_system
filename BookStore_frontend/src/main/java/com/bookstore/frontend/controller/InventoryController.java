@@ -2,198 +2,161 @@ package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
-import com.bookstore.frontend.utils.AlertUtils;
-import javafx.beans.property.ReadOnlyObjectWrapper;
+import com.bookstore.frontend.model.InventoryModel;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
+public class InventoryController extends BaseController {
 
-public class InventoryController implements Initializable {
+    @FXML private Label lblTotalTitles;
+    @FXML private Label lblLowStock;
+    @FXML private Label lblPaginationInfo;
 
-    @FXML private TableView<BookModel> bookTable;
+    @FXML private TableView<BookModel> tvInventory;
+    @FXML private TableColumn<BookModel, Long> colId;
     @FXML private TableColumn<BookModel, String> colTitle;
     @FXML private TableColumn<BookModel, String> colAuthor;
-    @FXML private TableColumn<BookModel, String> colPublisher;
+    @FXML private TableColumn<BookModel, Integer> colQty;
     @FXML private TableColumn<BookModel, Double> colPrice;
-    @FXML private TableColumn<BookModel, Integer> colQuantity;
-    @FXML private TableColumn<BookModel, String> colDescription;
-    @FXML private TableColumn<BookModel, Void> colAction; // Đã thêm cột Action
+    @FXML private TableColumn<BookModel, Void> colActions;
 
+    private InventoryModel model;
     private InventoryInteractor interactor;
-    private ObservableList<BookModel> bookList;
-    private BookFormController lastOpenedFormController;
 
-
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        interactor = new InventoryInteractor();
-        bookList = FXCollections.observableArrayList();
+    @FXML
+    public void initialize() {
+        this.model = new InventoryModel();
+        this.interactor = new InventoryInteractor(this.model);
 
         setupTableColumns();
-        loadDataFromApi();
     }
 
     private void setupTableColumns() {
-        colTitle.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getTitle()));
-        colAuthor.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getAuthorName()));
-        colPublisher.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getPublisherName()));
-        colPrice.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getPrice()));
-        colQuantity.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getQuantity()));
-        colDescription.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getDescription()));
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        colAuthor.setCellValueFactory(new PropertyValueFactory<>("authorName"));
+        colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        // --- CÀI ĐẶT NÚT 3 CHẤM CHO CỘT ACTION ---
-        colAction.setCellFactory(param -> new TableCell<>() {
-            private final MenuButton menuButton = new MenuButton("•••");
-            private final MenuItem editItem = new MenuItem("Edit");
-            private final MenuItem deleteItem = new MenuItem("Delete");
+        colQty.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item + " UNITS");
+                    if (item < 10) {
+                        setStyle("-fx-text-fill: #ff5555; -fx-background-color: rgba(255,85,85,0.1); -fx-background-radius: 10; -fx-padding: 2 10; -fx-alignment: center;");
+                    } else {
+                        setStyle("-fx-text-fill: #AAAAAA; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 10; -fx-padding: 2 10; -fx-alignment: center;");
+                    }
+                }
+            }
+        });
+
+        // EDIT VÀ DELETE (ACTIONS)
+        colActions.setCellFactory(param -> new TableCell<>() {
+            private final Button btnEdit = new Button("✎");
+            private final Button btnDelete = new Button("🗑");
+            private final HBox pane = new HBox(10, btnEdit, btnDelete);
 
             {
-                // Xóa viền nền để nút 3 chấm trông tự nhiên
-                menuButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-font-weight: bold;");
-                menuButton.getItems().addAll(editItem, deleteItem);
+                btnEdit.setStyle("-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-font-size: 16px;");
+                btnDelete.setStyle("-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-font-size: 16px;");
 
-                // Bắt sự kiện khi bấm nút Edit
-                editItem.setOnAction(event -> {
-                    BookModel selectedBook = getTableView().getItems().get(getIndex());
-                    onEditBook(selectedBook);
+                btnEdit.setOnAction(event -> {
+                    BookModel book = getTableView().getItems().get(getIndex());
+                    onEditBook(book);
                 });
 
-                // Bắt sự kiện khi bấm nút Delete
-                deleteItem.setOnAction(event -> {
-                    BookModel selectedBook = getTableView().getItems().get(getIndex());
-                    onDeleteBook(selectedBook);
+                btnDelete.setOnAction(event -> {
+                    BookModel book = getTableView().getItems().get(getIndex());
+                    onDeleteBook(book);
                 });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(menuButton);
-                }
+                setGraphic(empty ? null : pane);
             }
         });
 
-        bookTable.setItems(bookList);
-    }
-
-    private void loadDataFromApi() {
-        new Thread(() -> {
-            try {
-                // Tạm thời gọi hàm fetchAllBooks (bạn cần đảm bảo hàm này có sẵn trong Interactor nhé)
-                List<BookModel> realData = interactor.fetchAllBooks();
-                Platform.runLater(() -> {
-                    bookList.clear();
-                    bookList.addAll(realData);
-                });
-            } catch (Exception e) {
-                System.err.println("Lỗi khi kéo API: " + e.getMessage());
-            }
-        }).start();
-    }
-
-    @FXML
-    private void onAddNewBook() {
-        BookModel newBook = new BookModel();
-        boolean saved = showBookForm(newBook, false);
-        if (saved) {
-            // Mở luồng ngầm để gọi API tránh đơ màn hình
-            new Thread(() -> {
-                try {
-                    // Lấy ra Controller của Dialog để trích xuất file ảnh
-                    BookFormController formCtrl = lastOpenedFormController; // Đọc mẹo bên dưới
-
-                    interactor.saveBook(newBook, formCtrl.getSelectedImageFile(), false);
-
-                    Platform.runLater(() -> {
-                        System.out.println("Thêm thành công!");
-                        loadDataFromApi(); // Kéo lại dữ liệu mới nhất hiển thị lên bảng
-                    });
-                } catch (Exception e) {
-                    Platform.runLater(() -> System.err.println("Lỗi Thêm sách: " + e.getMessage()));
-                }
-            }).start();
-        }
+        // Bind Data
+        tvInventory.setItems(model.getBooks());
+        lblTotalTitles.textProperty().bind(model.totalTitlesProperty().asString());
+        lblLowStock.textProperty().bind(model.lowStockCountProperty().asString());
+        lblPaginationInfo.textProperty().bind(model.paginationInfoProperty());
     }
 
     private void onEditBook(BookModel selectedBook) {
-        boolean saved = showBookForm(selectedBook, true);
-        if (saved) {
-            new Thread(() -> {
-                try {
-                    BookFormController formCtrl = lastOpenedFormController;
-                    interactor.saveBook(selectedBook, formCtrl.getSelectedImageFile(), true);
-
-                    Platform.runLater(() -> {
-                        System.out.println("Cập nhật thành công!");
-                        loadDataFromApi();
-                    });
-                } catch (Exception e) {
-                    Platform.runLater(() -> System.err.println("Lỗi Cập nhật: " + e.getMessage()));
-                }
-            }).start();
-        }
-    }
-
-    /**
-     * Hàm dùng chung để mở cửa sổ Dialog
-     */
-    private boolean showBookForm(BookModel book, boolean isEdit) {
         try {
-            // 1. Nạp file FXML của Form
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/BookFormView.fxml"));
             VBox page = loader.load();
 
-            // 2. Tạo một Stage (Cửa sổ) mới
             Stage dialogStage = new Stage();
-            dialogStage.setTitle(isEdit ? "Edit Book" : "Add New Book");
-            dialogStage.initModality(Modality.APPLICATION_MODAL); // Bắt buộc tương tác xong mới được quay lại
-            dialogStage.initOwner(bookTable.getScene().getWindow());
+
+            dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+
             Scene scene = new Scene(page);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
             dialogStage.setScene(scene);
 
-            // 3. Truyền dữ liệu vào Controller của Form
             BookFormController controller = loader.getController();
-            this.lastOpenedFormController = controller;
-            controller.setBook(book, isEdit);
+            // Truyền true = chế độ EDIT
+            controller.setBook(selectedBook, true);
 
-            // 4. Hiển thị cửa sổ và đợi cho đến khi nó đóng lại
             dialogStage.showAndWait();
 
-            // 5. Kiểm tra xem người dùng nhấn "Save" hay "Cancel"
-            if (controller.isSaveClicked()) {
-                // Nếu người dùng nhấn Save, ta lấy thêm file ảnh họ đã chọn
-                java.io.File imageFile = controller.getSelectedImageFile();
-                // Tạm thời in ra để kiểm tra
-                System.out.println("Sẵn sàng gửi dữ liệu của: " + book.getTitle());
-                if (imageFile != null) System.out.println("Ảnh đính kèm: " + imageFile.getAbsolutePath());
 
-                return true;
+            if (controller.isSaveClicked()) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật sách thành công!");
+                alert.show();
+                interactor.loadInventoryData(0, 15);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            AlertUtils.show(Alert.AlertType.ERROR, "Error", "Could not load book form.");
+        } catch (Exception e) {
+            System.err.println("Error opening book editing form:" + e.getMessage());
         }
-        return false;
     }
 
     private void onDeleteBook(BookModel book) {
-        // Logic xóa sẽ làm ở bước sau
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc chắn muốn xóa sách: " + book.getTitle() + "?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait();
+        if (alert.getResult() == ButtonType.YES) {
+            interactor.deleteBook(book.getId()).thenAccept(success -> {
+                Platform.runLater(() -> {
+                    if (success) {
+                        interactor.loadInventoryData(0, 15);
+                    } else {
+                        Alert err = new Alert(Alert.AlertType.ERROR, "Lỗi khi xóa sách!");
+                        err.show();
+                    }
+                });
+            });
+        }
+    }
+
+    @FXML
+    public void handleFilterLowStock() {
+        System.out.println("Filtering books that are out of stock...");
+        // TODO: Gọi API lấy sách quantity < 10
+    }
+
+    @Override
+    public void onNavigate(Object data) {
+        if (interactor != null) {
+            interactor.loadInventoryData(0, 15);
+        }
     }
 }

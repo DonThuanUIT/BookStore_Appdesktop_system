@@ -1,5 +1,7 @@
 package com.bookstore.backend.repository;
 import com.bookstore.backend.entity.*;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,7 +16,7 @@ public interface BookRepository extends JpaRepository<Book, Long>{
             WHERE b.isDeleted = false OR b.isDeleted IS NULL
             """)
     List<Book> findAllActive();
-
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             SELECT b
             FROM Book b

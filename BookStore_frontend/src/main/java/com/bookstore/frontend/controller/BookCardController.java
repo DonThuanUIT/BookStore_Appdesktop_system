@@ -17,13 +17,11 @@ public class BookCardController {
     @FXML private Label lblPrice;
     @FXML private Button btnAdd;
 
-    // Các hàm callback (để báo cho HomeController biết thẻ nào bị click)
     private Runnable onCardClicked;
     private Runnable onAddClicked;
 
     @FXML
     public void initialize() {
-        // Bắt sự kiện người dùng click vào bất kỳ đâu trên thẻ sách (Để mở bảng Book Details)
         rootCard.setOnMouseClicked(event -> {
             if (onCardClicked != null) {
                 onCardClicked.run();
@@ -33,33 +31,29 @@ public class BookCardController {
 
     @FXML
     private void handleAddToCart(ActionEvent event) {
-        // Ngăn không cho sự kiện click lan ra rootCard (Tránh mở bảng Details khi đang bấm nút Add)
         event.consume();
         if (onAddClicked != null) {
             onAddClicked.run();
         }
     }
 
-    /**
-     * Hàm dùng để nạp dữ liệu sách từ Database vào giao diện
-     */
-    public void setBookData(String title, String author, String price, String imagePath) {
+    public void setBookData(String title, String author, String price, String imageUrl) {
         lblTitle.setText(title);
         lblAuthor.setText(author);
         lblPrice.setText(price);
 
         try {
-            // Load ảnh từ thư mục. (Lưu ý: Bạn cần có ảnh thật để test)
-            Image image = new Image(getClass().getResourceAsStream(imagePath));
-            imgCover.setImage(image);
+            if (imageUrl != null && !imageUrl.isBlank()) {
+                Image image = new Image(imageUrl, true);
+                imgCover.setImage(image);
+            } else {
+                imgCover.setImage(null);
+            }
         } catch (Exception e) {
-            System.err.println("Không tìm thấy ảnh: " + imagePath);
+            System.err.println("Error loading Cloudinary images for books" + title + ": " + imageUrl);
         }
     }
 
-    /**
-     * Hàm dùng để gắn sự kiện click từ HomeController truyền vào
-     */
     public void setCallbacks(Runnable onCardClicked, Runnable onAddClicked) {
         this.onCardClicked = onCardClicked;
         this.onAddClicked = onAddClicked;

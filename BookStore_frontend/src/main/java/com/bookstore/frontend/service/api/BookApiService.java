@@ -1,8 +1,9 @@
 package com.bookstore.frontend.service.api;
 
+import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.dto.BookResponseDto;
 import com.bookstore.frontend.model.dto.PageResponseDto;
-import com.bookstore.frontend.util.UserSession; // Import Két sắt chứa Token của bạn
+import com.bookstore.frontend.util.UserSession;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,41 +27,52 @@ public class BookApiService {
         this.objectMapper = new ObjectMapper();
     }
 
-    /**
-     * Lấy danh sách sách có phân trang (Chạy ngầm không làm đơ UI)
-     */
     public CompletableFuture<PageResponseDto<BookResponseDto>> fetchBooks(int page, int size) {
         String url = String.format("%s?page=%d&size=%d", BASE_URL, page, size);
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+        attachToken(requestBuilder);
 
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET();
+        return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenApply(this::handleResponse);
+    }
 
-        // NẾU API CẦN BẢO MẬT: Tự động thò tay vào UserSession lấy Token
-        String token = UserSession.getInstance().getToken();
-        if (token != null && !token.isEmpty()) {
-            requestBuilder.header("Authorization", "Bearer " + token);
+    public CompletableFuture<Boolean> createBook(BookModel newBook) {
+        return sendWriteRequest(BASE_URL, "POST", newBook);
+    }
+
+    // --- HÀM MỚI: CẬP NHẬT SÁCH ĐÃ CÓ ---
+    public CompletableFuture<Boolean> updateBook(Long id, BookModel book) {
+        String url = BASE_URL + "/" + id;
+        return sendWriteRequest(url, "PUT", book);
+    }
+
+    private CompletableFuture<Boolean> sendWriteRequest(String url, String method, Object body) {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(body);
+            HttpRequest.Builder rb = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .method(method, HttpRequest.BodyPublishers.ofString(jsonBody));
+            attachToken(rb);
+
+            return httpClient.sendAsync(rb.build(), HttpResponse.BodyHandlers.ofString())
+                    .thenApply(res -> res.statusCode() == 200 || res.statusCode() == 201);
+        } catch (Exception e) {
+            return CompletableFuture.completedFuture(false);
         }
+    }
 
-        HttpRequest request = requestBuilder.build();
+    private void attachToken(HttpRequest.Builder rb) {
+        String token = UserSession.getInstance().getToken();
+        if (token != null && !token.isEmpty()) rb.header("Authorization", "Bearer " + token);
+    }
 
-        // Gửi request BẤT ĐỒNG BỘ (Asynchronous)
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
-                    // Kiểm tra HTTP Status
-                    if (response.statusCode() != 200) {
-                        throw new RuntimeException("Lỗi máy chủ: HTTP " + response.statusCode());
-                    }
-
-                    // Parse JSON sang PageResponseDto
-                    try {
-                        return objectMapper.readValue(
-                                response.body(),
-                                new TypeReference<PageResponseDto<BookResponseDto>>() {}
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException("Lỗi khi đọc dữ liệu JSON: " + e.getMessage(), e);
-                    }
-                });
+    private PageResponseDto<BookResponseDto> handleResponse(HttpResponse<String> res) {
+        if (res.statusCode() != 200) throw new RuntimeException("HTTP Error: " + res.statusCode());
+        try {
+            return objectMapper.readValue(res.body(), new TypeReference<>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("JSON Error", e);
+        }
     }
 }
