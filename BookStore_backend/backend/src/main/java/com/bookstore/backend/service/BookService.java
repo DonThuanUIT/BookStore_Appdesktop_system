@@ -218,5 +218,17 @@ public class BookService {
 
         return bookPage.map(this::toResponse);
     }
+
+    @Transactional(readOnly = true)
+    public List<BookResponse> search(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return getAll();
+        }
+
+        return bookRepository.searchActive(keyword.trim())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }
 

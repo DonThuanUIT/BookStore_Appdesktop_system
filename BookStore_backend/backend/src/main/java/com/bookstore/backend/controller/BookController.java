@@ -35,6 +35,11 @@ public class BookController {
         return ResponseEntity.ok(bookService.getById(id));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponse>> search(@RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(bookService.search(keyword));
+    }
+
     private final BookService bookService;
     private final ImageService imageService;
 

@@ -23,4 +23,21 @@ public interface BookRepository extends JpaRepository<Book, Long>{
             WHERE b.id = :id AND (b.isDeleted = false OR b.isDeleted IS NULL)
             """)
     Optional<Book> findByIdActive(Long id);
+
+    @Query("""
+            SELECT DISTINCT b
+            FROM Book b
+            LEFT JOIN b.authors a
+            LEFT JOIN b.categories c
+            LEFT JOIN b.publisher p
+            WHERE (b.isDeleted = false OR b.isDeleted IS NULL)
+              AND (
+                    LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                 OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                 OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                 OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                 OR CAST(b.publishYear AS string) LIKE CONCAT('%', :keyword, '%')
+              )
+            """)
+    List<Book> searchActive(String keyword);
 }
