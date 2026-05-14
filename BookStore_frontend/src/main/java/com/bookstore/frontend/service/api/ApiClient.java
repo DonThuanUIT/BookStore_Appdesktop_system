@@ -19,7 +19,7 @@ public class ApiClient {
     private static ApiClient instance;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private static final String BASE_URL = "http://localhost:8080/api";
+    public static final String BASE_URL = "http://localhost:8080/api";
 
     private ApiClient() {
         // Khởi tạo HttpClient dùng chung, set timeout 10s để tránh treo app
