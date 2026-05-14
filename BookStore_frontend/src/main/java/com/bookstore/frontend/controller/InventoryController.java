@@ -64,7 +64,7 @@ public class InventoryController extends BaseController {
             }
         });
 
-        // NÚT EDIT VÀ DELETE (ACTIONS)
+        // EDIT VÀ DELETE (ACTIONS)
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("✎");
             private final Button btnDelete = new Button("🗑");
@@ -114,27 +114,16 @@ public class InventoryController extends BaseController {
             dialogStage.setScene(scene);
 
             BookFormController controller = loader.getController();
+            // Truyền true = chế độ EDIT
             controller.setBook(selectedBook, true);
 
             dialogStage.showAndWait();
 
+
             if (controller.isSaveClicked()) {
-                interactor.updateBook(selectedBook, controller.getSelectedImageFile())
-                        .thenAccept(success -> {
-                            Platform.runLater(() -> {
-                                if (success) {
-                                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "Updated books successfully!");
-                                    alert.show();
-                                    interactor.loadInventoryData(0, 15);
-                                } else {
-                                    Alert alert = new Alert(Alert.AlertType.ERROR, "Update failed! Please try again.");
-                                    alert.show();
-                                }
-                            });
-                        }).exceptionally(ex -> {
-                            System.err.println("Update progress error:" + ex.getMessage());
-                            return null;
-                        });
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật sách thành công!");
+                alert.show();
+                interactor.loadInventoryData(0, 15);
             }
         } catch (Exception e) {
             System.err.println("Error opening book editing form:" + e.getMessage());
@@ -142,12 +131,17 @@ public class InventoryController extends BaseController {
     }
 
     private void onDeleteBook(BookModel book) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete the book:" + book.getTitle() + "?", ButtonType.YES, ButtonType.NO);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc chắn muốn xóa sách: " + book.getTitle() + "?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait();
         if (alert.getResult() == ButtonType.YES) {
             interactor.deleteBook(book.getId()).thenAccept(success -> {
                 Platform.runLater(() -> {
-                    if (success) interactor.loadInventoryData(0, 15);
+                    if (success) {
+                        interactor.loadInventoryData(0, 15);
+                    } else {
+                        Alert err = new Alert(Alert.AlertType.ERROR, "Lỗi khi xóa sách!");
+                        err.show();
+                    }
                 });
             });
         }

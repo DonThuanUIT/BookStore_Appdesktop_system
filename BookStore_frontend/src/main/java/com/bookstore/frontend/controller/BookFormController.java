@@ -1,11 +1,11 @@
 package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.model.BookModel;
+import com.bookstore.frontend.service.api.ApiClient;
+import com.bookstore.frontend.service.api.BookApiService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
@@ -24,30 +24,26 @@ public class BookFormController {
     private BookModel currentBook;
     private File selectedImageFile;
     private boolean saveClicked = false;
+    private boolean isEditMode = false; // Cờ phân biệt trạng thái
+
+    private final BookApiService bookApiService = new BookApiService();
 
     @FXML
     public void initialize() {
-        // TODO: Chuẩn bị thay thế bằng dữ liệu gọi từ API
-        cbAuthor.getItems().addAll("Carlos Ruiz Zafón", "Nguyễn Nhật Ánh", "M. Scott Peck", "F. Scott Fitzgerald", "Unknown Author");
+        // mock data, thay thế bằng api sau.
+        cbAuthor.getItems().addAll("Nguyễn Nhật Ánh", "Carlos Ruiz Zafón", "Unknown Author");
     }
 
     public void setBook(BookModel book, boolean isEdit) {
         this.currentBook = book;
+        this.isEditMode = isEdit;
 
         if (isEdit) {
             lblFormTitle.setText("Edit Book Details");
             btnSave.setText("Update Book");
-
             txtTitle.setText(book.getTitle());
             cbAuthor.setValue(book.getAuthorName());
-
-            if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-                try {
-                    imgCover.setImage(new Image(book.getImageUrl(), true));
-                } catch (Exception e) {
-                    System.err.println("Không thể load ảnh từ URL: " + book.getImageUrl());
-                }
-            }
+            if (book.getImageUrl() != null) imgCover.setImage(new Image(book.getImageUrl(), true));
         } else {
             lblFormTitle.setText("Add New Book");
             btnSave.setText("Save Book");
@@ -56,47 +52,64 @@ public class BookFormController {
 
     @FXML
     private void handleChangeImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Book Cover Image");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
-        );
-
-        Stage stage = (Stage) btnSave.getScene().getWindow();
-        File file = fileChooser.showOpenDialog(stage);
-
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg"));
+        File file = fc.showOpenDialog(btnSave.getScene().getWindow());
         if (file != null) {
             this.selectedImageFile = file;
-            Image image = new Image(file.toURI().toString());
-            imgCover.setImage(image);
+            imgCover.setImage(new Image(file.toURI().toString()));
         }
     }
 
     @FXML
     private void handleSave() {
+        btnSave.setDisable(true);
+        btnSave.setText("Processing...");
+
         currentBook.setTitle(txtTitle.getText());
         currentBook.setAuthorName(cbAuthor.getValue());
 
-        this.saveClicked = true;
-        closeDialog();
+        if (selectedImageFile != null) {
+            uploadAndThenSave();
+        } else {
+            executeFinalSave();
+        }
     }
 
-    @FXML
-    private void handleCancel() {
-        this.saveClicked = false;
-        closeDialog();
+    private void uploadAndThenSave() {
+        try {
+            ApiClient.getInstance().uploadFile("/books/upload", selectedImageFile).thenAccept(res -> {
+                if (res.statusCode() < 300) {
+                    currentBook.setImageUrl(res.body()); // Gán URL trả về từ server
+                    executeFinalSave();
+                } else {
+                    showError("Upload failed!");
+                }
+            });
+        } catch (Exception e) { showError("IO Error!"); }
     }
 
-    private void closeDialog() {
-        Stage stage = (Stage) btnSave.getScene().getWindow();
-        stage.close();
+    private void executeFinalSave() {
+        var future = isEditMode ? bookApiService.updateBook(currentBook.getId(), currentBook) : bookApiService.createBook(currentBook);
+
+        future.thenAccept(success -> Platform.runLater(() -> {
+            if (success) {
+                this.saveClicked = true;
+                ((Stage) btnSave.getScene().getWindow()).close();
+            } else {
+                showError("Save failed!");
+            }
+        }));
     }
 
-    public boolean isSaveClicked() {
-        return saveClicked;
+    private void showError(String msg) {
+        Platform.runLater(() -> {
+            btnSave.setDisable(false);
+            btnSave.setText(isEditMode ? "Update Book" : "Save Book");
+            new Alert(Alert.AlertType.ERROR, msg).show();
+        });
     }
 
-    public File getSelectedImageFile() {
-        return selectedImageFile;
-    }
+    @FXML void handleCancel() { ((Stage) btnSave.getScene().getWindow()).close(); }
+    public boolean isSaveClicked() { return saveClicked; }
 }

@@ -4,11 +4,14 @@ import com.bookstore.frontend.interactor.ImportInteractor;
 import com.bookstore.frontend.model.ImportManagementModel;
 import com.bookstore.frontend.model.ImportModel;
 import javafx.application.Platform;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+import java.time.LocalDate;
 
 public class ImportHistoryController {
 
@@ -31,12 +34,16 @@ public class ImportHistoryController {
     private ImportManagementModel model;
     private ImportInteractor interactor;
 
+    // Lớp màng lọc dữ liệu
+    private FilteredList<ImportModel> filteredData;
+
     @FXML
     public void initialize() {
         this.model = new ImportManagementModel();
         this.interactor = new ImportInteractor(this.model);
 
         setupTableColumns();
+        setupFilters();
 
         // Load dữ liệu ngay khi vừa mở màn hình
         interactor.loadImportHistory();
@@ -102,33 +109,75 @@ public class ImportHistoryController {
             }
         });
 
-        tvImports.setItems(model.getImports());
         lblPaginationInfo.textProperty().bind(model.paginationInfoProperty());
+    }
+
+    // --- LOGIC TÌM KIẾM VÀ LỌC (FILTER) ---
+    private void setupFilters() {
+        // Bọc danh sách gốc vào FilteredList
+        filteredData = new FilteredList<>(model.getImports(), p -> true);
+
+        // Đổ danh sách ĐÃ LỌC vào TableView
+        tvImports.setItems(filteredData);
+
+        // Bắt sự kiện gõ phím để tìm kiếm Real-time
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
+            applyFilters();
+        });
     }
 
     @FXML
     private void handleFilter() {
-        System.out.println("Đang lọc dữ liệu... Tính năng này sẽ nối API sau.");
+        // Khi nhấn nút Lọc (thường dùng cho ngày tháng)
+        applyFilters();
+    }
+
+    private void applyFilters() {
+        String searchText = txtSearch.getText() != null ? txtSearch.getText().toLowerCase().trim() : "";
+        LocalDate fromDate = dpFrom.getValue();
+        LocalDate toDate = dpTo.getValue();
+
+        filteredData.setPredicate(importRecord -> {
+            // 1. Kiểm tra khớp Text (Mã phiếu hoặc Tên nhân viên)
+            boolean matchesSearch = true;
+            if (!searchText.isEmpty()) {
+                String idStr = String.valueOf(importRecord.getId());
+                // Xóa chữ "IMP-" hoặc "#IMP-" nếu user lỡ gõ vào
+                String cleanSearchText = searchText.replace("#", "").replace("imp-", "");
+
+                String staff = importRecord.getStaffUsername() != null ? importRecord.getStaffUsername().toLowerCase() : "";
+                matchesSearch = idStr.contains(cleanSearchText) || staff.contains(searchText);
+            }
+
+            // 2. Kiểm tra khớp Ngày tháng (Tạm thời bỏ qua vì Backend đang trả về "N/A")
+            boolean matchesDate = true;
+            /* * TODO: Khi Backend làm xong Ngày nhập, mở đoạn code này ra:
+             * if (!"N/A".equals(importRecord.getImportDate())) {
+             * LocalDate recordDate = LocalDate.parse(importRecord.getImportDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+             * if (fromDate != null && recordDate.isBefore(fromDate)) matchesDate = false;
+             * if (toDate != null && recordDate.isAfter(toDate)) matchesDate = false;
+             * }
+             */
+
+            return matchesSearch && matchesDate;
+        });
+
+        // Cập nhật lại nhãn đếm số lượng sau khi lọc
+        lblPaginationInfo.setText("Showing " + filteredData.size() + " entries (Filtered)");
     }
 
     @FXML
     private void handleCreateImport() {
-        // Điều hướng sang màn hình Import Create (Bạn cần thêm IMPORT_CREATE vào enum PageType nhé)
         com.bookstore.frontend.navigation.NavigationService.getInstance().navigateTo(com.bookstore.frontend.navigation.PageType.IMPORT_CREATE);
     }
 
-    // --- LOGIC GỌI API VÀ MỞ SIDE PANEL ---
     private void onViewDetails(ImportModel importRecord) {
-        System.out.println("Đang tải dữ liệu chi tiết phiếu #" + importRecord.getId() + " từ Backend...");
-
         interactor.getImportDetails(importRecord.getId()).thenAccept(fullImportData -> {
             Platform.runLater(() -> {
                 if (fullImportData != null) {
-                    // Truyền dữ liệu sang Side Panel và yêu cầu trượt ra
                     importDetailSidePanelController.setImportDataAndShow(fullImportData);
                 } else {
-                    Alert err = new Alert(Alert.AlertType.ERROR, "Không thể tải chi tiết phiếu nhập!");
-                    err.show();
+                    new Alert(Alert.AlertType.ERROR, "Không thể tải chi tiết phiếu nhập!").show();
                 }
             });
         });
@@ -143,8 +192,7 @@ public class ImportHistoryController {
                     if (success) {
                         interactor.loadImportHistory();
                     } else {
-                        Alert err = new Alert(Alert.AlertType.ERROR, "Xóa thất bại!");
-                        err.show();
+                        new Alert(Alert.AlertType.ERROR, "Xóa thất bại!").show();
                     }
                 });
             });

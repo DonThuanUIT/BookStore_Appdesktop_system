@@ -77,7 +77,8 @@
                     <font><Font name="System Bold" size="36.0" /></font>
                 </Label>
             </VBox>
-            <Button onAction="#handleSubmitImport" style="-fx-background-color: #FFC107; -fx-text-fill: #1A1A1A; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 30; -fx-font-size: 16px;" text="Hoàn tất phiếu nhập">
+
+            <Button fx:id="btnSubmit" onAction="#handleSubmitImport" style="-fx-background-color: #FFC107; -fx-text-fill: #1A1A1A; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 30; -fx-font-size: 16px;" text="Hoàn tất phiếu nhập">
                 <cursor><javafx.scene.Cursor fx:constant="HAND" /></cursor>
             </Button>
         </HBox>
