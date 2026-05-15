@@ -3,8 +3,10 @@ package com.bookstore.backend.repository;
 import com.bookstore.backend.entity.Import;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -24,4 +26,22 @@ public interface ImportRepository extends JpaRepository<Import, Long> {
                OR CAST(d.importPrice AS string) LIKE CONCAT('%', :keyword, '%')
             """)
     List<Import> search(String keyword);
+
+    @Query("""
+            SELECT SUM(i.totalCost)
+            FROM Import i
+            WHERE i.importDate >= :startDate
+              AND i.importDate < :endDate
+            """)
+    Double sumTotalCostByImportDateBetween(@Param("startDate") LocalDateTime startDate,
+                                           @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+            SELECT COUNT(i)
+            FROM Import i
+            WHERE i.importDate >= :startDate
+              AND i.importDate < :endDate
+            """)
+    Long countImportsByImportDateBetween(@Param("startDate") LocalDateTime startDate,
+                                         @Param("endDate") LocalDateTime endDate);
 }
