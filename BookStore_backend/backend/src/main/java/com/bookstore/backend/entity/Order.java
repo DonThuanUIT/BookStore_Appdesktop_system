@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "orders")
@@ -20,4 +21,14 @@ public class Order extends BaseEntity {
     private BigDecimal finalAmount;
     @Column(nullable = false)
     private String status;
+
+    @Column(name = "order_date", updatable = false)
+    private LocalDateTime orderDate;
+
+    @PrePersist
+    public void prePersist() {
+        if (orderDate == null) {
+            orderDate = LocalDateTime.now();
+        }
+    }
 }

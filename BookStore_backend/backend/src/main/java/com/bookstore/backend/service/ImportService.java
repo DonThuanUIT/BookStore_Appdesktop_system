@@ -169,6 +169,7 @@ public class ImportService {
                 staffId,
                 staffUsername,
                 importOrder.getTotalCost(),
+                importOrder.getImportDate(),
                 detailResponses
         );
     }
