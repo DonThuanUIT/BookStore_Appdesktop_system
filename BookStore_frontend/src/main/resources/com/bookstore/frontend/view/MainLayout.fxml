@@ -3,9 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 
 <StackPane prefHeight="800.0" prefWidth="1200.0"
            styleClass="main-background"
@@ -41,9 +38,13 @@
                             <Button mnemonicParsing="false" styleClass="btn-icon" text="👤" style="-fx-font-size: 18px;" />
                             <StackPane>
                                 <children>
-                                    <Button mnemonicParsing="false" styleClass="btn-icon" text="🛍" style="-fx-font-size: 18px;" />
-                                    <Label text="2" style="-fx-background-color: -fx-error-red; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 1 5; -fx-font-size: 10px;" StackPane.alignment="TOP_RIGHT">
-                                        <StackPane.margin><Insets right="-5.0" top="-5.0" /></StackPane.margin>
+                                    <Button fx:id="btnNavMiniCart" mnemonicParsing="false" onAction="#onNavMiniCartClick"
+                                            styleClass="btn-icon" text="🛒"
+                                            style="-fx-font-size: 20px; -fx-padding: 10 12; -fx-min-width: 48; -fx-min-height: 48; -fx-max-width: 48; -fx-max-height: 48; -fx-background-radius: 14; -fx-background-color: rgba(0,0,0,0.45); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 12, 0.2, 0, 2);" />
+                                    <Label fx:id="lblCartBadge" text=""
+                                           style="-fx-background-color: -fx-error-red; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 2 6; -fx-font-size: 10px; -fx-font-weight: bold;"
+                                           StackPane.alignment="TOP_RIGHT" visible="false" managed="false">
+                                        <StackPane.margin><Insets right="-4.0" top="-4.0" /></StackPane.margin>
                                     </Label>
                                 </children>
                             </StackPane>

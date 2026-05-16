@@ -3,15 +3,19 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.ShopInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.ShopModel;
+import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +28,7 @@ public class ShopController {
     @FXML private ComboBox<String> cbSort;
     @FXML private FlowPane booksContainer;
     @FXML private Label lblStatus;
+    @FXML private VBox categoriesContainer; // Đặt fx:id cho VBox chứa CheckBox trong FXML
 
     @FXML private BookDetailSidePanelController bookDetailSidePanelController;
 
@@ -55,13 +60,6 @@ public class ShopController {
         cbSort.setValue("Newest");
     }
 
-    private void setupRealTimeFilters() {
-        txtSearch.textProperty().addListener((obs, oldText, newText) -> executeFilter());
-        txtMinPrice.textProperty().addListener((obs, oldText, newText) -> executeFilter());
-        txtMaxPrice.textProperty().addListener((obs, oldText, newText) -> executeFilter());
-        cbSort.valueProperty().addListener((obs, oldVal, newVal) -> executeFilter());
-    }
-
     private void loadInitialData() {
         if (lblStatus != null) lblStatus.setText("Loading data...");
 
@@ -79,18 +77,39 @@ public class ShopController {
         });
     }
 
+    private void setupRealTimeFilters() {
+        txtSearch.textProperty().addListener((obs, old, newVal) -> executeFilter());
+
+        // THÊM: Lắng nghe 2 ô nhập giá
+        txtMinPrice.textProperty().addListener((obs, old, newVal) -> executeFilter());
+        txtMaxPrice.textProperty().addListener((obs, old, newVal) -> executeFilter());
+
+        // Thêm lắng nghe cho ComboBox sắp xếp luôn cho đồng bộ
+        cbSort.valueProperty().addListener((obs, old, newVal) -> executeFilter());
+
+        for (Node node : categoriesContainer.getChildren()) {
+            if (node instanceof CheckBox cb) {
+                cb.selectedProperty().addListener((obs, old, newVal) -> executeFilter());
+            }
+        }
+    }
+
     private void executeFilter() {
-        String keyword = txtSearch.getText();
-        String sortType = cbSort.getValue();
-        Double minPrice = parseDoubleSafe(txtMinPrice.getText());
-        Double maxPrice = parseDoubleSafe(txtMaxPrice.getText());
+        List<String> selectedCategories = categoriesContainer.getChildren().stream()
+                .filter(node -> node instanceof CheckBox && ((CheckBox) node).isSelected())
+                .map(node -> ((CheckBox) node).getText())
+                .toList();
 
         List<BookModel> filteredBooks = interactor.applyClientSideFilters(
-                originalBooksList, keyword, null, minPrice, maxPrice, sortType
+                originalBooksList,
+                txtSearch.getText(),
+                selectedCategories, // Truyền list thể loại vào
+                parseDoubleSafe(txtMinPrice.getText()),
+                parseDoubleSafe(txtMaxPrice.getText()),
+                cbSort.getValue()
         );
         renderBooks(filteredBooks);
     }
-
     private void renderBooks(List<BookModel> books) {
         booksContainer.getChildren().clear();
         if (books.isEmpty()) return;
@@ -116,7 +135,8 @@ public class ShopController {
                                 System.err.println("Lỗi: Component bookSidePanel chưa được nạp (Null)!");
                             }
                         },
-                        () -> System.out.println("Added to cart: " + book.getTitle())
+                        () -> AlertUtils.promptQuantityForCart(book.getTitle())
+                                .ifPresent(qty -> CartStore.getInstance().addBook(book, qty))
                 );
 
                 booksContainer.getChildren().add(cardNode);

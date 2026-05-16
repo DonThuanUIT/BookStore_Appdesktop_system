@@ -60,7 +60,7 @@ public class ShopInteractor {
     public List<BookModel> applyClientSideFilters(
             List<BookModel> originalBooks,
             String searchKeyword,
-            String categoryKeyword,
+            List<String> selectedCategories, // SỬA: Đổi từ String sang List<String>
             Double minPrice,
             Double maxPrice,
             String sortType
@@ -83,18 +83,30 @@ public class ShopInteractor {
                     boolean underMax = (maxPrice == null || price <= maxPrice);
                     return overMin && underMax;
                 })
-                // TODO: 3. Lọc theo Category.
-                // Hiện tại BookModel cần bổ sung biến categoryNames (List<String>) để map với Backend thì mới lọc chuẩn được.
+                // 3. Lọc theo Category (Đã bổ sung logic)
+                .filter(b -> {
+                    // Nếu người dùng không chọn Category nào, mặc định hiện tất cả
+                    if (selectedCategories == null || selectedCategories.isEmpty()) return true;
 
+                    // Lấy danh sách category của cuốn sách (từ trường categoryNames trong BookModel)
+                    List<String> bookCategories = b.getCategoryNames();
+                    if (bookCategories == null || bookCategories.isEmpty()) return false;
+
+                    // Kiểm tra xem cuốn sách có chứa ít nhất một category nằm trong danh sách đang lọc không
+                    return bookCategories.stream()
+                            .anyMatch(cat -> selectedCategories.contains(cat));
+                })
                 // 4. Sắp xếp (Sorting)
                 .sorted((b1, b2) -> {
                     if (sortType == null) return 0;
                     double p1 = b1.getPrice() != null ? b1.getPrice() : 0.0;
                     double p2 = b2.getPrice() != null ? b2.getPrice() : 0.0;
 
-                    if (sortType.equals("Price: Low to High")) return Double.compare(p1, p2);
-                    if (sortType.equals("Price: High to Low")) return Double.compare(p2, p1);
-                    return 0; // Mặc định giữ nguyên (Newest)
+                    return switch (sortType) {
+                        case "Price: Low to High" -> Double.compare(p1, p2);
+                        case "Price: High to Low" -> Double.compare(p2, p1);
+                        default -> 0; // "Newest" hoặc mặc định
+                    };
                 })
                 .collect(Collectors.toList());
     }

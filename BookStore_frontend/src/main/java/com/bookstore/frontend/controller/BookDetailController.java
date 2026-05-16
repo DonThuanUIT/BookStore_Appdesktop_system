@@ -9,6 +9,8 @@ import javafx.scene.image.ImageView;
 public class BookDetailController {
     @FXML private ImageView imgLargePreview;
     @FXML private Label lblTitle, lblAuthor, lblDescription, lblPrice;
+    @FXML private Label lblPublisher;   // Cần thêm fx:id này vào FXML
+    @FXML private Label lblCategories;  // Cần thêm fx:id này vào FXML
 
     private BookModel currentBook;
 
@@ -17,14 +19,23 @@ public class BookDetailController {
 
         lblTitle.setText(book.getTitle());
         lblAuthor.setText("By " + book.getAuthorName());
-        lblPrice.setText(String.format("%,.0fđ", book.getPrice()));
 
-        // Hiển thị mô tả nếu có
-        if (book.getDescription() != null && !book.getDescription().isEmpty()) {
-            lblDescription.setText(book.getDescription());
+        // Hiển thị thông tin chi tiết từ DB
+        if (lblPublisher != null) {
+            lblPublisher.setText("Publisher: " + (book.getPublisherName() != null ? book.getPublisherName() : "N/A"));
+        }
+        if (lblCategories != null) {
+            lblCategories.setText("Tags: " + book.getFormattedCategories());
         }
 
-        // Tải ảnh chất lượng cao
+        lblPrice.setText(String.format("$%.2f", book.getPrice()));
+
+        if (book.getDescription() != null && !book.getDescription().isEmpty()) {
+            lblDescription.setText(book.getDescription());
+        } else {
+            lblDescription.setText("No description available.");
+        }
+
         if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
             imgLargePreview.setImage(new Image(book.getImageUrl(), true));
         }
@@ -32,7 +43,6 @@ public class BookDetailController {
 
     @FXML
     private void onAddToCart() {
-        System.out.println("Đã thêm vào giỏ hàng: " + currentBook.getTitle());
-        // Logic xử lý giỏ hàng sẽ được thêm ở bước tiếp theo
+        System.out.println("Added to cart: " + currentBook.getTitle());
     }
 }

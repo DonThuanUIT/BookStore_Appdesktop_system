@@ -37,7 +37,7 @@
 
         <VBox spacing="15.0">
             <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <VBox spacing="10.0">
+            <VBox fx:id="categoriesContainer" spacing="10.0">
                 <CheckBox text="Fantasy" styleClass="custom-checkbox"/>
                 <CheckBox text="Mystery &amp; Thriller" styleClass="custom-checkbox" selected="true"/>
                 <CheckBox text="Classics" styleClass="custom-checkbox"/>

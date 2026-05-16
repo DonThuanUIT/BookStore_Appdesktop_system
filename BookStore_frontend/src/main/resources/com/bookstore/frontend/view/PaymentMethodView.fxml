@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.*?>
+
+<VBox fx:controller="com.bookstore.frontend.controller.CartController"
+      spacing="15" styleClass="payment-dialog-container" stylesheets="@../css/theme.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      prefWidth="480">
+    <padding>
+        <Insets top="25" right="25" bottom="25" left="25"/>
+    </padding>
+
+    <Label text="Chọn phương thức thanh toán" styleClass="payment-title"/>
+
+    <VBox spacing="12">
+        <VBox spacing="10">
+            <HBox fx:id="methodCod" styleClass="payment-method-row" alignment="CENTER_LEFT" spacing="15">
+                <ImageView fitWidth="35" fitHeight="35" preserveRatio="true">
+                    <Image url="@../image/cash-on-delivery.png"/>
+                </ImageView>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="Thanh toán khi nhận hàng (COD)" styleClass="payment-method-title"/>
+                    <Label text="Phí thanh toán: 0đ" styleClass="payment-method-sub"/>
+                </VBox>
+                <ImageView fx:id="checkCod" fitWidth="20" fitHeight="20" visible="false">
+                    <Image url="@../image/checked.png"/>
+                </ImageView>
+            </HBox>
+            <VBox fx:id="detailsCod" styleClass="details-area" visible="false" managed="false">
+                <Label text="Vui lòng chuẩn bị tiền mặt khi nhận hàng." styleClass="details-text"/>
+            </VBox>
+        </VBox>
+
+        <VBox spacing="10">
+            <HBox fx:id="methodBank" styleClass="payment-method-row" alignment="CENTER_LEFT" spacing="15">
+                <ImageView fitWidth="35" fitHeight="35" preserveRatio="true">
+                    <Image url="@../image/bank.png"/>
+                </ImageView>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="Chuyển khoản Ngân hàng" styleClass="payment-method-title"/>
+                    <Label text="Quét QR để thực hiện hành động thật" styleClass="payment-method-sub"/>
+                </VBox>
+                <ImageView fx:id="checkBank" fitWidth="20" fitHeight="20" visible="false">
+                    <Image url="@../image/checked.png"/>
+                </ImageView>
+            </HBox>
+            <VBox fx:id="detailsBank" styleClass="details-area" alignment="CENTER" visible="false" managed="false" spacing="12">
+                <Label text="Vui lòng quét mã QR để thanh toán" styleClass="details-text"/>
+
+                <ImageView fx:id="qrImageView" fitWidth="220" fitHeight="300" preserveRatio="true"
+                           style="-fx-cursor: hand;" onMouseClicked="#handleZoomQR">
+                    <Image url="@../image/QR personal.jpg"/>
+                </ImageView>
+
+                <VBox alignment="CENTER" spacing="8">
+                    <Label text="Nội dung chuyển khoản: DH + [Mã SV]" style="-fx-text-fill: #00ff00; -fx-font-weight: bold;"/>
+
+                    <HBox alignment="CENTER" spacing="10">
+                        <Button text="Chọn ảnh minh chứng" onAction="#handleSelectProofImage" styleClass="btn-secondary-small"/>
+                        <Label fx:id="lblFileName" text="Chưa chọn ảnh" style="-fx-text-fill: #cccccc; -fx-font-size: 11px;"/>
+                    </HBox>
+                </VBox>
+
+                <Button text="Xác nhận & Gửi đơn hàng" onAction="#handleManualConfirm"
+                        styleClass="btn-primary-modern" prefWidth="200"/>
+            </VBox>
+        </VBox>
+
+        <VBox spacing="10">
+            <HBox fx:id="methodCard" styleClass="payment-method-row" alignment="CENTER_LEFT" spacing="15">
+                <ImageView fitWidth="35" fitHeight="35" preserveRatio="true">
+                    <Image url="@../image/atm-card.png"/>
+                </ImageView>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="Thẻ Tín dụng / Ghi nợ" styleClass="payment-method-title"/>
+                    <Label text="Visa, Mastercard, JCB" styleClass="payment-method-sub"/>
+                </VBox>
+                <ImageView fx:id="checkCard" fitWidth="20" fitHeight="20" visible="false">
+                    <Image url="@../image/checked.png"/>
+                </ImageView>
+            </HBox>
+            <VBox fx:id="detailsCard" styleClass="details-area" visible="false" managed="false">
+                <TextField promptText="Số thẻ" styleClass="custom-input"/>
+            </VBox>
+        </VBox>
+    </VBox>
+
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+        <Button text="Hủy" onAction="#handleClose" styleClass="btn-huy-payment"/>
+        <Button text="Xác nhận" onAction="#handleConfirm" styleClass="btn-primary-modern" prefWidth="120"/>
+    </HBox>
+</VBox>

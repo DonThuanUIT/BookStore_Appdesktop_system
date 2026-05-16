@@ -5,24 +5,30 @@ import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.HomeModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
+import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.utils.AlertUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
+
+
 
 public class HomeController extends BaseController {
 
     @FXML private Label lblWelcome;
     @FXML private FlowPane booksContainer;
     @FXML private BookDetailSidePanelController bookDetailSidePanelController;
+    @FXML private TextField txtSearch;
+    @FXML private MenuButton btnSearchType; // fx:id mới cho MenuButton
 
     private final HomeModel model;
     private final HomeInteractor interactor;
 
-    // TODO: Bạn hãy upload 1 tấm ảnh mặc định lên Cloudinary và thay link vào đây
     private static final String DEFAULT_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
 
     public HomeController() {
@@ -68,7 +74,8 @@ public class HomeController extends BaseController {
 
                         cardController.setCallbacks(
                                 () -> bookDetailSidePanelController.setBookDetailDataAndShow(book),
-                                () -> System.out.println("Đã thêm vào giỏ: " + book.getTitle())
+                                () -> AlertUtils.promptQuantityForCart(book.getTitle())
+                                        .ifPresent(qty -> CartStore.getInstance().addBook(book, qty))
                         );
 
                         booksContainer.getChildren().add(cardNode);
@@ -80,9 +87,24 @@ public class HomeController extends BaseController {
         });
     }
 
-
     @FXML
     public void handleViewAll() {
         NavigationService.getInstance().navigateTo(PageType.SHOP);
+    }
+
+    @FXML
+    public void handleTypeSelect(ActionEvent event) {
+        MenuItem item = (MenuItem) event.getSource();
+        btnSearchType.setText(item.getText());
+    }
+
+    @FXML
+    private void handleHomeSearch() {
+        String query = txtSearch.getText();
+        String type = btnSearchType.getText();
+
+        System.out.println("Redirecting to Shop with filter: " + type + " = " + query);
+
+//         NavigationService.getInstance().navigateTo(PageType.SHOP, new SearchFilter(query, type));
     }
 }
