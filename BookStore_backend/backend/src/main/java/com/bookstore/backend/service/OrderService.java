@@ -67,6 +67,7 @@ public class OrderService {
                 .discount(order.getDiscount() != null ? order.getDiscount().doubleValue() : 0.0)
                 .finalAmount(order.getFinalAmount() != null ? order.getFinalAmount().doubleValue() : 0.0)
                 .status(order.getStatus())
+                .orderDate(order.getOrderDate())
                 .user(userDto)
                 .build();
     }

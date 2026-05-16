@@ -49,6 +49,17 @@ public class ImportService {
     }
 
     @Transactional(readOnly = true)
+    public List<ImportResponse> search(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return getAll();
+        }
+
+        return importRepository.search(keyword.trim()).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public ImportResponse getById(Long id) {
         Import importOrder = findImport(id);
         return toResponse(importOrder);
@@ -158,6 +169,7 @@ public class ImportService {
                 staffId,
                 staffUsername,
                 importOrder.getTotalCost(),
+                importOrder.getImportDate(),
                 detailResponses
         );
     }

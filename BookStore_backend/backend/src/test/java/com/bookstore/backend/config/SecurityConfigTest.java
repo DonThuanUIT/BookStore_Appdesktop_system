@@ -7,6 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(SecurityConfigTest.TestEndpoints.class)
 class SecurityConfigTest {
 
     @Autowired
@@ -69,5 +75,29 @@ class SecurityConfigTest {
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
                                 .jwt(jwt -> jwt.subject("customer-user").claim("roles", List.of("CUSTOMER")))))
                 .andExpect(status().isForbidden());
+    }
+
+    @TestConfiguration
+    static class TestEndpoints {
+
+        @RestController
+        @RequestMapping("/api/test")
+        static class TestController {
+
+            @GetMapping("/admin")
+            String admin() {
+                return "admin";
+            }
+
+            @GetMapping("/staff")
+            String staff() {
+                return "staff";
+            }
+
+            @GetMapping("/customer")
+            String customer() {
+                return "customer";
+            }
+        }
     }
 }

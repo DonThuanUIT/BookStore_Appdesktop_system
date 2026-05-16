@@ -1,5 +1,6 @@
 package com.bookstore.backend.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record ImportResponse(
@@ -7,6 +8,7 @@ public record ImportResponse(
         Long staffId,
         String staffUsername,
         Double totalCost,
+        LocalDateTime importDate,
         List<ImportDetailResponse> details
 ) {
 }
