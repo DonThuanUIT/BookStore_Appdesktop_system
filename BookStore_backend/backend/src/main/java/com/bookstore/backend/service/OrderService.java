@@ -45,7 +45,7 @@ public class OrderService {
         return orderPage.map(this::convertToResponse);
     }
 
-    private OrderResponse convertToResponse(Order order) {
+    OrderResponse convertToResponse(Order order) {
         UserProfileResponse userDto = null;
         if (order.getUser() != null) {
             String roleName = (order.getUser().getRole() != null)
@@ -76,8 +76,8 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("No order found."));
         String currentStatus = order.getStatus();
 
-        if (!"PENDING".equalsIgnoreCase(currentStatus)) {
-            throw new RuntimeException("Only PENDING orders can have their status updated.");
+        if (!"PENDING".equalsIgnoreCase(currentStatus) && !"PAID".equalsIgnoreCase(currentStatus)) {
+            throw new RuntimeException("Only PENDING or PAID orders can have their status updated.");
         }
         if (!"SHIPPING".equalsIgnoreCase(newStatus) && !"CANCELED".equalsIgnoreCase(newStatus)) {
             throw new RuntimeException("New status is invalid (Only accepting SHIPPING or CANCELED orders)");
