@@ -1,4 +1,31 @@
 .root {
+    /* --- Bảng màu Nền Cơ bản (Backgrounds) --- */
+    -fx-primary-black: #110000;
+    -fx-secondary-black: #0a0a0a;
+    -fx-primary-white: #FFFFFF;
+    -fx-secondary-white: #F5F5F5;
+
+    /* --- Bảng màu Glassmorphism (Kính mờ) --- */
+    -fx-glass-overlay: rgba(10, 10, 10, 0.75);
+    -fx-glass-surface: rgba(17, 0, 0, 0.85);
+    -fx-glass-border: rgba(255, 255, 255, 0.15);
+    -fx-glass-shadow-dark: rgba(0, 0, 0, 0.8);
+
+    /* --- Bảng màu Chủ đạo (Accent Gold) --- */
+    -fx-accent-gold: #FFCC00;
+    -fx-accent-gold-hover: #FFD633;
+    -fx-accent-gold-shadow: rgba(255, 204, 0, 0.3);
+    -fx-accent-gold-shadow-hover: rgba(255, 204, 0, 0.5);
+
+    /* --- Bảng màu Chữ & Viền (Text & Borders) --- */
+    -text-primary-dark: #110000;
+    -text-primary-light: #FFFFFF;
+    -text-muted: #AAAAAA;
+
+    /* --- Bảng màu Trạng thái (States) --- */
+    -fx-error-red: #ff5555;
+    -fx-info-blue: #00bcd4;
+
     -fx-font-family: "Segoe UI", "Inter", sans-serif;
 }
 
@@ -50,8 +77,8 @@
 
 /* BUTTONS */
 .login-button, .btn-primary {
-    -fx-background-color: -fx-accent-gold; /* Chỉ dùng biến màu */
-    -fx-text-fill: -text-primary-dark;
+    -fx-background-color: #FFCC00; /* Thay thế biến lỗi bằng mã màu Hex trực tiếp */
+    -fx-text-fill: #110000;
     -fx-font-weight: bold;
     -fx-font-size: 18px;
     -fx-background-radius: 12;
@@ -61,7 +88,7 @@
 }
 
 .login-button:hover, .btn-primary:hover {
-    -fx-background-color: -fx-accent-gold-hover;
+    -fx-background-color: #FFD633;
     -fx-effect: dropshadow(gaussian, rgba(255, 204, 0, 0.5), 20, 0, 0, 6);
     -fx-translate-y: -2px;
 }
@@ -73,16 +100,16 @@
     -fx-cursor: hand;
 }
 .btn-icon:hover {
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
 }
 
 /* LINKS & CHECKBOX */
 .text-link {
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
     -fx-cursor: hand;
 }
 .text-link:hover {
-    -fx-text-fill: -fx-accent-gold-hover;
+    -fx-text-fill: #FFD633;
     -fx-underline: true;
 }
 
@@ -95,13 +122,14 @@
     -fx-border-radius: 3;
 }
 .custom-checkbox:selected .box {
-    -fx-background-color: -fx-accent-gold;
-    -fx-border-color: -fx-accent-gold;
+    -fx-background-color: #FFCC00;
+    -fx-border-color: #FFCC00;
 }
 .custom-checkbox:selected .mark {
-    -fx-background-color: -text-primary-dark;
+    -fx-background-color: #110000;
 }
-/* COMBOBOX(riêng cho màn hình đăng ký) */
+
+/* COMBOBOX */
 .custom-combo-box {
     -fx-background-color: transparent;
     -fx-border-color: transparent transparent -text-muted transparent;
@@ -109,7 +137,7 @@
     -fx-padding: 5;
 }
 .custom-combo-box .list-cell {
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
     -fx-font-weight: bold;
     -fx-background-color: transparent;
 }
@@ -117,7 +145,8 @@
     -fx-background-color: transparent;
     -fx-padding: 0;
 }
-/* NAVIGATION BAR & BUTTONS */
+
+/* NAVIGATION BAR */
 .nav-bar {
     -fx-background-color: -fx-secondary-black;
     -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
@@ -131,30 +160,26 @@
     -fx-font-size: 16px;
     -fx-cursor: hand;
     -fx-padding: 8 15;
-    -fx-transition: all 0.3s ease;
 }
 
 .nav-button:hover {
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
 }
 
 .nav-button-active {
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
     -fx-font-weight: bold;
-    -fx-border-color: transparent transparent -fx-accent-gold transparent;
+    -fx-border-color: transparent transparent #FFCC00 transparent;
     -fx-border-width: 0 0 2 0;
 }
 
-/* --- BACKGROUND CHUNG CHO TOÀN BỘ APP --- */
 .main-background {
     -fx-background-image: url('../image/libraryBackground.jpg');
     -fx-background-size: cover;
     -fx-background-position: center;
 }
 
-
-/* HOME & BOOK CARD (STOREFRONT) */
-
+/* STOREFRONT */
 .search-bar-hero {
     -fx-background-color: rgba(255, 255, 255, 0.08);
     -fx-background-radius: 25;
@@ -164,7 +189,7 @@
     -fx-border-color: transparent;
 }
 .search-bar-hero:focused {
-    -fx-border-color: -fx-accent-gold;
+    -fx-border-color: #FFCC00;
     -fx-border-radius: 25;
 }
 
@@ -176,16 +201,14 @@
     -fx-border-width: 1;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 5);
     -fx-cursor: hand;
-    -fx-transition: all 0.3s ease;
 }
 
 .book-card:hover {
-    -fx-border-color: -fx-accent-gold;
+    -fx-border-color: #FFCC00;
     -fx-translate-y: -5px;
     -fx-effect: dropshadow(gaussian, rgba(255, 204, 0, 0.3), 15, 0, 0, 5);
 }
 
-/* Chữ trong Thẻ sách */
 .book-card-title {
     -fx-font-family: "Noto Serif", serif;
     -fx-font-size: 16px;
@@ -201,10 +224,9 @@
 .book-card-price {
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
 }
 
-/* Nút "Add" */
 .btn-outline-small {
     -fx-background-color: transparent;
     -fx-border-color: rgba(255, 255, 255, 0.3);
@@ -216,10 +238,10 @@
     -fx-cursor: hand;
 }
 .btn-outline-small:hover {
-    -fx-border-color: -fx-accent-gold;
-    -fx-text-fill: -fx-accent-gold;
+    -fx-border-color: #FFCC00;
+    -fx-text-fill: #FFCC00;
 }
-/* Bảng thông tin chi tiết (Side Panel) bên phải */
+
 .side-panel {
     -fx-background-color: -fx-secondary-black;
     -fx-border-color: transparent transparent transparent rgba(255, 255, 255, 0.1);
@@ -233,9 +255,7 @@
 .scroll-bar:horizontal .track, .scroll-bar:vertical .track {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-background-radius: 0;
 }
-
 .scroll-bar:horizontal .thumb, .scroll-bar:vertical .thumb {
     -fx-background-color: rgba(255, 255, 255, 0.15);
     -fx-background-radius: 10;
@@ -251,7 +271,7 @@
     -fx-shape: " ";
 }
 
-/* SHOP VIEW (FILTERS & PAGINATION) */
+/* SHOP VIEW */
 .sidebar-panel {
     -fx-background-color: rgba(255, 255, 255, 0.03);
     -fx-background-radius: 16;
@@ -259,26 +279,6 @@
     -fx-border-radius: 16;
 }
 
-/* Custom Checkbox (Nền đen, tick vàng) */
-.custom-checkbox .box {
-    -fx-background-color: transparent;
-    -fx-border-color: -text-muted;
-    -fx-border-radius: 4;
-}
-.custom-checkbox:selected .box {
-    -fx-background-color: -fx-accent-gold;
-    -fx-border-color: -fx-accent-gold;
-}
-.custom-checkbox:selected .mark {
-    -fx-background-color: -fx-primary-black;
-}
-.custom-checkbox {
-    -fx-text-fill: -text-primary-light;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-}
-
-/* Pagination Buttons */
 .btn-page {
     -fx-background-color: transparent;
     -fx-text-fill: -text-primary-light;
@@ -293,26 +293,20 @@
     -fx-background-color: rgba(255, 255, 255, 0.1);
 }
 .btn-page-active {
-    -fx-background-color: -fx-accent-gold;
+    -fx-background-color: #FFCC00;
     -fx-text-fill: -fx-primary-black;
-    -fx-border-color: -fx-accent-gold;
+    -fx-border-color: #FFCC00;
 }
 
-/* ===================================================================== */
-/* STYLING CHO BẢNG INVENTORY (TABLEVIEW) */
-/* ===================================================================== */
-
-/* 1. Tùy chỉnh toàn bộ Bảng */
+/* TABLEVIEW INVENTORY */
 .table-view {
     -fx-background-color: transparent;
-    -fx-font-size: 15px; /* Tăng font size tổng thể lên 15px */
-    -fx-fixed-cell-size: 50px; /* Tăng chiều cao của mỗi dòng (Row) cho thoáng */
+    -fx-font-size: 15px;
+    -fx-fixed-cell-size: 50px;
     -fx-border-color: transparent;
 }
-
-/* 2. Tùy chỉnh Dòng tiêu đề (Header) */
 .table-view .column-header-background {
-    -fx-background-color: rgba(0, 0, 0, 0.5); /* Nền đen mờ cho thanh tiêu đề */
+    -fx-background-color: rgba(0, 0, 0, 0.5);
     -fx-background-radius: 8 8 0 0;
     -fx-padding: 0 0 5 0;
 }
@@ -323,56 +317,42 @@
 .table-view .column-header .label {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-text-fill: -fx-accent-gold; /* Chữ vàng chuẩn thiết kế */
+    -fx-text-fill: #FFCC00;
     -fx-alignment: center-left;
     -fx-padding: 0 0 0 10;
 }
-
-/* 3. Tùy chỉnh Ô dữ liệu (Cell) */
 .table-view .table-cell {
-    -fx-text-fill: -text-primary-light; /* Chữ trắng */
-    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent; /* Đường kẻ ngang siêu mờ */
+    -fx-text-fill: -text-primary-light;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
     -fx-padding: 0 10 0 10;
-    -fx-alignment: center-left;
 }
-
-/* 4. Tùy chỉnh Dòng (Row) - Xóa nền trắng mặc định của JavaFX */
 .table-row-cell {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
 }
-
-/* 5. Hiệu ứng Hover khi trượt chuột qua từng dòng */
 .table-row-cell:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.08); /* Sáng lên nhẹ khi đưa chuột vào */
+    -fx-background-color: rgba(255, 255, 255, 0.08);
     -fx-cursor: hand;
 }
-
-/* Loại bỏ viền xanh khó chịu khi focus vào bảng */
 .table-view:focused {
     -fx-background-color: transparent;
-    -fx-background-insets: 0;
 }
 
-/* Style cho bảng chọn số lượng */
+/* SPINNER & DIALOG */
 .custom-quantity-dialog {
     -fx-background-color: -fx-glass-surface;
-    -fx-border-color: -fx-accent-gold;
+    -fx-border-color: #FFCC00;
     -fx-border-width: 1;
 }
-
 .custom-quantity-dialog .label {
     -fx-text-fill: white;
 }
-
-/* Làm đẹp Spinner */
 .modern-spinner {
     -fx-background-color: rgba(255,255,255,0.1);
     -fx-background-radius: 8;
 }
 .modern-spinner .text-field {
     -fx-background-color: transparent;
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
     -fx-font-weight: bold;
     -fx-alignment: center;
 }
@@ -380,69 +360,37 @@
     -fx-background-color: transparent;
     -fx-cursor: hand;
 }
-.modern-spinner .increment-arrow-button:hover, .modern-spinner .decrement-arrow-button:hover {
-    -fx-background-color: rgba(255, 204, 0, 0.2);
-}
 
-
-/* ===================================================================== */
-/* MODERN SEARCH BAR STYLE - ONLY SEARCH SECTION */
-/* ===================================================================== */
-
-/* Container bao quanh thanh Search */
+/* MODERN SEARCH BAR */
 .search-container-modern {
-    -fx-background-color: rgba(255, 255, 255, 0.08); /* Nền kính mờ nhẹ */
+    -fx-background-color: rgba(255, 255, 255, 0.08);
     -fx-background-radius: 50;
     -fx-border-color: rgba(255, 255, 255, 0.15);
     -fx-border-radius: 50;
     -fx-padding: 2 5 2 15;
     -fx-alignment: center;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 0, 8);
 }
-
-/* Nút chọn loại Search (MenuButton) */
 .btn-search-type-modern {
     -fx-background-color: transparent;
-    -fx-text-fill: -fx-accent-gold;
+    -fx-text-fill: #FFCC00;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-padding: 0 10 0 5;
     -fx-border-color: transparent rgba(255, 255, 255, 0.2) transparent transparent;
     -fx-border-width: 0 1 0 0;
 }
-
-/* Tùy chỉnh bảng chọn đổ xuống (Context Menu) - FIX LỖI XẤU */
 .btn-search-type-modern .context-menu {
-    -fx-background-color: rgba(30, 30, 30, 0.98); /* Nền tối sâu */
+    -fx-background-color: rgba(30, 30, 30, 0.98);
     -fx-background-radius: 12;
-    -fx-border-color: -fx-accent-gold;
+    -fx-border-color: #FFCC00;
     -fx-border-width: 0.5;
     -fx-padding: 5;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);
 }
-
-/* Các mục bên trong bảng chọn */
-.btn-search-type-modern .menu-item {
-    -fx-padding: 8 15;
-    -fx-background-radius: 8;
-}
-
-.btn-search-type-modern .menu-item:hover,
-.btn-search-type-modern .menu-item:focused {
-    -fx-background-color: rgba(255, 204, 0, 0.15); /* Highlight vàng nhẹ */
-}
-
 .btn-search-type-modern .menu-item .label {
     -fx-text-fill: white;
-    -fx-font-size: 13px;
 }
-
-.btn-search-type-modern .menu-item:hover .label,
-.btn-search-type-modern .menu-item:focused .label {
-    -fx-text-fill: -fx-accent-gold;
+.btn-search-type-modern .menu-item:hover .label {
+    -fx-text-fill: #FFCC00;
 }
-
-/* Ô nhập chữ (TextField) */
 .search-input-modern {
     -fx-background-color: transparent;
     -fx-text-fill: white;
@@ -450,41 +398,30 @@
     -fx-padding: 10 15;
     -fx-font-size: 15px;
 }
-
-/* Nút bấm Search (Button) */
 .btn-primary-modern {
-    -fx-background-color: -fx-accent-gold;
-    -fx-text-fill: #111;
+    -fx-background-color: #FFCC00;
+    -fx-text-fill: #111111;
     -fx-font-weight: bold;
     -fx-background-radius: 40;
     -fx-padding: 8 25;
     -fx-cursor: hand;
-    -fx-transition: all 0.2s ease;
 }
-
 .btn-primary-modern:hover {
-    -fx-background-color: -fx-accent-gold-hover;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
+    -fx-background-color: #FFD633;
 }
 
 /*-------------PAYMENT-------------*/
-/* Container chính - Sáng hơn và sang trọng */
 .payment-dialog-container {
     -fx-background-color: #2b2b2b;
     -fx-background-radius: 20;
     -fx-border-color: rgba(255, 255, 255, 0.1);
     -fx-border-width: 1;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 30, 0, 0, 10);
 }
-
 .payment-title {
     -fx-text-fill: white;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
-
-/* Các hàng phương thức */
 .payment-method-row {
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-background-radius: 12;
@@ -493,29 +430,22 @@
     -fx-border-color: transparent;
     -fx-border-width: 1.5;
 }
-
 .payment-method-row:hover {
     -fx-background-color: rgba(255, 255, 255, 0.1);
 }
-
-/* Khi phương thức được chọn (Màu cam Shopee) */
 .payment-method-row-selected {
     -fx-background-color: rgba(238, 77, 45, 0.1);
     -fx-border-color: #ee4d2d;
 }
-
 .payment-method-title {
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-font-size: 14px;
 }
-
 .payment-method-sub {
     -fx-text-fill: #aaaaaa;
     -fx-font-size: 11px;
 }
-
-/* Vùng hiển thị chi tiết (QR, hướng dẫn) */
 .details-area {
     -fx-background-color: #1a1a1a;
     -fx-padding: 20;
@@ -523,22 +453,10 @@
     -fx-border-color: rgba(255, 255, 255, 0.1);
     -fx-border-width: 1;
 }
-
-/* Hiệu ứng khi di chuột vào QR */
-#qrImageView:hover {
-    -fx-opacity: 0.8;
-    -fx-effect: dropshadow(gaussian, #ffcc00, 15, 0, 0, 0);
-}
-
-.progress-indicator .spinner {
-    -fx-padding: 1px;
-}
-
 .details-text {
     -fx-text-fill: #dddddd;
     -fx-font-size: 13px;
 }
-
 .btn-huy-payment {
     -fx-background-color: transparent;
     -fx-text-fill: #bbbbbb;

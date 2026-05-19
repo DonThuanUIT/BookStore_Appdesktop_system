@@ -1,7 +1,7 @@
 package com.bookstore.backend.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,14 +13,19 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Order extends BaseEntity {
-    @ManyToOne (fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
+
     private BigDecimal totalAmount;
     private BigDecimal discount;
     private BigDecimal finalAmount;
+
     @Column(nullable = false)
     private String status;
+
+    @Column(name = "payment_method", nullable = false) // <-- THÊM CỘT NÀY VÀO DB
+    private String paymentMethod;
 
     @Column(name = "order_date", updatable = false)
     private LocalDateTime orderDate;

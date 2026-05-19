@@ -2,7 +2,6 @@ package com.bookstore.backend.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -13,6 +12,7 @@ public class OrderResponse {
     private Double discount;
     private Double finalAmount;
     private String status;
+    private String paymentMethod; // <-- THÊM TRƯỜNG NÀY
     private LocalDateTime orderDate;
-    private UserProfileResponse user; // Tận dụng DTO UserProfileResponse bạn đã có
+    private UserProfileResponse user;
 }

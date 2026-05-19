@@ -1,4 +1,4 @@
-package com.bookstore.frontend.model.dto;
+package com.bookstore.frontend.model.dto.Response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

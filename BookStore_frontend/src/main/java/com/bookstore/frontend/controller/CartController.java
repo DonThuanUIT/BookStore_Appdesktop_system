@@ -1,7 +1,6 @@
 package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.interactor.CartInteractor;
-import com.bookstore.frontend.model.dto.CartItemDTO;
 import com.bookstore.frontend.model.CartModel;
 import com.bookstore.frontend.util.CartStore;
 import javafx.application.Platform;
@@ -13,176 +12,149 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import java.io.File;
 
 public class CartController extends BaseController {
     @FXML private VBox cartItemsContainer;
     @FXML private Label lblTotalPrice;
 
-    // Các UI mới cho phần gửi ảnh minh chứng
-    private Label lblFileName;
-    private File selectedProofFile;
-
-    private Stage paymentStage;
-    private double xOffset = 0;
-    private double yOffset = 0;
     private final CartModel model;
     private final CartInteractor interactor;
+    private static final String DEFAULT_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
 
     public CartController() {
         this.model = CartStore.getInstance().getModel();
+        // TRUYỀN THAM SỐ VÀO ĐÂY ĐỂ HẾT BÁO ĐỎ:
         this.interactor = new CartInteractor(this.model);
+    }
+
+    @Override
+    public void onNavigate(Object data) {
+        model.refreshAggregates();
+        renderCart();
     }
 
     @FXML
     public void initialize() {
         if (lblTotalPrice != null) {
-            updateTotalPriceLabel(model.totalPriceProperty().get());
-            model.totalPriceProperty().addListener((obs, oldVal, newVal) -> updateTotalPriceLabel(newVal.doubleValue()));
+            lblTotalPrice.setText(String.format("%.2fđ", model.totalPriceProperty().get()));
+            model.totalPriceProperty().addListener((obs, oldVal, newVal) ->
+                    lblTotalPrice.setText(String.format("%.2fđ", newVal.doubleValue())));
         }
-        if (cartItemsContainer != null) {
-            model.getItems().addListener((javafx.collections.ListChangeListener<CartItemDTO>) c -> {
-                while (c.next()) { }
-                renderCart();
-            });
-        }
-    }
-
-    private void updateTotalPriceLabel(double value) {
-        lblTotalPrice.setText(String.format("$%.2f", value));
-    }
-
-    @Override public void onNavigate(Object data) { interactor.loadCartItems(); renderCart(); }
-
-    private void renderCart() {
-        cartItemsContainer.getChildren().clear();
-        for (CartItemDTO item : model.getItems()) {
-            cartItemsContainer.getChildren().add(createCartItemRow(item));
-        }
-    }
-
-    private HBox createCartItemRow(CartItemDTO item) {
-        HBox row = new HBox(24);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 14; -fx-padding: 16 20; -fx-border-color: #ececec; -fx-border-radius: 14;");
-
-        ImageView cover = new ImageView(new Image(item.getBook().getImageUrl(), true));
-        cover.setFitWidth(80); cover.setPreserveRatio(true);
-
-        VBox info = new VBox(new Label(item.getBook().getTitle()), new Label("$" + item.getBook().getPrice()));
-        HBox.setHgrow(info, Priority.ALWAYS);
-
-        Spinner<Integer> spin = new Spinner<>(1, 100, item.getQuantity());
-        spin.valueProperty().addListener((obs, ov, nv) -> item.setQuantity(nv));
-
-        Button del = new Button("Xóa");
-        del.setOnAction(e -> CartStore.getInstance().removeItem(item));
-
-        row.getChildren().addAll(cover, info, spin, del);
-        return row;
+        renderCart();
     }
 
     @FXML
     private void handleCheckout() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/PaymentMethodView.fxml"));
-            VBox root = loader.load();
-            paymentStage = new Stage(StageStyle.TRANSPARENT);
-            paymentStage.initModality(Modality.APPLICATION_MODAL);
-
-            HBox rowBank = (HBox) root.lookup("#methodBank");
-            VBox detBank = (VBox) root.lookup("#detailsBank");
-            ImageView checkBank = (ImageView) root.lookup("#checkBank");
-
-            // Tìm các node mới để gán sự kiện (đảm bảo file FXML đã có fx:id hoặc ID tương ứng)
-            lblFileName = (Label) root.lookup("#lblFileName");
-            Button btnSelectProof = (Button) root.lookup("#btnSelectProof");
-            Button btnConfirm = (Button) root.lookup("#btnConfirmPayment");
-
-            rowBank.setOnMouseClicked(e -> {
-                detBank.setVisible(true);
-                detBank.setManaged(true);
-                checkBank.setVisible(true);
-                paymentStage.sizeToScene();
-            });
-
-            if (btnSelectProof != null) {
-                btnSelectProof.setOnAction(e -> handleSelectProofImage());
-            }
-
-            if (btnConfirm != null) {
-                btnConfirm.setOnAction(e -> handleManualConfirm());
-            }
-
-            root.setOnMousePressed(e -> { xOffset = e.getSceneX(); yOffset = e.getSceneY(); });
-            root.setOnMouseDragged(e -> { paymentStage.setX(e.getScreenX() - xOffset); paymentStage.setY(e.getScreenY() - yOffset); });
-
-            Scene scene = new Scene(root);
-            scene.setFill(Color.TRANSPARENT);
-            paymentStage.setScene(scene);
-            paymentStage.showAndWait();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    // Hàm chọn ảnh minh chứng từ máy tính
-    private void handleSelectProofImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Chọn ảnh minh chứng chuyển khoản");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
-        );
-
-        selectedProofFile = fileChooser.showOpenDialog(paymentStage);
-        if (selectedProofFile != null && lblFileName != null) {
-            lblFileName.setText(selectedProofFile.getName());
-            lblFileName.setStyle("-fx-text-fill: #00ff00;"); // Chuyển xanh để báo đã chọn thành công
-        }
-    }
-
-    @FXML
-    private void handleManualConfirm() {
-        if (selectedProofFile == null) {
-            Alert warning = new Alert(Alert.AlertType.WARNING, "Vui lòng chọn ảnh minh chứng!");
-            warning.showAndWait();
+        System.out.println("===== CHECKOUT CLICKED =====");
+        if (model.getItems().isEmpty()) {
+            System.out.println("Cart empty");
             return;
         }
 
-        String orderId = "DH24521882" + (System.currentTimeMillis() % 1000);
-        double totalAmount = model.totalPriceProperty().get();
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/bookstore/frontend/view/PaymentMethodView.fxml")
+            );
+            VBox root = loader.load();
+            PaymentController paymentCtrl = loader.getController();
 
-        // 1. Gọi interactor để lưu đơn hàng vào database
-        boolean isSaved = interactor.saveOrder(orderId, totalAmount, "PENDING", selectedProofFile.getAbsolutePath());
+            // THAY ĐỔI TẠI ĐÂY: Khớp hoàn toàn kiểu trả về CompletableFuture<Boolean> với CartInteractor
+            paymentCtrl.setOnConfirm(() -> {
+                String method = paymentCtrl.getSelectedMethod();
+                System.out.println("FRONTEND PROCESSING ORDER VIA API FOR: " + method);
 
-        if (isSaved) {
-            Platform.runLater(() -> {
-                Alert a = new Alert(Alert.AlertType.INFORMATION, "Đã nhận được minh chứng. Cảm ơn Trung!");
-                a.showAndWait();
-
-                // 2. Gọi hàm clear trực tiếp từ model bạn đã khởi tạo trong constructor
-                model.clearCart();
-
-                if (paymentStage != null) paymentStage.close();
+                // Gọi hàm async từ interactor và xâu chuỗi xử lý dọn giỏ hàng khi thành công
+                return interactor.placeOrder(model.getItems(), method).thenApply(isSuccess -> {
+                    if (isSuccess) {
+                        Platform.runLater(() -> {
+                            System.out.println("Đặt hàng thành công! Đang dọn giỏ hàng...");
+                            model.clearCart();
+                            renderCart();
+                        });
+                        return true;
+                    }
+                    return false;
+                });
             });
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Payment");
+            stage.show();
+
+            System.out.println("PAYMENT OPENED");
+        } catch (Exception e) {
+            System.out.println("ERROR OPENING PAYMENT:");
+            e.printStackTrace();
         }
     }
 
-    @FXML
-    private void handleZoomQR() {
-        Stage zoom = new Stage(StageStyle.TRANSPARENT);
-        ImageView bigQR = new ImageView(new Image(getClass().getResourceAsStream("/com/bookstore/frontend/image/QR personal.jpg")));
-        bigQR.setFitWidth(450); bigQR.setPreserveRatio(true);
-        bigQR.setOnMouseClicked(e -> zoom.close());
+    private void renderCart() {
+        cartItemsContainer.getChildren().clear();
+        model.refreshAggregates();
 
-        StackPane sp = new StackPane(bigQR);
-        sp.setStyle("-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 20; -fx-background-radius: 15;");
-        zoom.setScene(new Scene(sp, Color.TRANSPARENT));
-        zoom.show();
+        if (model.getItems().isEmpty()) {
+            Label empty = new Label("Your cart is empty");
+            empty.getStyleClass().add("payment-method-sub");
+            cartItemsContainer.getChildren().add(empty);
+            return;
+        }
+
+        model.getItems().forEach(item -> {
+            HBox row = new HBox(15);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.getStyleClass().add("payment-method-row");
+            row.setStyle("-fx-padding: 10;");
+
+            ImageView thumbView = new ImageView();
+            thumbView.setFitWidth(50);
+            thumbView.setFitHeight(70);
+            thumbView.setPreserveRatio(true);
+
+            String imgUrl = (item.getBook().getImageUrl() != null && !item.getBook().getImageUrl().isBlank())
+                    ? item.getBook().getImageUrl()
+                    : DEFAULT_COVER_URL;
+            try {
+                thumbView.setImage(new Image(imgUrl, true));
+            } catch (Exception e) {
+                thumbView.setImage(new Image(DEFAULT_COVER_URL));
+            }
+
+            VBox infoBox = new VBox(4);
+            Label title = new Label(item.getBook().getTitle());
+            title.getStyleClass().add("payment-method-title");
+            title.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
+
+            Label author = new Label("Tác giả: " + item.getBook().getAuthorName());
+            author.setStyle("-fx-text-fill: #888888; -fx-font-size: 11;");
+
+            Label qtyAndPrice = new Label(
+                    String.format("Số lượng: %d  ×  $%.2f", item.getQuantity(), item.getBook().getPrice())
+            );
+            qtyAndPrice.getStyleClass().add("payment-method-sub");
+
+            infoBox.getChildren().addAll(title, author, qtyAndPrice);
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            Label subtotal = new Label(String.format("$%.2f", item.getSubtotal()));
+            subtotal.getStyleClass().add("book-card-price");
+            subtotal.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+
+            Button removeBtn = new Button("Remove");
+            removeBtn.getStyleClass().add("btn-huy-payment");
+            removeBtn.setOnAction(e -> {
+                model.removeItem(item);
+                renderCart();
+            });
+
+            row.getChildren().addAll(thumbView, infoBox, spacer, subtotal, removeBtn);
+            cartItemsContainer.getChildren().add(row);
+        });
     }
-
-    @FXML private void handleClose() { if (paymentStage != null) paymentStage.close(); }
 }

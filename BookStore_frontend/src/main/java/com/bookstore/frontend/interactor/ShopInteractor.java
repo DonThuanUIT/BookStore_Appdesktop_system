@@ -2,6 +2,7 @@ package com.bookstore.frontend.interactor;
 
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.ShopModel;
+import com.bookstore.frontend.model.dto.Response.BookResponseDto;
 import com.bookstore.frontend.service.api.ApiClient;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -18,27 +19,43 @@ public class ShopInteractor {
         this.model = model;
     }
 
-    /**
-     * Tạm thời: Kéo một lượng lớn sách (VD: 50 cuốn) về Client
-     * Khi Backend có API lọc, ta sẽ truyền thêm các tham số minPrice, maxPrice, categoryId vào đây.
-     */
     public CompletableFuture<PageDto<BookModel>> getBooksPage(int page, int size) {
-        // Gọi API của Spring Boot (Hiện tại Backend chưa có param lọc nên ta chỉ truyền page & size)
         String endpoint = String.format("/books?page=%d&size=%d&sortBy=id&direction=desc", page, size);
 
         return ApiClient.getInstance().get(endpoint)
                 .thenApply(res -> {
                     if (res.statusCode() == 200) {
                         try {
-                            // Đọc mảng JSON "content" từ đối tượng Page của Spring Boot
                             JsonNode root = ApiClient.getInstance().getMapper().readTree(res.body());
                             JsonNode contentNode = root.get("content");
                             boolean isLast = root.get("last").asBoolean();
 
-                            // Convert mảng JSON sang List<BookModel>
-                            List<BookModel> books = ApiClient.getInstance().getMapper()
-                                    .readerForListOf(BookModel.class)
+                            // SỬA CHUẨN: Dùng BookResponseDto phẳng để hứng data
+                            List<BookResponseDto> dtoList = ApiClient.getInstance().getMapper()
+                                    .readerForListOf(BookResponseDto.class)
                                     .readValue(contentNode);
+
+                            List<BookModel> books = dtoList.stream().map(dto -> {
+                                BookModel bookModel = new BookModel();
+                                bookModel.setId(dto.getId());
+                                bookModel.setTitle(dto.getTitle());
+                                bookModel.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
+                                bookModel.setImageUrl(dto.getImageUrl());
+                                bookModel.setPublisherName(dto.getPublisherName());
+
+                                if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
+                                    bookModel.setAuthorName(dto.getAuthorNames().get(0));
+                                } else {
+                                    bookModel.setAuthorName("Unknown Author");
+                                }
+
+                                if (dto.getCategoryNames() != null) {
+                                    bookModel.setCategoryNames(dto.getCategoryNames());
+                                } else {
+                                    bookModel.setCategoryNames(Collections.emptyList());
+                                }
+                                return bookModel;
+                            }).collect(Collectors.toList());
 
                             return new PageDto<>(books, isLast);
 
@@ -46,21 +63,15 @@ public class ShopInteractor {
                             System.err.println("Lỗi Parse JSON sách Shop: " + e.getMessage());
                             e.printStackTrace();
                         }
-                    } else {
-                        System.err.println("Lỗi gọi API Shop: HTTP " + res.statusCode());
                     }
                     return new PageDto<>(Collections.emptyList(), true);
                 });
     }
 
-    /**
-     * LỌC TẠM TRÊN CLIENT:
-     * Nhận vào list sách gốc, lọc theo các thông số trên giao diện và trả ra list đã lọc.
-     */
     public List<BookModel> applyClientSideFilters(
             List<BookModel> originalBooks,
             String searchKeyword,
-            List<String> selectedCategories, // SỬA: Đổi từ String sang List<String>
+            List<String> selectedCategories,
             Double minPrice,
             Double maxPrice,
             String sortType
@@ -68,7 +79,6 @@ public class ShopInteractor {
         if (originalBooks == null || originalBooks.isEmpty()) return Collections.emptyList();
 
         return originalBooks.stream()
-                // 1. Lọc theo từ khóa (Tìm trong Title hoặc Author)
                 .filter(b -> {
                     if (searchKeyword == null || searchKeyword.trim().isEmpty()) return true;
                     String kw = searchKeyword.toLowerCase();
@@ -76,42 +86,31 @@ public class ShopInteractor {
                     boolean matchAuthor = b.getAuthorName() != null && b.getAuthorName().toLowerCase().contains(kw);
                     return matchTitle || matchAuthor;
                 })
-                // 2. Lọc theo khoảng giá
                 .filter(b -> {
                     double price = b.getPrice() != null ? b.getPrice() : 0.0;
                     boolean overMin = (minPrice == null || price >= minPrice);
                     boolean underMax = (maxPrice == null || price <= maxPrice);
                     return overMin && underMax;
                 })
-                // 3. Lọc theo Category (Đã bổ sung logic)
                 .filter(b -> {
-                    // Nếu người dùng không chọn Category nào, mặc định hiện tất cả
                     if (selectedCategories == null || selectedCategories.isEmpty()) return true;
-
-                    // Lấy danh sách category của cuốn sách (từ trường categoryNames trong BookModel)
                     List<String> bookCategories = b.getCategoryNames();
                     if (bookCategories == null || bookCategories.isEmpty()) return false;
-
-                    // Kiểm tra xem cuốn sách có chứa ít nhất một category nằm trong danh sách đang lọc không
-                    return bookCategories.stream()
-                            .anyMatch(cat -> selectedCategories.contains(cat));
+                    return bookCategories.stream().anyMatch(selectedCategories::contains);
                 })
-                // 4. Sắp xếp (Sorting)
                 .sorted((b1, b2) -> {
                     if (sortType == null) return 0;
                     double p1 = b1.getPrice() != null ? b1.getPrice() : 0.0;
                     double p2 = b2.getPrice() != null ? b2.getPrice() : 0.0;
-
                     return switch (sortType) {
                         case "Price: Low to High" -> Double.compare(p1, p2);
                         case "Price: High to Low" -> Double.compare(p2, p1);
-                        default -> 0; // "Newest" hoặc mặc định
+                        default -> 0;
                     };
                 })
                 .collect(Collectors.toList());
     }
 
-    // Class DTO nội bộ để truyền cục data về cho Controller
     public static class PageDto<T> {
         private final List<T> content;
         private final boolean isLast;
@@ -120,8 +119,40 @@ public class ShopInteractor {
             this.content = content;
             this.isLast = isLast;
         }
-
         public List<T> getContent() { return content; }
         public boolean isLast() { return isLast; }
+    }
+
+    public CompletableFuture<List<BookModel>> searchBooksFromBackend(String keyword) {
+        com.bookstore.frontend.service.api.BookApiService apiService = new com.bookstore.frontend.service.api.BookApiService();
+
+        return apiService.searchBooks(keyword)
+                .thenApply(dtoList -> {
+                    if (dtoList == null || dtoList.isEmpty()) {
+                        return Collections.emptyList();
+                    }
+
+                    return dtoList.stream().map(dto -> {
+                        BookModel model = new BookModel();
+                        model.setId(dto.getId());
+                        model.setTitle(dto.getTitle());
+                        model.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
+                        model.setImageUrl(dto.getImageUrl());
+                        model.setPublisherName(dto.getPublisherName());
+
+                        if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
+                            model.setAuthorName(dto.getAuthorNames().get(0));
+                        } else {
+                            model.setAuthorName("Unknown Author");
+                        }
+
+                        if (dto.getCategoryNames() != null) {
+                            model.setCategoryNames(dto.getCategoryNames());
+                        } else {
+                            model.setCategoryNames(Collections.emptyList());
+                        }
+                        return model;
+                    }).collect(Collectors.toList());
+                });
     }
 }
