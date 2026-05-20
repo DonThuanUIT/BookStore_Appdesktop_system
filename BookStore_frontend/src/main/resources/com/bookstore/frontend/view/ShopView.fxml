@@ -38,7 +38,6 @@
                     <items>
                         <MenuItem onAction="#handleTypeSelect" text="Title" />
                         <MenuItem onAction="#handleTypeSelect" text="Author" />
-                        <MenuItem onAction="#handleTypeSelect" text="Category" />
                     </items>
                 </MenuButton>
                 <Separator maxHeight="18" orientation="VERTICAL" style="-fx-opacity: 0.2;" />
@@ -59,7 +58,7 @@
             <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
             <VBox fx:id="categoriesContainer" spacing="10.0">
                 <CheckBox text="Fantasy" styleClass="custom-checkbox"/>
-                <CheckBox text="Mystery &amp; Thriller" styleClass="custom-checkbox" selected="true"/>
+                <CheckBox text="Mystery &amp; Thriller" styleClass="custom-checkbox"/>
                 <CheckBox text="Classics" styleClass="custom-checkbox"/>
                 <CheckBox text="Science Fiction" styleClass="custom-checkbox"/>
             </VBox>

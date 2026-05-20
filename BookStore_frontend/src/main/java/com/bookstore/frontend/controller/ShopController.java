@@ -27,7 +27,7 @@ import java.util.List;
 public class ShopController {
 
     @FXML private TextField txtSearch;
-    @FXML private MenuButton btnSearchType; // Nút chọn kiểu tìm kiếm (Title/Author/Category)
+    @FXML private MenuButton btnSearchType; // Nút chọn kiểu tìm kiếm (Title/Author)
     @FXML private TextField txtMinPrice;
     @FXML private TextField txtMaxPrice;
     @FXML private ComboBox<String> cbSort;
@@ -65,7 +65,7 @@ public class ShopController {
             cbSort.setValue("Newest");
         }
 
-        // Đặt nhãn ban đầu hiển thị mặc định giống hệt màn hình Home
+        // Đặt nhãn ban đầu hiển thị mặc định
         if (btnSearchType != null) {
             btnSearchType.setText("Title");
         }
@@ -104,7 +104,7 @@ public class ShopController {
     }
 
     /**
-     * Bắt sự kiện khi chuyển đổi kiểu tìm kiếm (Title / Author / Category)
+     * Bắt sự kiện khi chuyển đổi kiểu tìm kiếm (Title / Author)
      */
     @FXML
     public void handleTypeSelect(ActionEvent event) {
@@ -120,12 +120,12 @@ public class ShopController {
         String keyword = txtSearch.getText() != null ? txtSearch.getText().trim() : "";
         String searchType = btnSearchType != null ? btnSearchType.getText().trim() : "Title";
 
-        // GIẢI QUYẾT TRIỆT ĐỂ LỖI LAMBDA: Khởi tạo dữ liệu gán 1 lần duy nhất (effectively final)
+        // Khởi tạo dữ liệu gán 1 lần duy nhất (effectively final)
         final List<String> selectedCategories = (categoriesContainer == null) ? new ArrayList<>()
                 : categoriesContainer.getChildren().stream()
-                  .filter(node -> node instanceof CheckBox && ((CheckBox) node).isSelected())
-                  .map(node -> ((CheckBox) node).getText())
-                  .toList();
+                .filter(node -> node instanceof CheckBox && ((CheckBox) node).isSelected())
+                .map(node -> ((CheckBox) node).getText())
+                .toList();
 
         if (lblStatus != null) lblStatus.setText("Searching...");
 
@@ -140,23 +140,7 @@ public class ShopController {
             return;
         }
 
-        // TRƯỜNG HỢP 2: Lọc theo kiểu Category (Đồng bộ xử lý client-side mượt mà giống như màn hình Home)
-        if (searchType.equalsIgnoreCase("Category")) {
-            List<BookModel> categoryFiltered = originalBooksList.stream()
-                    .filter(book -> book.getCategoryNames() != null && book.getCategoryNames().stream()
-                            .anyMatch(catName -> catName.toLowerCase().contains(keyword.toLowerCase())))
-                    .toList();
-
-            List<BookModel> finalFilteredBooks = interactor.applyClientSideFilters(
-                    categoryFiltered, "", selectedCategories,
-                    parseDoubleSafe(txtMinPrice.getText()), parseDoubleSafe(txtMaxPrice.getText()), cbSort.getValue()
-            );
-            renderBooks(finalFilteredBooks);
-            if (lblStatus != null) lblStatus.setText("Found " + finalFilteredBooks.size() + " books.");
-            return;
-        }
-
-        // TRƯỜNG HỢP 3: Tìm kiếm theo Title hoặc Author -> Gọi xuống API Backend truy vết sâu dưới DB
+        // TRƯỜNG HỢP 2: Tìm kiếm theo Title hoặc Author -> Gọi xuống API Backend truy vết sâu dưới DB
         interactor.searchBooksFromBackend(keyword).thenAccept(booksFromBackend -> {
             Platform.runLater(() -> {
                 // Sàng lọc lớp hai đảm bảo kết quả trùng khít với Type (Title hay Author) đang chọn trên MenuButton
@@ -169,6 +153,7 @@ public class ShopController {
                             }
                         }).toList();
 
+                // Chạy tiếp qua bộ lọc giá, thể loại (Checkbox) và sắp xếp
                 List<BookModel> finalFilteredBooks = interactor.applyClientSideFilters(
                         typeSafetyBooks, "", selectedCategories,
                         parseDoubleSafe(txtMinPrice.getText()), parseDoubleSafe(txtMaxPrice.getText()), cbSort.getValue()

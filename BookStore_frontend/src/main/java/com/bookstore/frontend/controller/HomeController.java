@@ -77,7 +77,7 @@ public class HomeController extends BaseController {
             return;
         }
 
-        // CẢI TIẾN: Chuẩn hóa Unicode loại bỏ hoàn toàn sự lệch pha tổ hợp dấu tiếng Việt
+        // Chuẩn hóa Unicode loại bỏ hoàn toàn sự lệch pha tổ hợp dấu tiếng Việt
         String query = Normalizer.normalize(rawQuery, Normalizer.Form.NFC);
         String activeType = searchType != null ? searchType.trim() : "Title";
 
@@ -87,13 +87,6 @@ public class HomeController extends BaseController {
                         if (book.getAuthorName() == null) return false;
                         String author = Normalizer.normalize(book.getAuthorName().toLowerCase(), Normalizer.Form.NFC);
                         return author.contains(query);
-                    }
-                    else if (activeType.equalsIgnoreCase("Category")) {
-                        if (book.getCategoryNames() == null) return false;
-                        return book.getCategoryNames().stream().anyMatch(catName -> {
-                            String category = Normalizer.normalize(catName.toLowerCase(), Normalizer.Form.NFC);
-                            return category.contains(query);
-                        });
                     }
                     else {
                         if (book.getTitle() == null) return false;
