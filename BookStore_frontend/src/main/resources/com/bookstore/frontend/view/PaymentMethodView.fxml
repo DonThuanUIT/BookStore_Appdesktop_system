@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.*?>
+
+<VBox fx:controller="com.bookstore.frontend.controller.PaymentController"
+      spacing="15"
+      styleClass="payment-dialog-container"
+      stylesheets="@../css/theme.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      prefWidth="480"
+      prefHeight="550"> <padding>
+    <Insets top="25" right="25" bottom="25" left="25"/>
+</padding>
+
+    <Label text="Chọn phương thức thanh toán"
+           styleClass="payment-title"/>
+
+    <ScrollPane fitToWidth="true"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+
+        <VBox spacing="12">
+            <VBox spacing="10">
+                <HBox fx:id="methodCod"
+                      styleClass="payment-method-row"
+                      alignment="CENTER_LEFT"
+                      spacing="15">
+
+                    <ImageView fitWidth="35" fitHeight="35" preserveRatio="true">
+                        <Image url="@../image/cash-on-delivery.png"/>
+                    </ImageView>
+
+                    <VBox HBox.hgrow="ALWAYS">
+                        <Label text="Thanh toán khi nhận hàng"
+                               styleClass="payment-method-title"/>
+                        <Label text="Thanh toán trực tiếp cho shipper"
+                               styleClass="payment-method-sub"/>
+                    </VBox>
+
+                    <ImageView fx:id="checkCod"
+                               fitWidth="20"
+                               fitHeight="20"
+                               visible="false">
+                        <Image url="@../image/checked.png"/>
+                    </ImageView>
+                </HBox>
+
+                <VBox fx:id="detailsCod"
+                      styleClass="details-area"
+                      visible="false"
+                      managed="false">
+                    <Label text="Đơn hàng sẽ được tạo ở trạng thái PENDING và chờ nhân viên xác nhận."
+                           styleClass="details-text"
+                           wrapText="true"/>
+                </VBox>
+            </VBox>
+
+            <VBox spacing="10">
+                <HBox fx:id="methodBank"
+                      styleClass="payment-method-row"
+                      alignment="CENTER_LEFT"
+                      spacing="15">
+
+                    <ImageView fitWidth="35" fitHeight="35" preserveRatio="true">
+                        <Image url="@../image/bank.png"/>
+                    </ImageView>
+
+                    <VBox HBox.hgrow="ALWAYS">
+                        <Label text="Chuyển khoản ngân hàng"
+                               styleClass="payment-method-title"/>
+                        <Label text="Quét QR và nhấn OK"
+                               styleClass="payment-method-sub"/>
+                    </VBox>
+
+                    <ImageView fx:id="checkBank"
+                               fitWidth="20"
+                               fitHeight="20"
+                               visible="false">
+                        <Image url="@../image/checked.png"/>
+                    </ImageView>
+                </HBox>
+
+                <VBox fx:id="detailsBank"
+                      styleClass="details-area"
+                      alignment="CENTER"
+                      visible="false"
+                      managed="false"
+                      spacing="12">
+
+                    <Label text="Quét QR để chuyển khoản"
+                           styleClass="details-text"
+                           wrapText="true"/>
+
+                    <ImageView fx:id="qrImageView"
+                               fitWidth="220"
+                               fitHeight="300"
+                               preserveRatio="true"
+                               style="-fx-cursor: hand;"
+                               onMouseClicked="#handleZoomQR">
+                        <Image url="@../image/QR personal.jpg"/>
+                    </ImageView>
+
+                    <Label text="Sau khi chuyển khoản, nhấn Xác nhận"
+                           style="-fx-text-fill: #00ff00; -fx-font-weight: bold;"
+                           wrapText="true"/>
+                </VBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+        <Button text="Hủy"
+                onAction="#handleClose"
+                styleClass="btn-huy-payment"/>
+
+        <Button text="Xác nhận"
+                onAction="#handleConfirm"
+                styleClass="btn-primary-modern"
+                prefWidth="120"/>
+    </HBox>
+
+</VBox>

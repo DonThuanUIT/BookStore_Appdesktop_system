@@ -210,6 +210,8 @@ public class BookService {
         return authors;
     }
 
+    // THÊM ANNOTATION NÀY ĐỂ KÍCH HOẠT LAZY LOADING TRONG LUỒNG PHÂN TRANG
+    @Transactional(readOnly = true)
     public Page<BookResponse> getAllBooks(int page, int size, String sortBy, String direction){
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending(): Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);

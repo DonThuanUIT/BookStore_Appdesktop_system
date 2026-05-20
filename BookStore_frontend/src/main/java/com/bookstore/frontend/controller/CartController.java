@@ -1,92 +1,160 @@
 package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.interactor.CartInteractor;
-import com.bookstore.frontend.model.dto.CartItemDTO;
 import com.bookstore.frontend.model.CartModel;
+import com.bookstore.frontend.util.CartStore;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
-public class CartController extends BaseController{
+public class CartController extends BaseController {
     @FXML private VBox cartItemsContainer;
     @FXML private Label lblTotalPrice;
 
     private final CartModel model;
     private final CartInteractor interactor;
+    private static final String DEFAULT_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
 
     public CartController() {
-        this.model = new CartModel();
+        this.model = CartStore.getInstance().getModel();
+        // TRUYỀN THAM SỐ VÀO ĐÂY ĐỂ HẾT BÁO ĐỎ:
         this.interactor = new CartInteractor(this.model);
-    }
-
-    @FXML
-    public void initialize() {
-        // Binding: Tự động cập nhật nhãn tổng tiền khi Model thay đổi
-        model.totalPriceProperty().addListener((obs, oldVal, newVal) -> {
-            lblTotalPrice.setText(String.format("Rs. %.2f", newVal.doubleValue()));
-        });
     }
 
     @Override
     public void onNavigate(Object data) {
-        interactor.loadCartItems();
+        model.refreshAggregates();
         renderCart();
+    }
+
+    @FXML
+    public void initialize() {
+        if (lblTotalPrice != null) {
+            lblTotalPrice.setText(String.format("%.2fđ", model.totalPriceProperty().get()));
+            model.totalPriceProperty().addListener((obs, oldVal, newVal) ->
+                    lblTotalPrice.setText(String.format("%.2fđ", newVal.doubleValue())));
+        }
+        renderCart();
+    }
+
+    @FXML
+    private void handleCheckout() {
+        System.out.println("===== CHECKOUT CLICKED =====");
+        if (model.getItems().isEmpty()) {
+            System.out.println("Cart empty");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/bookstore/frontend/view/PaymentMethodView.fxml")
+            );
+            VBox root = loader.load();
+            PaymentController paymentCtrl = loader.getController();
+
+            // THAY ĐỔI TẠI ĐÂY: Khớp hoàn toàn kiểu trả về CompletableFuture<Boolean> với CartInteractor
+            paymentCtrl.setOnConfirm(() -> {
+                String method = paymentCtrl.getSelectedMethod();
+                System.out.println("FRONTEND PROCESSING ORDER VIA API FOR: " + method);
+
+                // Gọi hàm async từ interactor và xâu chuỗi xử lý dọn giỏ hàng khi thành công
+                return interactor.placeOrder(model.getItems(), method).thenApply(isSuccess -> {
+                    if (isSuccess) {
+                        Platform.runLater(() -> {
+                            System.out.println("Đặt hàng thành công! Đang dọn giỏ hàng...");
+                            model.clearCart();
+                            renderCart();
+                        });
+                        return true;
+                    }
+                    return false;
+                });
+            });
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Payment");
+            stage.show();
+
+            System.out.println("PAYMENT OPENED");
+        } catch (Exception e) {
+            System.out.println("ERROR OPENING PAYMENT:");
+            e.printStackTrace();
+        }
     }
 
     private void renderCart() {
         cartItemsContainer.getChildren().clear();
-        for (CartItemDTO item : model.getItems()) {
-            cartItemsContainer.getChildren().add(createCartItemRow(item));
+        model.refreshAggregates();
+
+        if (model.getItems().isEmpty()) {
+            Label empty = new Label("Your cart is empty");
+            empty.getStyleClass().add("payment-method-sub");
+            cartItemsContainer.getChildren().add(empty);
+            return;
         }
-    }
 
-    /**
-     * Tạo một hàng sản phẩm trong giỏ hàng (giống Card trong ảnh thiết kế)
-     */
-    private HBox createCartItemRow(CartItemDTO item) {
-        HBox row = new HBox(30);
-        row.setStyle("-fx-border-color: #eee; -fx-border-width: 0 0 1 0; -fx-padding: 20; -fx-alignment: CENTER_LEFT;");
+        model.getItems().forEach(item -> {
+            HBox row = new HBox(15);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.getStyleClass().add("payment-method-row");
+            row.setStyle("-fx-padding: 10;");
 
-        // 1. Ảnh giả lập
-        VBox imgBox = new VBox();
-        imgBox.setPrefSize(100, 140);
-        imgBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #ddd;");
+            ImageView thumbView = new ImageView();
+            thumbView.setFitWidth(50);
+            thumbView.setFitHeight(70);
+            thumbView.setPreserveRatio(true);
 
-        // 2. Thông tin sách
-        VBox infoBox = new VBox(5);
-        Label title = new Label(item.getBook().getTitle());
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 18px;");
+            String imgUrl = (item.getBook().getImageUrl() != null && !item.getBook().getImageUrl().isBlank())
+                    ? item.getBook().getImageUrl()
+                    : DEFAULT_COVER_URL;
+            try {
+                thumbView.setImage(new Image(imgUrl, true));
+            } catch (Exception e) {
+                thumbView.setImage(new Image(DEFAULT_COVER_URL));
+            }
 
-        // Sửa getAuthor() thành getAuthorName() và check null
-        String authorStr = item.getBook().getAuthorName() != null ? item.getBook().getAuthorName() : "Đang cập nhật";
-        Label author = new Label(authorStr);
+            VBox infoBox = new VBox(4);
+            Label title = new Label(item.getBook().getTitle());
+            title.getStyleClass().add("payment-method-title");
+            title.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
 
-        // Convert Double sang String và format tiền tệ (Ví dụ: Rs. 900)
-        String priceStr = "Rs. 0";
-        if (item.getBook().getPrice() != null) {
-            priceStr = String.format("Rs. %,.0f", item.getBook().getPrice());
-        }
-        Label price = new Label(priceStr);
-        price.setStyle("-fx-font-weight: bold; -fx-text-fill: -fx-accent-gold;");
+            Label author = new Label("Tác giả: " + item.getBook().getAuthorName());
+            author.setStyle("-fx-text-fill: #888888; -fx-font-size: 11;");
 
-        infoBox.getChildren().addAll(title, author, price);
+            Label qtyAndPrice = new Label(
+                    String.format("Số lượng: %d  ×  $%.2f", item.getQuantity(), item.getBook().getPrice())
+            );
+            qtyAndPrice.getStyleClass().add("payment-method-sub");
 
-        // 3. Spinner chọn số lượng (Gắn kết trực tiếp với Model)
-        VBox actionBox = new VBox(10);
-        Label lblCopies = new Label("Copies");
-        Spinner<Integer> spinner = new Spinner<>(1, 100, item.getQuantity());
-        spinner.setPrefWidth(80);
+            infoBox.getChildren().addAll(title, author, qtyAndPrice);
 
-        // Cập nhật Model ngay khi người dùng thay đổi Spinner
-        spinner.valueProperty().addListener((obs, oldVal, newVal) -> {
-            item.setQuantity(newVal);
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            Label subtotal = new Label(String.format("$%.2f", item.getSubtotal()));
+            subtotal.getStyleClass().add("book-card-price");
+            subtotal.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+
+            Button removeBtn = new Button("Remove");
+            removeBtn.getStyleClass().add("btn-huy-payment");
+            removeBtn.setOnAction(e -> {
+                model.removeItem(item);
+                renderCart();
+            });
+
+            row.getChildren().addAll(thumbView, infoBox, spacer, subtotal, removeBtn);
+            cartItemsContainer.getChildren().add(row);
         });
-
-        actionBox.getChildren().addAll(lblCopies, spinner);
-
-        row.getChildren().addAll(imgBox, infoBox, actionBox);
-        return row;
     }
 }

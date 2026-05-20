@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
 <HBox prefHeight="800.0" prefWidth="1200.0" spacing="30.0"
       style="-fx-background-color: transparent;"
+      stylesheets="@../css/colors.css,@../css/theme.css"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bookstore.frontend.controller.ShopController">
 
@@ -18,12 +30,20 @@
             <Insets top="25.0" right="20.0" bottom="25.0" left="20.0"/>
         </padding>
 
-        <Label text="Filters" styleClass="login-title" style="-fx-font-size: 24px;"/>
-        <Separator style="-fx-background-color: rgba(255,255,255,0.1);"/>
-
-        <VBox spacing="15.0">
+        <VBox spacing="10.0">
             <Label text="Search" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <TextField fx:id="txtSearch" promptText="Search title or author..." styleClass="custom-text-field" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+
+            <HBox alignment="CENTER_LEFT" styleClass="search-container-modern" style="-fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 4px; -fx-padding: 2px;">
+                <MenuButton fx:id="btnSearchType" styleClass="btn-search-type-modern" text="Title" style="-fx-text-fill: #f4f00f; -fx-background-color: transparent;">
+                    <items>
+                        <MenuItem onAction="#handleTypeSelect" text="Title" />
+                        <MenuItem onAction="#handleTypeSelect" text="Author" />
+                        <MenuItem onAction="#handleTypeSelect" text="Category" />
+                    </items>
+                </MenuButton>
+                <Separator maxHeight="18" orientation="VERTICAL" style="-fx-opacity: 0.2;" />
+                <TextField fx:id="txtSearch" promptText="Search your book..." styleClass="search-input-modern" style="-fx-background-color: transparent; -fx-text-fill: white;" HBox.hgrow="ALWAYS" />
+            </HBox>
         </VBox>
 
         <VBox spacing="15.0">
@@ -37,7 +57,7 @@
 
         <VBox spacing="15.0">
             <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <VBox spacing="10.0">
+            <VBox fx:id="categoriesContainer" spacing="10.0">
                 <CheckBox text="Fantasy" styleClass="custom-checkbox"/>
                 <CheckBox text="Mystery &amp; Thriller" styleClass="custom-checkbox" selected="true"/>
                 <CheckBox text="Classics" styleClass="custom-checkbox"/>

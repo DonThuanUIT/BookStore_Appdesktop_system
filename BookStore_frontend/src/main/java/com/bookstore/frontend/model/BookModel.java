@@ -24,6 +24,16 @@ public class BookModel {
 
     private String authorName;
 
+    @JsonProperty("categoryNames")
+    private List<String> categoryNames;
+
+    public List<String> getCategoryNames() { return categoryNames; }
+    public void setCategoryNames(List<String> categoryNames) { this.categoryNames = categoryNames; }
+
+    public String getFormattedCategories() {
+        if (categoryNames == null || categoryNames.isEmpty()) return "General";
+        return String.join(", ", categoryNames);
+    }
     public String getAuthorName() {
         if (authorName != null) return authorName;
         if (authorNamesList != null && !authorNamesList.isEmpty()) {
