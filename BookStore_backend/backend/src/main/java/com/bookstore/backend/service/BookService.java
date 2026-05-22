@@ -77,11 +77,15 @@ public class BookService {
         }
 
         book.setQuantity(0);
-        book.setSellPrice(BigDecimal.ZERO);
+        book.setSellPrice(request.sellPrice() != null ? request.sellPrice() : BigDecimal.ZERO);
 
         // Image URL
         if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
             book.setImageUrl(request.imageUrl());
+        }
+
+        if (request.sellPrice() != null) {
+            book.setSellPrice(request.sellPrice());
         }
 
         // Publisher

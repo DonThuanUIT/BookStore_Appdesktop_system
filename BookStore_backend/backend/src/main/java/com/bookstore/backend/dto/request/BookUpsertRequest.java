@@ -3,37 +3,39 @@ package com.bookstore.backend.dto.request;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
-public record BookUpsertRequest (
-        @NotBlank(message = "Tên sách không được để trống")
-        @Size(max = 200, message = "Tên sách tối đa 200 ký tự")
+
+public record BookUpsertRequest(
+        @NotBlank(message = "Book title is required")
+        @Size(max = 200, message = "Book title must not exceed 200 characters")
         String title,
 
-
-        @Min(value = 0, message = "Năm xuất bản không hợp lệ")
-        @Max(value = 2100, message = "Năm xuất bản không hợp lệ")
+        @NotNull(message = "Publish year is required")
+        @Min(value = 0, message = "Publish year is invalid")
+        @Max(value = 2100, message = "Publish year is invalid")
         Integer publishYear,
 
-        @PositiveOrZero(message = "Giá bán không hợp lệ")
+        @PositiveOrZero(message = "Sell price is invalid")
         BigDecimal sellPrice,
 
-        @Size(max = 500, message = "URL ảnh tối đa 500 ký tự")
+        @Size(max = 500, message = "Image URL must not exceed 500 characters")
         String imageUrl,
 
-        @Positive(message = "publisherId không hợp lệ")
+        @NotNull(message = "publisherId is required")
+        @Positive(message = "publisherId is invalid")
         Long publisherId,
 
-        List<Long> authorIds,
-        // "Loại sách" (category) - client gửi list id danh mục
-        List<Long> categoryIds
-){}
+        @NotEmpty(message = "authorIds must not be empty")
+        List<@NotNull(message = "authorId is required") @Positive(message = "authorId is invalid") Long> authorIds,
 
+        @NotEmpty(message = "categoryIds must not be empty")
+        List<@NotNull(message = "categoryId is required") @Positive(message = "categoryId is invalid") Long> categoryIds
+) {
+}
