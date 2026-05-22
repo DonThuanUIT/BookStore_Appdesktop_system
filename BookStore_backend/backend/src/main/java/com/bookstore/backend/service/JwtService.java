@@ -1,10 +1,9 @@
 package com.bookstore.backend.service;
 
-import java.util.List;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import org.springframework.beans.factory.annotation.Value;
+import com.bookstore.backend.config.JwtProperties;
+import com.bookstore.backend.dto.response.JwtTokenResponse;
+import com.bookstore.backend.dto.response.JwtValidationResponse;
+import com.bookstore.backend.util.RoleNames;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -15,9 +14,9 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
 
-import com.bookstore.backend.config.JwtProperties;
-import com.bookstore.backend.dto.response.JwtTokenResponse;
-import com.bookstore.backend.dto.response.JwtValidationResponse;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 public class JwtService {
@@ -35,20 +34,21 @@ public class JwtService {
     public JwtTokenResponse generateToken(String subject, List<String> roles) {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(jwtProperties.expirationMinutes(), ChronoUnit.MINUTES);
+        List<String> normalizedRoles = RoleNames.normalizeAll(roles);
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(subject)
                 .issuer(jwtProperties.issuer())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
-                .claim("roles", roles)
+                .claim("roles", normalizedRoles)
                 .build();
 
         String token = jwtEncoder.encode(
                 JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)
         ).getTokenValue();
 
-        return new JwtTokenResponse(token, "Bearer", subject, roles, issuedAt, expiresAt);
+        return new JwtTokenResponse(token, "Bearer", subject, normalizedRoles, issuedAt, expiresAt);
     }
 
     public JwtValidationResponse validateToken(String token) {
@@ -57,12 +57,12 @@ public class JwtService {
             return new JwtValidationResponse(
                     true,
                     jwt.getSubject(),
-                    jwt.getClaimAsStringList("roles"),
+                    RoleNames.normalizeAll(jwt.getClaimAsStringList("roles")),
                     jwt.getIssuedAt(),
                     jwt.getExpiresAt(),
                     "Token is valid"
             );
-        } catch (JwtException ex) {
+        } catch (JwtException | IllegalArgumentException ex) {
             return new JwtValidationResponse(false, null, null, null, null, ex.getMessage());
         }
     }

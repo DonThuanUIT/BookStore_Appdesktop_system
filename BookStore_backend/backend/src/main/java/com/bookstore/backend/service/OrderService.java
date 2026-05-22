@@ -74,14 +74,14 @@ public class OrderService {
     }
     public OrderResponse updateStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No order found."));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "No order found."));
         String currentStatus = order.getStatus();
 
         if (!"PENDING".equalsIgnoreCase(currentStatus) && !"PAID".equalsIgnoreCase(currentStatus)) {
-            throw new RuntimeException("Only PENDING or PAID orders can have their status updated.");
+            throw new AppException(HttpStatus.BAD_REQUEST, "Only PENDING or PAID orders can have their status updated.");
         }
         if (!"SHIPPING".equalsIgnoreCase(newStatus) && !"CANCELED".equalsIgnoreCase(newStatus)) {
-            throw new RuntimeException("New status is invalid (Only accepting SHIPPING or CANCELED orders)");
+            throw new AppException(HttpStatus.BAD_REQUEST, "New status is invalid (Only accepting SHIPPING or CANCELED orders)");
         }
         order.setStatus(newStatus.toUpperCase());
         return convertToResponse(orderRepository.save(order));
