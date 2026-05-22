@@ -1,8 +1,8 @@
 package com.bookstore.frontend.service.api;
 
 import com.bookstore.frontend.model.BookModel;
-import com.bookstore.frontend.model.dto.BookResponseDto;
-import com.bookstore.frontend.model.dto.PageResponseDto;
+import com.bookstore.frontend.model.dto.Response.BookResponseDto;
+import com.bookstore.frontend.model.dto.Response.PageResponseDto;
 import com.bookstore.frontend.util.UserSession;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +28,7 @@ public class BookApiService {
     }
 
     public CompletableFuture<PageResponseDto<BookResponseDto>> fetchBooks(int page, int size) {
-        String url = String.format("%s?page=%d&size=%d", BASE_URL, page, size);
+        String url = String.format("%s?page=%d&size=%d&sortBy=id&direction=desc", BASE_URL, page, size);
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url)).GET();
         attachToken(requestBuilder);
 
@@ -40,7 +40,6 @@ public class BookApiService {
         return sendWriteRequest(BASE_URL, "POST", newBook);
     }
 
-    // --- HÀM MỚI: CẬP NHẬT SÁCH ĐÃ CÓ ---
     public CompletableFuture<Boolean> updateBook(Long id, BookModel book) {
         String url = BASE_URL + "/" + id;
         return sendWriteRequest(url, "PUT", book);
@@ -74,5 +73,36 @@ public class BookApiService {
         } catch (Exception e) {
             throw new RuntimeException("JSON Error", e);
         }
+    }
+
+    /**
+     * HOÀN THIỆN: Gọi API tìm kiếm tổng lực và map chính xác cấu trúc mảng dẹt
+     */
+    public CompletableFuture<java.util.List<BookResponseDto>> searchBooks(String keyword) {
+        String encodedKeyword = "";
+        try {
+            encodedKeyword = java.net.URLEncoder.encode(keyword != null ? keyword.trim() : "", java.nio.charset.StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            encodedKeyword = keyword != null ? keyword.trim() : "";
+        }
+
+        String url = String.format("%s/search?keyword=%s", BASE_URL, encodedKeyword);
+
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+        attachToken(requestBuilder);
+
+        return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() == 200) {
+                        try {
+                            return objectMapper.readValue(response.body(), new TypeReference<java.util.List<BookResponseDto>>() {});
+                        } catch (Exception e) {
+                            System.err.println("Lỗi Parse JSON tại BookApiService: " + e.getMessage());
+                        }
+                    } else {
+                        System.err.println("Lỗi gọi API Search: HTTP " + response.statusCode());
+                    }
+                    return java.util.Collections.emptyList();
+                });
     }
 }

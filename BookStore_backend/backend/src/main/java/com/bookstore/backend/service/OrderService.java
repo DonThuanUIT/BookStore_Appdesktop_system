@@ -67,6 +67,7 @@ public class OrderService {
                 .discount(order.getDiscount() != null ? order.getDiscount().doubleValue() : 0.0)
                 .finalAmount(order.getFinalAmount() != null ? order.getFinalAmount().doubleValue() : 0.0)
                 .status(order.getStatus())
+                .paymentMethod(order.getPaymentMethod()) // <-- Trả ngược về Response
                 .orderDate(order.getOrderDate())
                 .user(userDto)
                 .build();
@@ -90,6 +91,7 @@ public class OrderService {
         Order order = Order.builder()
                 .user(user)
                 .status("PENDING")
+                .paymentMethod(request.paymentMethod()) // <-- Map trường này sang Entity
                 .totalAmount(BigDecimal.ZERO)
                 .discount(BigDecimal.ZERO)
                 .finalAmount(BigDecimal.ZERO)

@@ -1,6 +1,8 @@
 package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.model.BookModel;
+import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.utils.AlertUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -17,7 +19,10 @@ public class BookDetailSidePanelController {
     @FXML private Label lblTitle;
     @FXML private Label lblAuthor;
     @FXML private Label lblPrice;
+    @FXML private Label lblPublisher;
+    @FXML private Label lblCategories;
 
+    private BookModel currentBook;
 
     @FXML
     public void initialize() {
@@ -26,9 +31,16 @@ public class BookDetailSidePanelController {
     }
 
     public void setBookDetailDataAndShow(BookModel book) {
+        this.currentBook = book;
         lblTitle.setText(book.getTitle());
         lblAuthor.setText("By " + book.getAuthorName());
         lblPrice.setText(String.format("$%.2f", book.getPrice()));
+
+        // THÊM: Gán dữ liệu thực từ DB
+        if (lblPublisher != null)
+            lblPublisher.setText("Publisher: " + (book.getPublisherName() != null ? book.getPublisherName() : "N/A"));
+        if (lblCategories != null)
+            lblCategories.setText("Tags: " + book.getFormattedCategories());
 
         try {
             if (book.getImageUrl() != null && !book.getImageUrl().isBlank()) {
@@ -86,5 +98,14 @@ public class BookDetailSidePanelController {
         });
 
         slideOut.play();
+    }
+
+    @FXML
+    public void handleAddToCart() {
+        if (currentBook == null) {
+            return;
+        }
+        AlertUtils.promptQuantityForCart(currentBook.getTitle())
+                .ifPresent(qty -> CartStore.getInstance().addBook(currentBook, qty));
     }
 }

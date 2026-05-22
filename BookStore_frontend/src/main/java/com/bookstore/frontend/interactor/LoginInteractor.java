@@ -10,6 +10,9 @@ import com.bookstore.frontend.util.UserSession;
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class LoginInteractor {
@@ -41,7 +44,17 @@ public class LoginInteractor {
                             JsonNode jsonNode = ApiClient.getInstance().getMapper().readTree(res.body());
                             String token = jsonNode.get("token").asText();
 
-                            UserSession.getInstance().init(token, user);
+                            List<String> roles = new ArrayList<>();
+                            JsonNode rolesNode = jsonNode.get("roles");
+                            if (rolesNode != null && rolesNode.isArray()) {
+                                for (JsonNode r : rolesNode) {
+                                    if (r != null && !r.isNull()) {
+                                        roles.add(r.asText());
+                                    }
+                                }
+                            }
+
+                            UserSession.getInstance().init(token, user, roles);
                             System.out.println("Login thành công. Token: " + token);
                             navigateToHome(user);
                         } catch (Exception e) {
