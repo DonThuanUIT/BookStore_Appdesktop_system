@@ -3,63 +3,99 @@ package com.bookstore.backend.controller;
 import com.bookstore.backend.dto.request.CreateOrderRequest;
 import com.bookstore.backend.dto.request.UpdateOrderStatusRequest;
 import com.bookstore.backend.dto.response.OrderResponse;
-import com.bookstore.backend.entity.Order;
 import com.bookstore.backend.entity.User;
-import com.bookstore.backend.exception.AppException;import com.bookstore.backend.service.OrderService;
+import com.bookstore.backend.exception.AppException;
+import com.bookstore.backend.service.OrderService;
 import com.bookstore.backend.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;import org.springframework.http.HttpStatus;import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/orders")
-@Tag(name = "Order", description = "Các API quản lý đơn hàng")
+@Tag(name = "Order", description = "Order management APIs")
+@Validated
 public class OrderController {
+
     @Autowired
     private OrderService orderService;
+
     @Autowired
     private UserService userService;
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Page<OrderResponse>> getAllOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be greater than or equal to 0")
+            int page,
 
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100")
+            int size,
+
+            @RequestParam(defaultValue = "id")
+            @Pattern(regexp = "^(id|status|orderDate|totalAmount|finalAmount)$", message = "sortBy is invalid")
+            String sortBy,
+
+            @RequestParam(defaultValue = "desc")
+            @Pattern(regexp = "^(?i)(asc|desc)$", message = "direction must be asc or desc")
+            String direction
+    ) {
         return ResponseEntity.ok(orderService.getAllOrders(page, size, sortBy, direction));
     }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable Long id,
-            @RequestBody UpdateOrderStatusRequest request) {
+            @PathVariable @Positive(message = "id is invalid") Long id,
+            @Valid @RequestBody UpdateOrderStatusRequest request
+    ) {
         return ResponseEntity.ok(orderService.updateStatus(id, request.status()));
     }
+
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<OrderResponse> createOrder(
-            @Valid
-            @RequestBody CreateOrderRequest request,
-            Authentication authentication) {
-
+            @Valid @RequestBody CreateOrderRequest request,
+            Authentication authentication
+    ) {
         String username = authentication.getName();
         User currentUser = userService.findByUsername(username);
-
-        // 2. Gọi service để tạo đơn hàng
         return ResponseEntity.ok(orderService.createOrder(request, currentUser));
     }
+
     @GetMapping("/history")
     public ResponseEntity<Page<OrderResponse>> getMyOrderHistory(
             @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be greater than or equal to 0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100")
+            int size
     ) {
         if (jwt == null) {
             throw new AppException(HttpStatus.UNAUTHORIZED, "You need to log in to view your history!");
@@ -70,12 +106,13 @@ public class OrderController {
 
         return ResponseEntity.ok(orderService.getOrderHistory(currentUser, page, size));
     }
+
     @PostMapping("/{id}/confirm")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<OrderResponse> confirmReceived(
-            @PathVariable Long id,
-            @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt) {
-
+            @PathVariable @Positive(message = "id is invalid") Long id,
+            @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt
+    ) {
         String username = jwt.getSubject();
         User currentUser = userService.findByUsername(username);
 

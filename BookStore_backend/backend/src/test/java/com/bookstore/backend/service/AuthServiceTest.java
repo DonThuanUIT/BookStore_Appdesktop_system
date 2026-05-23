@@ -80,7 +80,7 @@ class AuthServiceTest {
 
         assertEquals("Bearer", response.tokenType());
         assertEquals("admin", response.subject());
-        assertEquals(List.of("ADMIN"), response.roles());
+        assertEquals(List.of("ROLE_ADMIN"), response.roles());
         assertNotNull(response.token());
         assertTrue(response.expiresAt().isAfter(Instant.now()));
     }

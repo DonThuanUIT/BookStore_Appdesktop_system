@@ -9,6 +9,7 @@ import com.bookstore.backend.exception.AppException;
 import com.bookstore.backend.repository.RoleRepository;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.service.UserService;
+import com.bookstore.backend.util.RoleNames;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng: " + username));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "User not found: " + username));
     }
 
     @Override
@@ -58,14 +59,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse create(UserCreateRequest request) {
-        String username = trimRequired(request.username(), "Username không được để trống");
-        String email = trimRequired(request.email(), "Email không được để trống");
+        String username = trimRequired(request.username(), "Username is required");
+        String email = trimRequired(request.email(), "Email is required");
 
         if (userRepository.existsByUsername(username)) {
-            throw new AppException(HttpStatus.CONFLICT, "Username đã tồn tại");
+            throw new AppException(HttpStatus.CONFLICT, "Username already exists");
         }
         if (userRepository.existsByEmail(email)) {
-            throw new AppException(HttpStatus.CONFLICT, "Email đã tồn tại");
+            throw new AppException(HttpStatus.CONFLICT, "Email already exists");
         }
 
         User user = User.builder()
@@ -90,7 +91,7 @@ public class UserServiceImpl implements UserService {
         if (hasText(request.username())) {
             String username = request.username().trim();
             if (userRepository.existsByUsernameAndIdNot(username, id)) {
-                throw new AppException(HttpStatus.CONFLICT, "Username đã tồn tại");
+                throw new AppException(HttpStatus.CONFLICT, "Username already exists");
             }
             user.setUsername(username);
         }
@@ -102,7 +103,7 @@ public class UserServiceImpl implements UserService {
         if (hasText(request.email())) {
             String email = request.email().trim();
             if (userRepository.existsByEmailAndIdNot(email, id)) {
-                throw new AppException(HttpStatus.CONFLICT, "Email đã tồn tại");
+                throw new AppException(HttpStatus.CONFLICT, "Email already exists");
             }
             user.setEmail(email);
         }
@@ -133,18 +134,21 @@ public class UserServiceImpl implements UserService {
 
     private User findActiveById(Long id) {
         return userRepository.findByIdActive(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
     private Role resolveRole(String roleName) {
         String normalizedRoleName = normalizeRoleName(roleName);
         return roleRepository.findByName(normalizedRoleName)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy role: " + normalizedRoleName));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Role not found: " + normalizedRoleName));
     }
 
     private String normalizeRoleName(String roleName) {
-        String value = trimRequired(roleName, "Role không được để trống").toUpperCase();
-        return value.startsWith("ROLE_") ? value : "ROLE_" + value;
+        try {
+            return RoleNames.normalize(roleName);
+        } catch (IllegalArgumentException ex) {
+            throw new AppException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
     private String trimRequired(String value, String message) {
@@ -175,7 +179,7 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 user.getAddress(),
                 role != null ? role.getId() : null,
-                role != null ? role.getName() : null,
+                role != null ? RoleNames.normalize(role.getName()) : null,
                 user.getIsDeleted()
         );
     }
