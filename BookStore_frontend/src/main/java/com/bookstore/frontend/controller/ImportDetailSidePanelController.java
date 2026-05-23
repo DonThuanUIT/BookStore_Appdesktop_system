@@ -67,7 +67,7 @@ public class ImportDetailSidePanelController {
         tvDetails.setItems(data.getDetails());
 
         if (!isShowing) {
-            slidePanel(0); // Trượt vào vị trí X = 0 (Hiển thị)
+            slidePanel(0);
             isShowing = true;
         }
     }
@@ -75,7 +75,7 @@ public class ImportDetailSidePanelController {
     @FXML
     public void handleClose() {
         if (isShowing) {
-            slidePanel(sidePanelRoot.getPrefWidth()); // Trượt ra ngoài màn hình
+            slidePanel(sidePanelRoot.getPrefWidth());
             isShowing = false;
         }
     }

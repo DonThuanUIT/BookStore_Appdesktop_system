@@ -48,9 +48,9 @@
         <VBox spacing="15.0">
             <Label text="Price Range" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <TextField fx:id="txtMinPrice" promptText="Min $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+                <TextField fx:id="txtMinPrice" promptText="Min đ" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
                 <Label text="-" style="-fx-text-fill: white;"/>
-                <TextField fx:id="txtMaxPrice" promptText="Max $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+                <TextField fx:id="txtMaxPrice" promptText="Max " styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
             </HBox>
         </VBox>
 

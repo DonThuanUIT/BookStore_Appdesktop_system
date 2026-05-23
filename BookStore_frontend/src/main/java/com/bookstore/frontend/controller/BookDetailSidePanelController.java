@@ -33,10 +33,9 @@ public class BookDetailSidePanelController {
     public void setBookDetailDataAndShow(BookModel book) {
         this.currentBook = book;
         lblTitle.setText(book.getTitle());
-        lblAuthor.setText("By " + book.getAuthorName());
-        lblPrice.setText(String.format("$%.2f", book.getPrice()));
+        lblAuthor.setText("By " + book.getAuthorNames());
+        lblPrice.setText(String.format("%,.0f đ", book.getPrice()));
 
-        // THÊM: Gán dữ liệu thực từ DB
         if (lblPublisher != null)
             lblPublisher.setText("Publisher: " + (book.getPublisherName() != null ? book.getPublisherName() : "N/A"));
         if (lblCategories != null)
@@ -53,23 +52,17 @@ public class BookDetailSidePanelController {
             System.err.println("SidePanel - Lỗi nạp ảnh Cloudinary: " + book.getImageUrl());
         }
 
-        // --- LOGIC ANIMATION MỞ PANEL (SLIDE IN + FADE IN) ---
-
-        // 1. Phải bật hiển thị trước thì mới thấy được Animation
         rootPanel.setVisible(true);
         rootPanel.setManaged(true);
 
-        // 2. Hiệu ứng trượt: Đẩy Panel ra xa 100px về bên phải, rồi kéo về vị trí gốc (0)
         TranslateTransition translate = new TranslateTransition(Duration.millis(350), rootPanel);
         translate.setFromX(100);
         translate.setToX(0);
 
-        // 3. Hiệu ứng mờ: Từ hoàn toàn trong suốt (0) dần hiện rõ lên (1)
         FadeTransition fade = new FadeTransition(Duration.millis(350), rootPanel);
         fade.setFromValue(0);
         fade.setToValue(1);
 
-        // 4. Gom 2 hiệu ứng chạy song song cùng lúc
         ParallelTransition slideIn = new ParallelTransition(translate, fade);
         slideIn.play();
     }
@@ -77,21 +70,17 @@ public class BookDetailSidePanelController {
 
     @FXML
     public void handleClose() {
-        // --- LOGIC ANIMATION ĐÓNG PANEL (SLIDE OUT + FADE OUT) ---
 
-        // 1. Trượt ngược lại ra ngoài lề phải
         TranslateTransition translate = new TranslateTransition(Duration.millis(250), rootPanel);
         translate.setFromX(0);
         translate.setToX(100);
 
-        // 2. Mờ dần đi
         FadeTransition fade = new FadeTransition(Duration.millis(250), rootPanel);
         fade.setFromValue(1);
         fade.setToValue(0);
 
         ParallelTransition slideOut = new ParallelTransition(translate, fade);
 
-        // 3. QUAN TRỌNG: Đợi Animation chạy xong (250ms) thì mới tắt hiển thị để giải phóng layout
         slideOut.setOnFinished(event -> {
             rootPanel.setVisible(false);
             rootPanel.setManaged(false);

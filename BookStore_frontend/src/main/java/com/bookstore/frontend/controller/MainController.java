@@ -26,6 +26,7 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.net.URL;
@@ -52,6 +53,9 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         NavigationService.getInstance().setContentArea(contentArea);
+
+        // ĐÃ XÓA: Đoạn code Platform.runLater ép setMaximized(true) gây xung đột luồng render.
+        // Việc quản lý phóng to cửa sổ giờ đây do MainApplication.showView() đảm nhận hoàn toàn.
 
         lblCartBadge.textProperty().bind(
                 Bindings.createStringBinding(
@@ -221,7 +225,7 @@ public class MainController implements Initializable {
         name.maxWidthProperty().bind(textCol.widthProperty());
         name.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
 
-        Label meta = new Label(String.format("SL %d  ·  $%.2f", item.getQuantity(), item.getBook().getPrice()));
+        Label meta = new Label(String.format("SL %d  ·  %,.0f đ", item.getQuantity(), item.getBook().getPrice()));
         meta.setWrapText(false);
         meta.setTextOverrun(OverrunStyle.ELLIPSIS);
         meta.maxWidthProperty().bind(textCol.widthProperty());
@@ -276,7 +280,6 @@ public class MainController implements Initializable {
         });
     }
 
-    /** Popup neo dưới thanh nav (nút ở góc phải trên). */
     private void positionMiniCartPopup() {
         if (!miniCartPopup.isShowing() || btnNavMiniCart.getScene() == null) {
             return;

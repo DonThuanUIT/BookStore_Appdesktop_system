@@ -257,10 +257,14 @@ public class ImportCreateController {
             controller.setBook(new BookModel(), false); // Tạo mới sách
 
             Stage stage = new Stage();
-            stage.setTitle("Thêm Sách Mới");
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
 
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            Scene scene = new Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+
+            stage.setScene(scene);
             stage.showAndWait();
 
             // Nếu user bấm "Save", tải lại danh sách sách

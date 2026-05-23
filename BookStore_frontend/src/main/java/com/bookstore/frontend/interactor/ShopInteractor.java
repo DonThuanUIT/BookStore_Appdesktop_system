@@ -4,6 +4,7 @@ import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.ShopModel;
 import com.bookstore.frontend.model.dto.Response.BookResponseDto;
 import com.bookstore.frontend.service.api.ApiClient;
+import com.bookstore.frontend.util.BookMapper; // KHAI THÁC SỨC MẠNH CỦA MAPPER
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Collections;
@@ -30,32 +31,14 @@ public class ShopInteractor {
                             JsonNode contentNode = root.get("content");
                             boolean isLast = root.get("last").asBoolean();
 
-                            // SỬA CHUẨN: Dùng BookResponseDto phẳng để hứng data
                             List<BookResponseDto> dtoList = ApiClient.getInstance().getMapper()
                                     .readerForListOf(BookResponseDto.class)
                                     .readValue(contentNode);
 
-                            List<BookModel> books = dtoList.stream().map(dto -> {
-                                BookModel bookModel = new BookModel();
-                                bookModel.setId(dto.getId());
-                                bookModel.setTitle(dto.getTitle());
-                                bookModel.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
-                                bookModel.setImageUrl(dto.getImageUrl());
-                                bookModel.setPublisherName(dto.getPublisherName());
-
-                                if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
-                                    bookModel.setAuthorName(dto.getAuthorNames().get(0));
-                                } else {
-                                    bookModel.setAuthorName("Unknown Author");
-                                }
-
-                                if (dto.getCategoryNames() != null) {
-                                    bookModel.setCategoryNames(dto.getCategoryNames());
-                                } else {
-                                    bookModel.setCategoryNames(Collections.emptyList());
-                                }
-                                return bookModel;
-                            }).collect(Collectors.toList());
+                            // ĐÃ FIX: Dùng BookMapper để map tự động. Xóa bỏ hoàn toàn mớ logic setter thủ công lộn xộn.
+                            List<BookModel> books = dtoList.stream()
+                                    .map(BookMapper::toModel)
+                                    .collect(Collectors.toList());
 
                             return new PageDto<>(books, isLast);
 
@@ -83,7 +66,10 @@ public class ShopInteractor {
                     if (searchKeyword == null || searchKeyword.trim().isEmpty()) return true;
                     String kw = searchKeyword.toLowerCase();
                     boolean matchTitle = b.getTitle() != null && b.getTitle().toLowerCase().contains(kw);
-                    boolean matchAuthor = b.getAuthorName() != null && b.getAuthorName().toLowerCase().contains(kw);
+
+                    // ĐÃ FIX: Dùng getFormattedAuthors() thay vì hàm getAuthorName() đã bị xóa
+                    boolean matchAuthor = b.getFormattedAuthors().toLowerCase().contains(kw);
+
                     return matchTitle || matchAuthor;
                 })
                 .filter(b -> {
@@ -132,27 +118,10 @@ public class ShopInteractor {
                         return Collections.emptyList();
                     }
 
-                    return dtoList.stream().map(dto -> {
-                        BookModel model = new BookModel();
-                        model.setId(dto.getId());
-                        model.setTitle(dto.getTitle());
-                        model.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
-                        model.setImageUrl(dto.getImageUrl());
-                        model.setPublisherName(dto.getPublisherName());
-
-                        if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
-                            model.setAuthorName(dto.getAuthorNames().get(0));
-                        } else {
-                            model.setAuthorName("Unknown Author");
-                        }
-
-                        if (dto.getCategoryNames() != null) {
-                            model.setCategoryNames(dto.getCategoryNames());
-                        } else {
-                            model.setCategoryNames(Collections.emptyList());
-                        }
-                        return model;
-                    }).collect(Collectors.toList());
+                    // ĐÃ FIX: Tiếp tục dùng BookMapper thay vì viết lại hàng loạt hàm Set cứng nhắc
+                    return dtoList.stream()
+                            .map(BookMapper::toModel)
+                            .collect(Collectors.toList());
                 });
     }
 }

@@ -147,7 +147,8 @@ public class ShopController {
                 List<BookModel> typeSafetyBooks = booksFromBackend.stream()
                         .filter(book -> {
                             if (searchType.equalsIgnoreCase("Author")) {
-                                return book.getAuthorName() != null && book.getAuthorName().toLowerCase().contains(keyword.toLowerCase());
+                                // ĐÃ FIX: Sử dụng getFormattedAuthors()
+                                return book.getFormattedAuthors().toLowerCase().contains(keyword.toLowerCase());
                             } else { // Mặc định là Title
                                 return book.getTitle() != null && book.getTitle().toLowerCase().contains(keyword.toLowerCase());
                             }
@@ -187,7 +188,9 @@ public class ShopController {
                         : DEFAULT_COVER_URL;
 
                 BookCardController cardController = loader.getController();
-                cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imageUrl);
+
+                // ĐÃ FIX: Sử dụng getFormattedAuthors() thay vì getAuthorName()
+                cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), formattedPrice, imageUrl);
 
                 cardController.setCallbacks(
                         () -> {

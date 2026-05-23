@@ -84,8 +84,9 @@ public class HomeController extends BaseController {
         List<BookModel> filteredBooks = originalBooksList.stream()
                 .filter(book -> {
                     if (activeType.equalsIgnoreCase("Author")) {
-                        if (book.getAuthorName() == null) return false;
-                        String author = Normalizer.normalize(book.getAuthorName().toLowerCase(), Normalizer.Form.NFC);
+                        // ĐÃ FIX: Sử dụng getFormattedAuthors() thay vì getAuthorName()
+                        if (book.getFormattedAuthors() == null) return false;
+                        String author = Normalizer.normalize(book.getFormattedAuthors().toLowerCase(), Normalizer.Form.NFC);
                         return author.contains(query);
                     }
                     else {
@@ -118,7 +119,9 @@ public class HomeController extends BaseController {
                         : DEFAULT_COVER_URL;
 
                 BookCardController cardController = loader.getController();
-                cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath);
+
+                // ĐÃ FIX: Sử dụng getFormattedAuthors()
+                cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), formattedPrice, imagePath);
 
                 cardController.setCallbacks(
                         () -> bookDetailSidePanelController.setBookDetailDataAndShow(book),

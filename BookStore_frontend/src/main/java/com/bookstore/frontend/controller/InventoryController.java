@@ -42,7 +42,7 @@ public class InventoryController extends BaseController {
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colAuthor.setCellValueFactory(new PropertyValueFactory<>("authorName"));
+        colAuthor.setCellValueFactory(new PropertyValueFactory<>("formattedAuthors"));
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
@@ -126,7 +126,7 @@ public class InventoryController extends BaseController {
                 interactor.loadInventoryData(0, 15);
             }
         } catch (Exception e) {
-            System.err.println("Error opening book editing form:" + e.getMessage());
+            e.printStackTrace();
         }
     }
 
