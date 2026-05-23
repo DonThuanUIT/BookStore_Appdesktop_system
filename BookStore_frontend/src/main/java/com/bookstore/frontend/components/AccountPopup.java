@@ -1,6 +1,6 @@
 package com.bookstore.frontend.components;
 
-import com.bookstore.frontend.api.ApiClient;
+import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.util.UserSession;
