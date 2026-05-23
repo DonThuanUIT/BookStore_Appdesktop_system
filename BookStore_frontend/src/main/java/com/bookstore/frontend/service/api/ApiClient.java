@@ -1,7 +1,9 @@
 package com.bookstore.frontend.service.api;
 
 import com.bookstore.frontend.util.UserSession;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule; // Thêm import này
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,12 @@ public class ApiClient {
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
         this.objectMapper = new ObjectMapper();
+
+        // 1. Đăng ký module để xử lý LocalDateTime
+        this.objectMapper.registerModule(new JavaTimeModule());
+
+        // 2. Cấu hình để bỏ qua các trường lạ (như 'discount')
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public static ApiClient getInstance() {
