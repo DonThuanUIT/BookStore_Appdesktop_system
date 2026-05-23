@@ -32,6 +32,13 @@ public class AuthorService {
         return toResponse(author);
     }
 
+    @Transactional(readOnly = true)
+    public AuthorResponse getByName(String name) {
+        Author author = authorRepository.findFirstByNameIgnoreCase(name.trim())
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay tac gia"));
+        return toResponse(author);
+    }
+
     @Transactional
     public AuthorResponse create(AuthorUpsertRequest request) {
         Author author = Author.builder()

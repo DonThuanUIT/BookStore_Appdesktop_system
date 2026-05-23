@@ -32,6 +32,13 @@ public class CategoryService {
         return toResponse(category);
     }
 
+    @Transactional(readOnly = true)
+    public CategoryResponse getByName(String name) {
+        Category category = categoryRepository.findFirstByNameIgnoreCase(name.trim())
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay danh muc"));
+        return toResponse(category);
+    }
+
     @Transactional
     public CategoryResponse create(CategoryUpsertRequest request) {
         Category category = Category.builder()

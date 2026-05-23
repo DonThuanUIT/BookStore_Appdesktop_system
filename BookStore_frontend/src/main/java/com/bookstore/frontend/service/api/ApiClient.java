@@ -75,6 +75,23 @@ public class ApiClient {
         }
     }
 
+    public CompletableFuture<HttpResponse<String>> put(String endpoint, Object body) {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(body);
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody));
+
+            attachAuthToken(requestBuilder);
+
+            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
     public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) throws IOException {
         String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
         // Đẩy logic xử lý byte phức tạp xuống hàm helper để class sạch sẽ hơn
