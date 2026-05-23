@@ -5,6 +5,7 @@ import com.bookstore.backend.dto.response.CategoryResponse;
 import com.bookstore.backend.service.CategoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,13 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getById(@PathVariable @Positive(message = "id is invalid") Long id) {
         return ResponseEntity.ok(categoryService.getById(id));
+    }
+
+    @GetMapping("/name/{name}")
+    public ResponseEntity<CategoryResponse> getByName(
+            @PathVariable @NotBlank(message = "name is required") String name
+    ) {
+        return ResponseEntity.ok(categoryService.getByName(name));
     }
 
     @PostMapping

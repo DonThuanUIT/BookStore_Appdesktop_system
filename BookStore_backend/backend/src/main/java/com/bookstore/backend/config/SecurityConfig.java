@@ -45,7 +45,7 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/api/auth/register",
             "/api/auth/login",
-            "/api/auth/**"
+            "/api/auth/jwt/validate"
     };
 
     @Bean
