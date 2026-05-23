@@ -35,8 +35,8 @@
                     <Region HBox.hgrow="ALWAYS" />
                     <HBox alignment="CENTER_RIGHT" spacing="20.0">
                         <children>
-                            <Button mnemonicParsing="false" styleClass="btn-icon" text="👤" style="-fx-font-size: 18px;" />
-                            <StackPane>
+                            <!-- Trong file FXML của bạn -->
+                            <Button fx:id="btnAccount" mnemonicParsing="false" onAction="#onAccountClick" styleClass="btn-icon" text="👤" />                            <StackPane>
                                 <children>
                                     <Button fx:id="btnNavMiniCart" mnemonicParsing="false" onAction="#onNavMiniCartClick"
                                             styleClass="btn-icon" text="🛒"
