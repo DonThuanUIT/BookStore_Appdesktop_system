@@ -33,10 +33,15 @@ public class AuthorService {
     }
 
     @Transactional(readOnly = true)
-    public AuthorResponse getByName(String name) {
-        Author author = authorRepository.findFirstByNameIgnoreCase(name.trim())
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay tac gia"));
-        return toResponse(author);
+    public List<AuthorResponse> getByName(String keyword) {
+        String trimmed = keyword == null ? "" : keyword.trim();
+        if (trimmed.isEmpty()) {
+            return List.of();
+        }
+        return authorRepository.findByNameContainingIgnoreCaseOrderByNameAsc(trimmed)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
