@@ -33,10 +33,15 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public CategoryResponse getByName(String name) {
-        Category category = categoryRepository.findFirstByNameIgnoreCase(name.trim())
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay danh muc"));
-        return toResponse(category);
+    public List<CategoryResponse> getByName(String keyword) {
+        String trimmed = keyword == null ? "" : keyword.trim();
+        if (trimmed.isEmpty()) {
+            return List.of();
+        }
+        return categoryRepository.findByNameContainingIgnoreCaseOrderByNameAsc(trimmed)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
