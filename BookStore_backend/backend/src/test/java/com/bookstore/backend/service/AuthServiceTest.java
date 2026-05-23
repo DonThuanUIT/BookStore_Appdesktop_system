@@ -25,6 +25,7 @@ import com.bookstore.backend.config.JwtProperties;
 import com.bookstore.backend.dto.response.JwtTokenResponse;
 import com.bookstore.backend.entity.AppUser;
 import com.bookstore.backend.entity.Role;
+import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.repository.AppUserRepository;
 import com.bookstore.backend.repository.RoleRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -43,6 +44,9 @@ class AuthServiceTest {
 
     @Mock
     private RoleRepository roleRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -64,7 +68,7 @@ class AuthServiceTest {
         jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(jwtProperties.issuer()));
 
         JwtService jwtService = new JwtService(jwtEncoder, jwtDecoder, jwtProperties);
-        authService = new AuthService(appUserRepository, roleRepository, passwordEncoder, jwtService);
+        authService = new AuthService(appUserRepository, roleRepository, userRepository, passwordEncoder, jwtService);
     }
 
     @Test
@@ -80,7 +84,7 @@ class AuthServiceTest {
 
         assertEquals("Bearer", response.tokenType());
         assertEquals("admin", response.subject());
-        assertEquals(List.of("ADMIN"), response.roles());
+        assertEquals(List.of("ROLE_ADMIN"), response.roles());
         assertNotNull(response.token());
         assertTrue(response.expiresAt().isAfter(Instant.now()));
     }

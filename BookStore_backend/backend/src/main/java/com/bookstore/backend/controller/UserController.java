@@ -6,9 +6,11 @@ import com.bookstore.backend.dto.response.UserResponse;
 import com.bookstore.backend.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("/api/users")
 @Tag(name = "Users")
 @PreAuthorize("hasRole('ADMIN')")
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -38,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getById(@PathVariable @Positive(message = "id is invalid") Long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
@@ -50,14 +53,14 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(
-            @PathVariable Long id,
+            @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody UserUpdateRequest request
     ) {
         return ResponseEntity.ok(userService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }

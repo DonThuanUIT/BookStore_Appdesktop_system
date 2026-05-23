@@ -52,7 +52,7 @@ class JwtServiceTest {
         assertNotNull(tokenResponse.token());
         assertEquals("Bearer", tokenResponse.tokenType());
         assertEquals("bookstore-user", tokenResponse.subject());
-        assertEquals(List.of("ADMIN"), tokenResponse.roles());
+        assertEquals(List.of("ROLE_ADMIN"), tokenResponse.roles());
         assertNotNull(tokenResponse.issuedAt());
         assertNotNull(tokenResponse.expiresAt());
 
@@ -60,7 +60,7 @@ class JwtServiceTest {
 
         assertTrue(validationResponse.valid());
         assertEquals("bookstore-user", validationResponse.subject());
-        assertEquals(List.of("ADMIN"), validationResponse.roles());
+        assertEquals(List.of("ROLE_ADMIN"), validationResponse.roles());
         assertEquals("Token is valid", validationResponse.message());
         assertNotNull(validationResponse.issuedAt());
         assertNotNull(validationResponse.expiresAt());

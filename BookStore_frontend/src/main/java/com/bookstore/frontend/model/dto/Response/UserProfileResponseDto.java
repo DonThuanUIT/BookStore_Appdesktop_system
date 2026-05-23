@@ -1,10 +1,8 @@
-package com.bookstore.backend.dto.response;
-
-import lombok.Builder;
+package com.bookstore.frontend.model.dto.Response;
 
 import java.util.List;
-@Builder
-public record UserProfileResponse(
+
+public record UserProfileResponseDto(
         Long id,
         String username,
         String fullName,
@@ -12,6 +10,5 @@ public record UserProfileResponse(
         String phone,
         String address,
         List<String> roles
-
 ) {
 }

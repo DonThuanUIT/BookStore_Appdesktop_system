@@ -1,20 +1,31 @@
 package com.bookstore.backend.controller;
 
-import java.util.List;
-
 import com.bookstore.backend.dto.request.AuthorUpsertRequest;
 import com.bookstore.backend.dto.response.AuthorResponse;
 import com.bookstore.backend.service.AuthorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/authors")
 @Tag(name = "Authors")
+@Validated
 public class AuthorController {
 
     private final AuthorService authorService;
@@ -29,8 +40,15 @@ public class AuthorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AuthorResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<AuthorResponse> getById(@PathVariable @Positive(message = "id is invalid") Long id) {
         return ResponseEntity.ok(authorService.getById(id));
+    }
+
+    @GetMapping("/name/{name}")
+    public ResponseEntity<AuthorResponse> getByName(
+            @PathVariable @NotBlank(message = "name is required") String name
+    ) {
+        return ResponseEntity.ok(authorService.getByName(name));
     }
 
     @PostMapping
@@ -43,7 +61,7 @@ public class AuthorController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<AuthorResponse> update(
-            @PathVariable Long id,
+            @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody AuthorUpsertRequest request
     ) {
         return ResponseEntity.ok(authorService.update(id, request));
@@ -51,7 +69,7 @@ public class AuthorController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         authorService.delete(id);
         return ResponseEntity.noContent().build();
     }
