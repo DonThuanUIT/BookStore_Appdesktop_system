@@ -45,7 +45,7 @@ public class CategoryController {
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<CategoryResponse> getByName(
+    public ResponseEntity<List<CategoryResponse>> getByName(
             @PathVariable @NotBlank(message = "name is required") String name
     ) {
         return ResponseEntity.ok(categoryService.getByName(name));

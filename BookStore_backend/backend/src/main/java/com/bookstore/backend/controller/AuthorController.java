@@ -45,7 +45,7 @@ public class AuthorController {
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<AuthorResponse> getByName(
+    public ResponseEntity<List<AuthorResponse>> getByName(
             @PathVariable @NotBlank(message = "name is required") String name
     ) {
         return ResponseEntity.ok(authorService.getByName(name));
