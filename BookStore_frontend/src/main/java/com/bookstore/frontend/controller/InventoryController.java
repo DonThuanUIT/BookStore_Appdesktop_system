@@ -114,8 +114,9 @@ public class InventoryController extends BaseController {
             dialogStage.setScene(scene);
 
             BookFormController controller = loader.getController();
-            // Truyền true = chế độ EDIT
             controller.setBook(selectedBook, true);
+
+            controller.setInteractor(this.interactor);
 
             dialogStage.showAndWait();
 

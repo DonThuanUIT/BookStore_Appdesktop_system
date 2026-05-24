@@ -5,6 +5,8 @@ import com.bookstore.frontend.model.dto.Response.CategoryResponseDto;
 import com.bookstore.frontend.model.dto.Response.PublisherResponseDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,6 @@ public class MasterDataApiService {
         return createItem("/categories", name, CategoryResponseDto.class);
     }
 
-
     public CompletableFuture<List<PublisherResponseDto>> getAllPublishers() {
         return fetchList("/publishers", new TypeReference<>() {});
     }
@@ -36,7 +37,6 @@ public class MasterDataApiService {
     public CompletableFuture<PublisherResponseDto> createPublisher(String name) {
         return createItem("/publishers", name, PublisherResponseDto.class);
     }
-
 
     private <T> CompletableFuture<List<T>> fetchList(String endpoint, TypeReference<List<T>> typeRef) {
         return ApiClient.getInstance().get(endpoint).thenApply(res -> {
@@ -62,5 +62,24 @@ public class MasterDataApiService {
             }
             return null;
         });
+    }
+
+    // live search:
+    public CompletableFuture<List<AuthorResponseDto>> searchAuthors(String keyword) {
+        try {
+            String encoded = URLEncoder.encode(keyword.trim(), StandardCharsets.UTF_8);
+            return fetchList("/authors/name/" + encoded, new TypeReference<>() {});
+        } catch (Exception e) {
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+    }
+
+    public CompletableFuture<List<CategoryResponseDto>> searchCategories(String keyword) {
+        try {
+            String encoded = URLEncoder.encode(keyword.trim(), StandardCharsets.UTF_8);
+            return fetchList("/categories/name/" + encoded, new TypeReference<>() {});
+        } catch (Exception e) {
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
     }
 }

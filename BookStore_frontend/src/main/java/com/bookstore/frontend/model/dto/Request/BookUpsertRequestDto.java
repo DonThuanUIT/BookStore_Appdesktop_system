@@ -7,6 +7,7 @@ public class BookUpsertRequestDto {
     private String description;
     private String imageUrl;
     private Double sellPrice;
+
     private Long publisherId;
     private List<Long> authorIds;
     private List<Long> categoryIds;

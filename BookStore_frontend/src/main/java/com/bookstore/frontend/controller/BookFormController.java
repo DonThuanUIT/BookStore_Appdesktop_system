@@ -3,6 +3,8 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.components.TagInputField;
 import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
+import com.bookstore.frontend.service.api.MasterDataApiService;
+import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -10,12 +12,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class BookFormController {
 
@@ -23,7 +28,6 @@ public class BookFormController {
     @FXML private ImageView imgCover;
     @FXML private TextField txtTitle;
 
-    // NHÚNG COMPONENT SIÊU GỌN GÀNG
     @FXML private TagInputField tagInputAuthor;
     @FXML private TagInputField tagInputCategory;
 
@@ -35,44 +39,54 @@ public class BookFormController {
 
     private BookModel currentBook;
     private File selectedImageFile;
+
+    @Getter
     private boolean saveClicked = false;
+
     private boolean isEditMode = false;
+
+    @Setter
     private InventoryInteractor interactor;
 
-    // Giả lập Dữ liệu gốc từ Backend (Map giữa Tên hiển thị và ID trong Database)
+    private final MasterDataApiService masterDataApi = new MasterDataApiService();
+
     private final Map<String, Long> masterAuthors = new HashMap<>();
     private final Map<String, Long> masterCategories = new HashMap<>();
     private final Map<String, Long> masterPublishers = new HashMap<>();
 
     @FXML
     public void initialize() {
-        // MOCK DATA: Chờ tích hợp API Master Data
-        masterAuthors.put("Nguyễn Nhật Ánh", 1L);
-        masterAuthors.put("Carlos Ruiz Zafón", 2L);
-        masterAuthors.put("J.K. Rowling", 3L);
-        masterAuthors.put("Tô Hoài", 4L);
+        btnSave.setDisable(true);
+        cbPublisher.setPromptText("Đang tải dữ liệu...");
 
-        masterCategories.put("Văn học", 1L);
-        masterCategories.put("Tiểu thuyết", 2L);
-        masterCategories.put("Khoa học viễn tưởng", 3L);
-        masterCategories.put("Thiếu nhi", 4L);
+        masterDataApi.getAllPublishers().thenAccept(list -> Platform.runLater(() -> {
+            list.forEach(p -> masterPublishers.put(p.getName(), p.getId()));
+            cbPublisher.getItems().addAll(masterPublishers.keySet());
+            cbPublisher.setPromptText("Chọn nhà xuất bản");
+            btnSave.setDisable(false);
+        }));
 
-        masterPublishers.put("NXB Trẻ", 1L);
-        masterPublishers.put("Nhã Nam", 2L);
-        masterPublishers.put("Kim Đồng", 3L);
+        tagInputAuthor.setSearchAsyncCallback(keyword ->
+                masterDataApi.searchAuthors(keyword).thenApply(dtoList -> {
+                    List<String> names = new ArrayList<>();
+                    for (var dto : dtoList) {
+                        masterAuthors.put(dto.getName(), dto.getId());
+                        names.add(dto.getName());
+                    }
+                    return names;
+                })
+        );
 
-        cbPublisher.getItems().addAll(masterPublishers.keySet());
-
-        // Đổ dữ liệu gợi ý vào các Component
-        tagInputAuthor.setPromptText("Gõ tên tác giả...");
-        tagInputAuthor.setSuggestionsPool(new ArrayList<>(masterAuthors.keySet()));
-
-        tagInputCategory.setPromptText("Gõ tên thể loại...");
-        tagInputCategory.setSuggestionsPool(new ArrayList<>(masterCategories.keySet()));
-    }
-
-    public void setInteractor(InventoryInteractor interactor) {
-        this.interactor = interactor;
+        tagInputCategory.setSearchAsyncCallback(keyword ->
+                masterDataApi.searchCategories(keyword).thenApply(dtoList -> {
+                    List<String> names = new ArrayList<>();
+                    for (var dto : dtoList) {
+                        masterCategories.put(dto.getName(), dto.getId());
+                        names.add(dto.getName());
+                    }
+                    return names;
+                })
+        );
     }
 
     public void setBook(BookModel book, boolean isEdit) {
@@ -83,22 +97,39 @@ public class BookFormController {
             lblFormTitle.setText("Cập nhật thông tin Sách");
             btnSave.setText("Lưu thay đổi");
 
-            // Đổ dữ liệu text cơ bản
             txtTitle.setText(book.getTitle());
             txtPrice.setText(String.format("%.0f", book.getPrice() != null ? book.getPrice() : 0.0));
-            txtQuantity.setText(String.valueOf(book.getQuantity() != null ? book.getQuantity() : 0));
-            txtDescription.setText(book.getDescription());
-            cbPublisher.setValue(book.getPublisherName());
 
-            if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
-                try {
-                    imgCover.setImage(new Image(book.getImageUrl(), true));
-                } catch (Exception ignored) {}
+            txtQuantity.setText(String.valueOf(book.getQuantity() != null ? book.getQuantity() : 0));
+            txtQuantity.setEditable(false);
+            txtQuantity.setFocusTraversable(false);
+            txtQuantity.setStyle("-fx-opacity: 0.6; -fx-background-color: #2a2d36; -fx-cursor: default;");
+
+            txtDescription.setText(book.getDescription());
+
+            if (book.getPublisherName() != null) {
+                cbPublisher.setValue(book.getPublisherName());
             }
 
-            // RA LỆNH CHO COMPONENT RENDER GIAO DIỆN CHIP RẤT SẠCH SẼ
-            tagInputAuthor.setTags(book.getAuthorNames());
-            tagInputCategory.setTags(book.getCategoryNames());
+            if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
+                try { imgCover.setImage(new Image(book.getImageUrl(), true)); }
+                catch (Exception ignored) {}
+            }
+
+            List<String> aNames = book.getAuthorNames();
+            List<Long> aIds = book.getAuthorIds();
+            if (aNames != null && aIds != null && aNames.size() == aIds.size()) {
+                for (int i = 0; i < aNames.size(); i++) masterAuthors.put(aNames.get(i), aIds.get(i));
+            }
+            tagInputAuthor.setTags(aNames);
+
+            List<String> cNames = book.getCategoryNames();
+            List<Long> cIds = book.getCategoryIds();
+            if (cNames != null && cIds != null && cNames.size() == cIds.size()) {
+                for (int i = 0; i < cNames.size(); i++) masterCategories.put(cNames.get(i), cIds.get(i));
+            }
+            tagInputCategory.setTags(cNames);
+
         } else {
             lblFormTitle.setText("Thêm Sách Mới");
             btnSave.setText("Thêm Sách");
@@ -118,7 +149,7 @@ public class BookFormController {
 
     @FXML
     private void handleSave() {
-        if (txtTitle.getText().isEmpty() || cbPublisher.getValue() == null) {
+        if (txtTitle.getText().trim().isEmpty() || cbPublisher.getValue() == null) {
             showError("Vui lòng nhập Tên sách và chọn Nhà xuất bản!");
             return;
         }
@@ -126,66 +157,99 @@ public class BookFormController {
         btnSave.setDisable(true);
         btnSave.setText("Đang xử lý...");
 
-        // Cập nhật thuộc tính cơ bản
-        currentBook.setTitle(txtTitle.getText());
-        currentBook.setDescription(txtDescription.getText());
+        currentBook.setTitle(txtTitle.getText().trim());
+        currentBook.setDescription(txtDescription.getText().trim());
 
         try {
-            currentBook.setPrice(Double.parseDouble(txtPrice.getText()));
-            currentBook.setQuantity(Integer.parseInt(txtQuantity.getText()));
+            currentBook.setPrice(Double.parseDouble(txtPrice.getText().trim()));
         } catch (NumberFormatException e) {
-            showError("Giá bán và Số lượng phải là chữ số!");
+            showError("Giá bán phải là chữ số!");
             return;
         }
 
         String pubName = cbPublisher.getValue();
+        Long pubId = masterPublishers.get(pubName);
+        if (pubId == null) {
+            showError("Nhà xuất bản không hợp lệ!");
+            return;
+        }
         currentBook.setPublisherName(pubName);
-        currentBook.setPublisherId(masterPublishers.getOrDefault(pubName, null));
+        currentBook.setPublisherId(pubId);
 
-        // LẤY DỮ LIỆU TỪ COMPONENT ĐỂ ĐÓNG GÓI MODEL (RẤT NHÀN NHÃ)
         List<String> selectedAuthors = tagInputAuthor.getTags();
-        List<Long> mappedAuthorIds = new ArrayList<>();
-        for (String authorName : selectedAuthors) {
-            Long id = masterAuthors.get(authorName);
-            mappedAuthorIds.add(id != null ? id : -1L);
-        }
-        currentBook.setAuthorNames(selectedAuthors);
-        currentBook.setAuthorIds(mappedAuthorIds);
-
         List<String> selectedCategories = tagInputCategory.getTags();
-        List<Long> mappedCategoryIds = new ArrayList<>();
-        for (String catName : selectedCategories) {
-            Long id = masterCategories.get(catName);
-            mappedCategoryIds.add(id != null ? id : -1L);
-        }
+        currentBook.setAuthorNames(selectedAuthors);
         currentBook.setCategoryNames(selectedCategories);
-        currentBook.setCategoryIds(mappedCategoryIds);
 
-        // Đẩy xuống Interactor (Đã được nâng cấp bằng Mapper DTO)
-        if (isEditMode) {
-            interactor.updateBook(currentBook, selectedImageFile).thenAccept(success -> {
-                Platform.runLater(() -> {
-                    if (success) {
-                        this.saveClicked = true;
-                        ((Stage) btnSave.getScene().getWindow()).close();
-                    } else {
-                        showError("Cập nhật thất bại. Vui lòng kiểm tra Server!");
-                    }
-                });
+        CompletableFuture<List<Long>> authorIdsFuture = resolveAuthorIds(selectedAuthors);
+        CompletableFuture<List<Long>> categoryIdsFuture = resolveCategoryIds(selectedCategories);
+
+        authorIdsFuture.thenCombine(categoryIdsFuture, (aIds, cIds) -> {
+            if (aIds.contains(-1L) || cIds.contains(-1L)) {
+                throw new RuntimeException("Không thể tạo dữ liệu mới trên máy chủ.");
+            }
+            currentBook.setAuthorIds(aIds);
+            currentBook.setCategoryIds(cIds);
+            return currentBook;
+        }).thenCompose(book -> isEditMode
+                ? interactor.updateBook(book, selectedImageFile)
+                : CompletableFuture.completedFuture(false)
+        ).thenAccept(success -> Platform.runLater(() -> {
+            if (success) {
+                this.saveClicked = true;
+                ((Stage) btnSave.getScene().getWindow()).close();
+            } else {
+                showError("Cập nhật thất bại. Vui lòng kiểm tra Server!");
+            }
+        })).exceptionally(ex -> {
+            showError(ex.getMessage());
+            return null;
+        });
+    }
+
+    private CompletableFuture<List<Long>> resolveAuthorIds(List<String> names) {
+        List<CompletableFuture<Long>> futures = names.stream().map(name -> {
+            if (masterAuthors.containsKey(name)) {
+                return CompletableFuture.completedFuture(masterAuthors.get(name));
+            }
+            return masterDataApi.createAuthor(name).thenApply(dto -> {
+                if (dto != null) {
+                    masterAuthors.put(dto.getName(), dto.getId());
+                    return dto.getId();
+                }
+                return -1L;
             });
-        } else {
-            // Logic tạo mới sẽ làm sau
-        }
+        }).toList();
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).toList());
+    }
+
+    private CompletableFuture<List<Long>> resolveCategoryIds(List<String> names) {
+        List<CompletableFuture<Long>> futures = names.stream().map(name -> {
+            if (masterCategories.containsKey(name)) {
+                return CompletableFuture.completedFuture(masterCategories.get(name));
+            }
+            return masterDataApi.createCategory(name).thenApply(dto -> {
+                if (dto != null) {
+                    masterCategories.put(dto.getName(), dto.getId());
+                    return dto.getId();
+                }
+                return -1L;
+            });
+        }).toList();
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).toList());
     }
 
     private void showError(String msg) {
         Platform.runLater(() -> {
             btnSave.setDisable(false);
             btnSave.setText(isEditMode ? "Lưu thay đổi" : "Thêm Sách");
-            new Alert(Alert.AlertType.ERROR, msg).show();
+            AlertUtils.show(Alert.AlertType.ERROR, "Lỗi", msg);
         });
     }
 
     @FXML void handleCancel() { ((Stage) btnSave.getScene().getWindow()).close(); }
-    public boolean isSaveClicked() { return saveClicked; }
 }

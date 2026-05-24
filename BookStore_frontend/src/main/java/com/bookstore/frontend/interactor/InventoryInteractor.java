@@ -89,13 +89,15 @@ public class InventoryInteractor {
 
     private CompletableFuture<Boolean> sendUpdateRequest(BookModel book, String imageUrl) {
         try {
-                if (imageUrl != null) {
+            if (imageUrl != null) {
                 book.setImageUrl(imageUrl);
             }
 
             BookUpsertRequestDto requestDTO = BookMapper.toUpsertRequest(book);
-
             String jsonBody = ApiClient.getInstance().getMapper().writeValueAsString(requestDTO);
+
+            System.out.println("\n--- PAYLOAD GỬI ĐI TỪ INTERACTOR ---");
+            System.out.println(jsonBody);
 
             java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
                     .uri(java.net.URI.create("http://localhost:8080/api/books/" + book.getId()))
@@ -106,7 +108,17 @@ public class InventoryInteractor {
 
             return java.net.http.HttpClient.newHttpClient()
                     .sendAsync(request, java.net.http.HttpResponse.BodyHandlers.ofString())
-                    .thenApply(response -> response.statusCode() == 200);
+                    .thenApply(response -> {
+                        if (response.statusCode() == 200 || response.statusCode() == 201) {
+                            System.out.println("=> CẬP NHẬT SÁCH THÀNH CÔNG!");
+                            return true;
+                        } else {
+                            // IN RA CHÍNH XÁC LÝ DO BACKEND TỪ CHỐI
+                            System.err.println("=> CẬP NHẬT SÁCH THẤT BẠI (HTTP " + response.statusCode() + "):");
+                            System.err.println("Lý do từ Backend: " + response.body() + "\n");
+                            return false;
+                        }
+                    });
         } catch (Exception e) {
             System.err.println("LỖI KHI GỬI REQUEST CẬP NHẬT: " + e.getMessage());
             e.printStackTrace();

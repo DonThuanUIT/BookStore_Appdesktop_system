@@ -6,6 +6,7 @@ module com.bookstore.frontend {
 
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
+    requires static lombok;
 
     // Mở quyền nạp giao diện FXML cho Controller
     opens com.bookstore.frontend.controller to javafx.fxml;

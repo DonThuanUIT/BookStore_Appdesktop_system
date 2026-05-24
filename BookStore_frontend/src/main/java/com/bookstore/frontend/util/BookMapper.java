@@ -18,7 +18,6 @@ public class BookMapper {
         model.setTitle(dto.getTitle());
         model.setDescription(dto.getDescription());
         model.setImageUrl(dto.getImageUrl());
-        model.setQuantity(dto.getQuantity());
         model.setPrice(dto.getSellPrice());
         model.setPublisherName(dto.getPublisherName());
 
@@ -38,6 +37,7 @@ public class BookMapper {
         dto.setDescription(model.getDescription());
         dto.setImageUrl(model.getImageUrl());
         dto.setSellPrice(model.getPrice());
+
         dto.setPublisherId(model.getPublisherId());
         dto.setAuthorIds(model.getAuthorIds());
         dto.setCategoryIds(model.getCategoryIds());
