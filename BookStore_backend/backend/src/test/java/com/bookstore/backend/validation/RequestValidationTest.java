@@ -56,7 +56,7 @@ class RequestValidationTest {
 
     @Test
     void shouldRejectEmptyOrderItems() {
-        CreateOrderRequest request = new CreateOrderRequest(List.of());
+        CreateOrderRequest request = new CreateOrderRequest(List.of(), "BANK_TRANSFER");;
 
         assertFalse(validator.validate(request).isEmpty());
     }

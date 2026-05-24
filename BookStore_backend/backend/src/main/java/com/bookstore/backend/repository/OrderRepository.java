@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 public interface OrderRepository extends JpaRepository<Order, Long>{
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
     Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
-
-    @Query("""
+    @Query("SELECT o FROM Order o WHERE UPPER(o.status) = UPPER(:status)")
+    Page<Order> findByStatus(@Param("status") String status, Pageable pageable);    @Query("""
             SELECT SUM(o.finalAmount)
             FROM Order o
             WHERE o.orderDate >= :startDate

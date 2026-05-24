@@ -65,7 +65,20 @@ public class OrderController {
     ) {
         return ResponseEntity.ok(orderService.getAllOrders(page, size, sortBy, direction));
     }
-
+    @GetMapping("/sales-history")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Page<OrderResponse>> getSalesHistory(
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be greater than or equal to 0")
+            int page,
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100")
+            int size
+    ) {
+        return ResponseEntity.ok(orderService.getSalesHistory(page, size));
+    }
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponse> updateStatus(
             @PathVariable @Positive(message = "id is invalid") Long id,
@@ -86,6 +99,7 @@ public class OrderController {
     }
 
     @GetMapping("/history")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Page<OrderResponse>> getMyOrderHistory(
             @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
             @RequestParam(defaultValue = "0")
