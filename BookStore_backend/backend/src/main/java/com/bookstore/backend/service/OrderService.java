@@ -72,18 +72,41 @@ public class OrderService {
                 .user(userDto)
                 .build();
     }
+    @Transactional
     public OrderResponse updateStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "No order found."));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng với ID: " + id));
         String currentStatus = order.getStatus();
+        String targetStatus = newStatus.toUpperCase();
+        if ("COMPLETED".equalsIgnoreCase(currentStatus) || "CANCELED".equalsIgnoreCase(currentStatus)) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Không thể cập nhật đơn hàng đã hoàn thành (COMPLETED) hoặc đã hủy (CANCELED).");
+        }
+        if (!"SHIPPING".equalsIgnoreCase(targetStatus) &&
+                !"CANCELED".equalsIgnoreCase(targetStatus) &&
+                !"COMPLETED".equalsIgnoreCase(targetStatus)) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Trạng thái mới không hợp lệ. Chỉ chấp nhận: SHIPPING, CANCELED hoặc COMPLETED.");
+        }
 
-        if (!"PENDING".equalsIgnoreCase(currentStatus) && !"PAID".equalsIgnoreCase(currentStatus)) {
-            throw new AppException(HttpStatus.BAD_REQUEST, "Only PENDING or PAID orders can have their status updated.");
+        if ("SHIPPING".equalsIgnoreCase(currentStatus) && "CANCELED".equalsIgnoreCase(targetStatus)) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Đơn hàng đang trong quá trình giao (SHIPPING), không thể thực hiện hủy đơn.");
         }
-        if (!"SHIPPING".equalsIgnoreCase(newStatus) && !"CANCELED".equalsIgnoreCase(newStatus)) {
-            throw new AppException(HttpStatus.BAD_REQUEST, "New status is invalid (Only accepting SHIPPING or CANCELED orders)");
+
+        if ("CANCELED".equalsIgnoreCase(targetStatus)) {
+            if (order.getOrderDetails() != null) {
+                for (OrderDetail detail : order.getOrderDetails()) {
+                    Book book = detail.getBook();
+                    if (book != null) {
+                        book.setQuantity(book.getQuantity() + detail.getQuantity());
+                        bookRepository.save(book);
+                    }
+                }
+            }
         }
-        order.setStatus(newStatus.toUpperCase());
+
+        order.setStatus(targetStatus);
         return convertToResponse(orderRepository.save(order));
     }
     @Transactional

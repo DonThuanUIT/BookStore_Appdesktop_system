@@ -21,6 +21,7 @@ public class BookDetailSidePanelController {
     @FXML private Label lblPrice;
     @FXML private Label lblPublisher;
     @FXML private Label lblCategories;
+    @FXML private Label lblDescription;
 
     private BookModel currentBook;
 
@@ -41,6 +42,14 @@ public class BookDetailSidePanelController {
             lblPublisher.setText("Publisher: " + (book.getPublisherName() != null ? book.getPublisherName() : "N/A"));
         if (lblCategories != null)
             lblCategories.setText("Tags: " + book.getFormattedCategories());
+
+        if (lblDescription != null) {
+            if (book.getDescription() != null && !book.getDescription().isBlank()) {
+                lblDescription.setText(book.getDescription());
+            } else {
+                lblDescription.setText("No description available.");
+            }
+        }
 
         try {
             if (book.getImageUrl() != null && !book.getImageUrl().isBlank()) {

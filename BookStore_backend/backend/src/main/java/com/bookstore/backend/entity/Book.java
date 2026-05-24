@@ -14,6 +14,10 @@ public class Book extends BaseEntity {
     private Integer publishYear;
     private BigDecimal sellPrice;
     private String imageUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     private Boolean isDeleted = false;
 
     @Column(nullable = false)
