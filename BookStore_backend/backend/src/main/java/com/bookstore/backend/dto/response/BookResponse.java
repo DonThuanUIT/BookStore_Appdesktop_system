@@ -9,6 +9,7 @@ public record BookResponse(
         Integer publishYear,
         BigDecimal sellPrice,
         String imageUrl,
+        String description,
         Boolean isDeleted,
         Integer quantity,
         Long publisherId,

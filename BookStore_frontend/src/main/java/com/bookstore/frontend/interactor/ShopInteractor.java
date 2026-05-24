@@ -41,6 +41,7 @@ public class ShopInteractor {
                                 bookModel.setTitle(dto.getTitle());
                                 bookModel.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
                                 bookModel.setImageUrl(dto.getImageUrl());
+                                bookModel.setDescription(dto.getDescription());
                                 bookModel.setPublisherName(dto.getPublisherName());
 
                                 if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
@@ -138,6 +139,7 @@ public class ShopInteractor {
                         model.setTitle(dto.getTitle());
                         model.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
                         model.setImageUrl(dto.getImageUrl());
+                        model.setDescription(dto.getDescription());
                         model.setPublisherName(dto.getPublisherName());
 
                         if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
