@@ -43,6 +43,7 @@ public class HomeInteractor {
                                 bookModel.setTitle(dto.getTitle());
                                 bookModel.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
                                 bookModel.setImageUrl(dto.getImageUrl());
+                                bookModel.setDescription(dto.getDescription());
                                 bookModel.setPublisherName(dto.getPublisherName());
 
                                 // 1. LẤY TÁC GIẢ PHẲNG: Gọi trực tiếp getAuthorNames() từ DTO mới
