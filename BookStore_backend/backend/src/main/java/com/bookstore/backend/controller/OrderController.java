@@ -67,6 +67,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')") // THÊM DÒNG NÀY VÀO
     public ResponseEntity<OrderResponse> updateStatus(
             @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody UpdateOrderStatusRequest request

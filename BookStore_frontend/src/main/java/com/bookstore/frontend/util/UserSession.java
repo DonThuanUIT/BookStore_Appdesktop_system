@@ -48,4 +48,12 @@ public class UserSession {
         username = null;
         roles = List.of();
     }
+
+    // Thêm vào trong class UserSession
+    public boolean isAdminOrStaff() {
+        return roles.stream().anyMatch(role -> {
+            String n = role.trim().toUpperCase();
+            return n.contains("ADMIN") || n.contains("STAFF");
+        });
+    }
 }

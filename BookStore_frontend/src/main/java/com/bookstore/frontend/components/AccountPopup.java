@@ -1,13 +1,20 @@
 package com.bookstore.frontend.components;
 
+import com.bookstore.frontend.MainApplication;
 import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.util.UserSession;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class AccountPopup extends Popup {
 
@@ -42,9 +49,22 @@ public class AccountPopup extends Popup {
         Button btnLogout = new Button("Log Out");
         btnLogout.setMaxWidth(Double.MAX_VALUE);
         btnLogout.setStyle("-fx-text-fill: #ff5555; -fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 10 0 0 0;");
+        // Trong lớp AccountPopup.java
+
+        // Trong sự kiện btnLogout.setOnAction
         btnLogout.setOnAction(e -> {
+            // 1. Xóa session
             UserSession.getInstance().clean();
-            NavigationService.getInstance().navigateTo(PageType.LOGIN);
+
+            // 2. Xóa Cache để lần đăng nhập tới trang sẽ được load lại từ đầu
+            NavigationService.getInstance().clearCache();
+
+            // 3. Chuyển về Login
+            try {
+                MainApplication.showView("LoginView.fxml", "BookStore - Login");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             this.hide();
         });
 

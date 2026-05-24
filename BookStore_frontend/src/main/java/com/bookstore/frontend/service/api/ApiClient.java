@@ -155,4 +155,20 @@ public class ApiClient {
         return body.array();
     }
 
+    // Thêm vào class ApiClient
+    public CompletableFuture<HttpResponse<String>> patch(String endpoint, String jsonBody) {
+        try {
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody));
+
+            attachAuthToken(requestBuilder);
+
+            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
 }

@@ -1,59 +1,68 @@
 package com.bookstore.frontend.controller;
 
-import com.bookstore.frontend.model.dto.Request.UpdateProfileRequest;
-import com.bookstore.frontend.model.dto.UserProfileDTO;
 import com.bookstore.frontend.service.api.ApiClient;
+import com.bookstore.frontend.model.dto.Request.UserProfileUpdateRequest;
+import com.bookstore.frontend.model.dto.Response.UserProfileResponseDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextField;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.scene.control.*;
 
 public class ProfileController {
     @FXML private TextField txtUsername;
     @FXML private TextField txtFullName;
     @FXML private TextField txtEmail;
-    @FXML private TextField txtRoles; // Thêm trường mới
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @FXML
     public void initialize() {
-        System.out.println("ProfileController đã khởi tạo.");
+        txtUsername.setEditable(false);
         loadUserProfile();
     }
 
     private void loadUserProfile() {
-        ApiClient.getInstance().get("/users/profile").thenAccept(response -> {
-            System.out.println("Status Code nhận được: " + response.statusCode()); // Kiểm tra log
+        ApiClient.getInstance().get("/auth/me").thenAccept(response -> {
             if (response.statusCode() == 200) {
                 try {
-                    UserProfileDTO user = ApiClient.getInstance().getMapper().readValue(response.body(), UserProfileDTO.class);
+                    UserProfileResponseDto profile = objectMapper.readValue(response.body(), UserProfileResponseDto.class);
                     Platform.runLater(() -> {
-                        txtUsername.setText(user.username);
-                        txtFullName.setText(user.fullName);
-                        txtEmail.setText(user.email);
+                        txtUsername.setText(profile.username());
+                        txtFullName.setText(profile.fullName());
+                        txtEmail.setText(profile.email());
                     });
-                } catch (Exception e) {
-                    e.printStackTrace(); // Xem kỹ lỗi ở console
+                } catch (JsonProcessingException e) {
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Lỗi khi xử lý dữ liệu hồ sơ!");
+                        alert.show();
+                    });
+                    e.printStackTrace();
                 }
-            } else {
-                System.out.println("API trả về lỗi: " + response.body());
             }
-        }).exceptionally(ex -> {
-            ex.printStackTrace();
-            return null;
         });
     }
 
     @FXML
     private void handleUpdate() {
-        // Chỉ tạo object với các thông tin cho phép sửa
-        UpdateProfileRequest request = new UpdateProfileRequest(txtEmail.getText(), txtFullName.getText());
+        // Lưu ý: Nếu FXML có thêm phone/address, hãy thay null bằng giá trị từ TextField
+        UserProfileUpdateRequest request = new UserProfileUpdateRequest(
+                txtEmail.getText(),
+                txtFullName.getText(),
+                null,
+                null
+        );
 
-        ApiClient.getInstance().put("/users/profile", request).thenAccept(response -> {
-            if (response.statusCode() == 200) {
-                Platform.runLater(() -> System.out.println("Cập nhật thành công!"));
-            } else {
-                // In ra body lỗi để xem tại sao 403
-                System.err.println("Lỗi 403/400: " + response.body());
-            }
+        ApiClient.getInstance().put("/auth/me", request).thenAccept(response -> {
+            Platform.runLater(() -> {
+                if (response.statusCode() == 200) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật thành công!");
+                    alert.show();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Cập nhật thất bại: " + response.body());
+                    alert.show();
+                }
+            });
         });
     }
 }
