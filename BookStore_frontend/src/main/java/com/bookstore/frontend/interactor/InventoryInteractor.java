@@ -38,6 +38,9 @@ public class InventoryInteractor {
                         book.setPrice(node.get("sellPrice").asDouble());
                         book.setQuantity(node.get("quantity").asInt());
                         book.setImageUrl(node.has("imageUrl") && !node.get("imageUrl").isNull() ? node.get("imageUrl").asText() : null);
+                        if (node.has("description") && !node.get("description").isNull()) {
+                            book.setDescription(node.get("description").asText());
+                        }
 
                         if (node.has("authorNames") && !node.get("authorNames").isEmpty()) {
                             book.setAuthorName(node.get("authorNames").get(0).asText());
@@ -96,6 +99,7 @@ public class InventoryInteractor {
             requestData.put("title", book.getTitle());
 
             if (imageUrl != null) requestData.put("imageUrl", imageUrl);
+            if (book.getDescription() != null) requestData.put("description", book.getDescription());
 
             // TODO: Nâng cấp lấy ID động từ ComboBox ở bước tiếp theo
             requestData.put("publisherId", 4);

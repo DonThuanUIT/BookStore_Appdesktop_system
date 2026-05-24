@@ -84,6 +84,10 @@ public class BookService {
             book.setImageUrl(request.imageUrl());
         }
 
+        if (request.description() != null) {
+            book.setDescription(request.description().trim());
+        }
+
         if (request.sellPrice() != null) {
             book.setSellPrice(request.sellPrice());
         }
@@ -125,6 +129,10 @@ public class BookService {
 
         if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
             book.setImageUrl(request.imageUrl());
+        }
+
+        if (request.description() != null) {
+            book.setDescription(request.description().trim());
         }
 
         if (request.publisherId() != null) {
@@ -182,6 +190,7 @@ public class BookService {
                 book.getPublishYear(),
                 book.getSellPrice(),
                 book.getImageUrl(),
+                book.getDescription(),
                 book.getIsDeleted(),
                 quantity,
                 publisherId,
