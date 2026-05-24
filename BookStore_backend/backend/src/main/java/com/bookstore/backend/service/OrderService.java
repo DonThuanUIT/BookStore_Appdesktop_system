@@ -132,6 +132,12 @@ public class OrderService {
         Page<Order> orderPage = orderRepository.findByUserId(user.getId(), pageable);
         return orderPage.map(this::convertToResponse);
     }
+    public Page<OrderResponse> getSalesHistory(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Order> completedOrders = orderRepository.findByStatus("COMPLETED", pageable);
+
+        return completedOrders.map(this::convertToResponse);
+    }
     @Transactional
     public OrderResponse confirmReceived(Long orderId, User user) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"No orders with ID found: " +orderId ));
