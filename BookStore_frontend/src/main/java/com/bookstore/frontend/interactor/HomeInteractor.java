@@ -20,7 +20,7 @@ public class HomeInteractor {
     }
 
     public void loadDashboardData(String username) {
-        String message = "Welcome back, " + (username != null ? username : "Customer") + "!";
+        String message = "Chào mừng, " + (username != null ? username : "Khách iu") + "!";
         model.welcomeMessageProperty().set(message);
     }
 
@@ -38,7 +38,6 @@ public class HomeInteractor {
                                     .readerForListOf(BookResponseDto.class)
                                     .readValue(contentNode);
 
-                            // ĐÃ FIX: Dùng BookMapper để map tự động. Xóa bỏ hoàn toàn mớ logic setter thủ công lộn xộn.
                             return dtoList.stream()
                                     .map(BookMapper::toModel)
                                     .collect(Collectors.toList());

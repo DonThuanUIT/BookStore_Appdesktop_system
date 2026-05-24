@@ -31,20 +31,13 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         NavigationService.getInstance().setContentArea(contentArea);
 
-        // [CODE CỦA BẠN] ĐÃ XÓA: Đoạn code Platform.runLater ép setMaximized(true) gây xung đột luồng render.
-        // Việc quản lý phóng to cửa sổ giờ đây do MainApplication.showView() đảm nhận hoàn toàn.
-
-        // [CODE ĐỒNG ĐỘI] Khởi tạo các Popup
         accountPopup = new AccountPopup();
         miniCartPopup = new MiniCartPopup();
 
-        // [CODE ĐỒNG ĐỘI] Bindings cho giỏ hàng
         setupCartBindings();
 
-        // [CODE ĐỒNG ĐỘI] Điều hướng & Role
         applyCustomerNavVisibilityForRole();
 
-        // Khởi động vào trang Home và bật trạng thái Active
         navigateAndUpdateState(PageType.HOME);
     }
 
@@ -62,7 +55,6 @@ public class MainController implements Initializable {
         lblCartBadge.managedProperty().bind(lblCartBadge.visibleProperty());
     }
 
-    // --- Xử lý sự kiện Popup ---
     @FXML
     void onAccountClick() {
         if (accountPopup.isShowing()) {
@@ -78,14 +70,12 @@ public class MainController implements Initializable {
         if (miniCartPopup.isShowing()) {
             miniCartPopup.hide();
         } else {
-            // [CHUẨN SOLID] Tận dụng logic Refactor của đồng đội: Giao việc render UI cho MiniCartPopup
             miniCartPopup.rebuild();
             var bounds = btnNavMiniCart.localToScreen(btnNavMiniCart.getBoundsInLocal());
             miniCartPopup.show(btnNavMiniCart.getScene().getWindow(), bounds.getMaxX() - 340, bounds.getMaxY() + 10);
         }
     }
 
-    // --- Cụm Điều hướng (Đã tối ưu kết hợp code 2 người) ---
     @FXML void onHomeClick() { navigateAndUpdateState(PageType.HOME); }
     @FXML void onShopNavClick() { navigateAndUpdateState(PageType.SHOP); }
     @FXML void onCartClick() { navigateAndUpdateState(PageType.CART); }

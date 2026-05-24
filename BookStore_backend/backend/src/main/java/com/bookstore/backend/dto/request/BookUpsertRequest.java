@@ -28,6 +28,9 @@ public record BookUpsertRequest(
         @Size(max = 500, message = "Image URL must not exceed 500 characters")
         String imageUrl,
 
+        @Size(max = 2000, message = "Description must not exceed 2000 characters")
+        String description,
+
         @NotNull(message = "publisherId is required")
         @Positive(message = "publisherId is invalid")
         Long publisherId,

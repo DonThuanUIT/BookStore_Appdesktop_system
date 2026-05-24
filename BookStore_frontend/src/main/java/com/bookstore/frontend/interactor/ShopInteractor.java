@@ -35,7 +35,7 @@ public class ShopInteractor {
                                     .readerForListOf(BookResponseDto.class)
                                     .readValue(contentNode);
 
-                            // ĐÃ FIX: Dùng BookMapper để map tự động. Xóa bỏ hoàn toàn mớ logic setter thủ công lộn xộn.
+                            // Dùng BookMapper để map tự động
                             List<BookModel> books = dtoList.stream()
                                     .map(BookMapper::toModel)
                                     .collect(Collectors.toList());
@@ -67,7 +67,7 @@ public class ShopInteractor {
                     String kw = searchKeyword.toLowerCase();
                     boolean matchTitle = b.getTitle() != null && b.getTitle().toLowerCase().contains(kw);
 
-                    // ĐÃ FIX: Dùng getFormattedAuthors() thay vì hàm getAuthorName() đã bị xóa
+                    // Dùng getFormattedAuthors() chuẩn xác
                     boolean matchAuthor = b.getFormattedAuthors().toLowerCase().contains(kw);
 
                     return matchTitle || matchAuthor;
@@ -118,7 +118,7 @@ public class ShopInteractor {
                         return Collections.emptyList();
                     }
 
-                    // ĐÃ FIX: Tiếp tục dùng BookMapper thay vì viết lại hàng loạt hàm Set cứng nhắc
+                    // Tiếp tục dùng BookMapper thay vì viết lại hàm set
                     return dtoList.stream()
                             .map(BookMapper::toModel)
                             .collect(Collectors.toList());

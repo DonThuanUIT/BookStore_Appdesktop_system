@@ -36,4 +36,8 @@ public class Order extends BaseEntity {
             orderDate = LocalDateTime.now();
         }
     }
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private java.util.List<OrderDetail> orderDetails = new java.util.ArrayList<>();
 }

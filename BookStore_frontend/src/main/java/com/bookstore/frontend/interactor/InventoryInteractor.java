@@ -36,6 +36,7 @@ public class InventoryInteractor {
                     List<BookModel> bookList = new ArrayList<>();
                     int lowStock = 0;
 
+                    // Sử dụng BookMapper chuẩn xác từ nhánh của bạn
                     for (BookResponseDto dto : dtoList) {
                         BookModel book = BookMapper.toModel(dto);
 
@@ -93,6 +94,7 @@ public class InventoryInteractor {
                 book.setImageUrl(imageUrl);
             }
 
+            // Đồng bộ dữ liệu bằng Mapper thay vì Map<String, Object> thủ công
             BookUpsertRequestDto requestDTO = BookMapper.toUpsertRequest(book);
             String jsonBody = ApiClient.getInstance().getMapper().writeValueAsString(requestDTO);
 
@@ -113,7 +115,6 @@ public class InventoryInteractor {
                             System.out.println("=> CẬP NHẬT SÁCH THÀNH CÔNG!");
                             return true;
                         } else {
-                            // IN RA CHÍNH XÁC LÝ DO BACKEND TỪ CHỐI
                             System.err.println("=> CẬP NHẬT SÁCH THẤT BẠI (HTTP " + response.statusCode() + "):");
                             System.err.println("Lý do từ Backend: " + response.body() + "\n");
                             return false;

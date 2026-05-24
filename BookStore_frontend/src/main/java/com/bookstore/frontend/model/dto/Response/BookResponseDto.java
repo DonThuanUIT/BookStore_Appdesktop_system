@@ -10,6 +10,7 @@ public class BookResponseDto {
     private String title;
     private String description;
     private String imageUrl;
+    private Boolean isDeleted; // Biến mới từ nhánh của đồng đội
     private Integer quantity;
 
     @JsonProperty("sellPrice")
@@ -35,6 +36,9 @@ public class BookResponseDto {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public Boolean getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
