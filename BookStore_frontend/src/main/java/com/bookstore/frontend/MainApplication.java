@@ -20,14 +20,12 @@ public class MainApplication extends Application {
         primaryStage = stage;
         try {
             showView("LoginView.fxml", "BookStore - Login");
-            //showView("MainLayout.fxml", "BookStore - Main");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static void showView(String fxmlFileName, String title) throws IOException {
-        // Logic của bạn: Tự động nối VIEW_BASE_PATH nếu file name không bắt đầu bằng "/"
         String resourcePath = fxmlFileName.startsWith("/") ? fxmlFileName : VIEW_BASE_PATH + fxmlFileName;
         URL fxmlLocation = MainApplication.class.getResource(resourcePath);
 
@@ -35,24 +33,32 @@ public class MainApplication extends Application {
             throw new IOException("Resource not found: " + resourcePath);
         }
 
-        // Nạp FXML theo fxmlLocation đã xác định
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         Parent root = loader.load();
 
-        // Thiết lập Scene với kích thước 1300x650 như code của bạn
-        Scene scene = new Scene(root, 1300, 600);
+        primaryStage.setTitle(title);
 
-        // Nạp CSS theme
+        Scene scene = new Scene(root);
+        addStylesheet(scene);
+        primaryStage.setScene(scene);
+
+        primaryStage.setResizable(true);
+        primaryStage.setMinWidth(1200);
+        primaryStage.setMinHeight(700);
+
+        primaryStage.show();
+
+        if (primaryStage.isMaximized()) {
+            primaryStage.setMaximized(false);
+        }
+        primaryStage.setMaximized(true);
+    }
+
+    private static void addStylesheet(Scene scene) {
         URL cssLocation = MainApplication.class.getResource(CSS_PATH);
         if (cssLocation != null) {
             scene.getStylesheets().add(cssLocation.toExternalForm());
         }
-
-        // Cấu hình Stage theo ý bạn
-        primaryStage.setTitle(title);
-        primaryStage.setScene(scene);
-        primaryStage.centerOnScreen();
-        primaryStage.show();
     }
 
     public static void main(String[] args) {

@@ -6,6 +6,7 @@ module com.bookstore.frontend {
 
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
+    requires static lombok;
 
     // Mở quyền nạp giao diện FXML cho Controller
     opens com.bookstore.frontend.controller to javafx.fxml;
@@ -14,6 +15,7 @@ module com.bookstore.frontend {
     opens com.bookstore.frontend.model to javafx.base, com.fasterxml.jackson.databind;
     opens com.bookstore.frontend.model.dto to javafx.base, com.fasterxml.jackson.databind;
     opens com.bookstore.frontend.model.dto.Request to javafx.base, com.fasterxml.jackson.databind;
+    opens com.bookstore.frontend.components to javafx.fxml;
 
     // Xuất bản các gói phục vụ chạy luồng ứng dụng
     exports com.bookstore.frontend;
@@ -24,4 +26,6 @@ module com.bookstore.frontend {
     exports com.bookstore.frontend.interactor;
     exports com.bookstore.frontend.model.dto.Response;
     opens com.bookstore.frontend.model.dto.Response to com.fasterxml.jackson.databind, javafx.base;
+    exports com.bookstore.frontend.components;
+
 }

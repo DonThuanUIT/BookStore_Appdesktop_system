@@ -1,5 +1,6 @@
 package com.bookstore.frontend.controller;
 
+import com.bookstore.frontend.controller.strategy.EditBookStrategy;
 import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.InventoryModel;
@@ -42,7 +43,7 @@ public class InventoryController extends BaseController {
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colAuthor.setCellValueFactory(new PropertyValueFactory<>("authorName"));
+        colAuthor.setCellValueFactory(new PropertyValueFactory<>("formattedAuthors"));
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
@@ -105,7 +106,6 @@ public class InventoryController extends BaseController {
             VBox page = loader.load();
 
             Stage dialogStage = new Stage();
-
             dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
 
@@ -114,11 +114,10 @@ public class InventoryController extends BaseController {
             dialogStage.setScene(scene);
 
             BookFormController controller = loader.getController();
-            // Truyền true = chế độ EDIT
-            controller.setBook(selectedBook, true);
+
+            controller.setBook(selectedBook, new EditBookStrategy(this.interactor));
 
             dialogStage.showAndWait();
-
 
             if (controller.isSaveClicked()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật sách thành công!");
@@ -126,7 +125,7 @@ public class InventoryController extends BaseController {
                 interactor.loadInventoryData(0, 15);
             }
         } catch (Exception e) {
-            System.err.println("Error opening book editing form:" + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -149,7 +148,6 @@ public class InventoryController extends BaseController {
 
     @FXML
     public void handleFilterLowStock() {
-        System.out.println("Filtering books that are out of stock...");
         // TODO: Gọi API lấy sách quantity < 10
     }
 

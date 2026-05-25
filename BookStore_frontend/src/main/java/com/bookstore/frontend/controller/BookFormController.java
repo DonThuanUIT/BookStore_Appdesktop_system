@@ -1,8 +1,10 @@
 package com.bookstore.frontend.controller;
 
+import com.bookstore.frontend.components.TagInputField;
+import com.bookstore.frontend.controller.strategy.BookFormStrategy;
 import com.bookstore.frontend.model.BookModel;
-import com.bookstore.frontend.service.api.ApiClient;
-import com.bookstore.frontend.service.api.BookApiService;
+import com.bookstore.frontend.service.api.MasterDataApiService;
+import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -12,41 +14,117 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class BookFormController {
 
+    // --- Khai báo các thành phần UI từ FXML ---
     @FXML private Label lblFormTitle;
     @FXML private ImageView imgCover;
     @FXML private TextField txtTitle;
-    @FXML private ComboBox<String> cbAuthor;
+
+    @FXML private TagInputField tagInputAuthor;
+    @FXML private TagInputField tagInputCategory;
+
+    @FXML private ComboBox<String> cbPublisher;
+    @FXML private TextField txtPrice;
+    @FXML private TextField txtQuantity;
+    @FXML private TextArea txtDescription;
     @FXML private Button btnSave;
 
+    // --- Quản lý dữ liệu nội bộ ---
     private BookModel currentBook;
     private File selectedImageFile;
-    private boolean saveClicked = false;
-    private boolean isEditMode = false; // Cờ phân biệt trạng thái
 
-    private final BookApiService bookApiService = new BookApiService();
+
+    private boolean saveClicked = false;
+
+    // Bộ não điều khiển luồng hành vi (Design Pattern: Strategy)
+    private BookFormStrategy formStrategy;
+
+    private final MasterDataApiService masterDataApi = new MasterDataApiService();
+
+    private final Map<String, Long> masterAuthors = new HashMap<>();
+    private final Map<String, Long> masterCategories = new HashMap<>();
+    private final Map<String, Long> masterPublishers = new HashMap<>();
 
     @FXML
     public void initialize() {
-        // mock data, thay thế bằng api sau.
-        cbAuthor.getItems().addAll("Nguyễn Nhật Ánh", "Carlos Ruiz Zafón", "Unknown Author");
+        btnSave.setDisable(true);
+        cbPublisher.setPromptText("Đang tải dữ liệu...");
+
+        // Tải danh sách nhà xuất bản từ server
+        masterDataApi.getAllPublishers().thenAccept(list -> Platform.runLater(() -> {
+            list.forEach(p -> masterPublishers.put(p.getName(), p.getId()));
+            cbPublisher.getItems().addAll(masterPublishers.keySet());
+            cbPublisher.setPromptText("Chọn nhà xuất bản");
+            btnSave.setDisable(false);
+        }));
+
+        // Cấu hình tìm kiếm bất đồng bộ cho Tác giả
+        tagInputAuthor.setSearchAsyncCallback(keyword ->
+                masterDataApi.searchAuthors(keyword).thenApply(dtoList -> {
+                    List<String> names = new ArrayList<>();
+                    for (var dto : dtoList) {
+                        masterAuthors.put(dto.getName(), dto.getId());
+                        names.add(dto.getName());
+                    }
+                    return names;
+                })
+        );
+
+        // Cấu hình tìm kiếm bất đồng bộ cho Thể loại
+        tagInputCategory.setSearchAsyncCallback(keyword ->
+                masterDataApi.searchCategories(keyword).thenApply(dtoList -> {
+                    List<String> names = new ArrayList<>();
+                    for (var dto : dtoList) {
+                        masterCategories.put(dto.getName(), dto.getId());
+                        names.add(dto.getName());
+                    }
+                    return names;
+                })
+        );
     }
 
-    public void setBook(BookModel book, boolean isEdit) {
+    public void setBook(BookModel book, BookFormStrategy strategy) {
         this.currentBook = book;
-        this.isEditMode = isEdit;
+        this.formStrategy = strategy;
 
-        if (isEdit) {
-            lblFormTitle.setText("Edit Book Details");
-            btnSave.setText("Update Book");
-            txtTitle.setText(book.getTitle());
-            cbAuthor.setValue(book.getAuthorName());
-            if (book.getImageUrl() != null) imgCover.setImage(new Image(book.getImageUrl(), true));
-        } else {
-            lblFormTitle.setText("Add New Book");
-            btnSave.setText("Save Book");
+        // 1. Đổ dữ liệu chung lên các ô nhập liệu
+        if (book.getTitle() != null) txtTitle.setText(book.getTitle());
+        if (book.getDescription() != null) txtDescription.setText(book.getDescription());
+        if (book.getPublisherName() != null) cbPublisher.setValue(book.getPublisherName());
+
+        // Hiển thị ảnh bìa nếu có
+        if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
+            try {
+                imgCover.setImage(new Image(book.getImageUrl(), true));
+            } catch (Exception ignored) {}
+        }
+
+        // Đổ danh sách tag Tác giả hiện tại
+        List<String> aNames = book.getAuthorNames();
+        List<Long> aIds = book.getAuthorIds();
+        if (aNames != null && aIds != null && aNames.size() == aIds.size()) {
+            for (int i = 0; i < aNames.size(); i++) masterAuthors.put(aNames.get(i), aIds.get(i));
+        }
+        tagInputAuthor.setTags(aNames);
+
+        // Đổ danh sách tag Thể loại hiện tại
+        List<String> cNames = book.getCategoryNames();
+        List<Long> cIds = book.getCategoryIds();
+        if (cNames != null && cIds != null && cNames.size() == cIds.size()) {
+            for (int i = 0; i < cNames.size(); i++) masterCategories.put(cNames.get(i), cIds.get(i));
+        }
+        tagInputCategory.setTags(cNames);
+
+        // 2. [DELEGATE] Ủy quyền cho Strategy tự cấu hình UI đặc thù (Khóa/Mở, Tiêu đề)
+        if (this.formStrategy != null) {
+            this.formStrategy.setupUI(this, book);
         }
     }
 
@@ -63,53 +141,123 @@ public class BookFormController {
 
     @FXML
     private void handleSave() {
-        btnSave.setDisable(true);
-        btnSave.setText("Processing...");
-
-        currentBook.setTitle(txtTitle.getText());
-        currentBook.setAuthorName(cbAuthor.getValue());
-
-        if (selectedImageFile != null) {
-            uploadAndThenSave();
-        } else {
-            executeFinalSave();
+        if (txtTitle.getText().trim().isEmpty() || cbPublisher.getValue() == null) {
+            showError("Vui lòng nhập Tên sách và chọn Nhà xuất bản!");
+            return;
         }
-    }
 
-    private void uploadAndThenSave() {
+        btnSave.setDisable(true);
+        btnSave.setText("Đang xử lý...");
+
+        // Đồng bộ dữ liệu text cơ bản vào Model
+        currentBook.setTitle(txtTitle.getText().trim());
+        currentBook.setDescription(txtDescription.getText().trim());
+
+        // Parse số liệu an toàn
         try {
-            ApiClient.getInstance().uploadFile("/books/upload", selectedImageFile).thenAccept(res -> {
-                if (res.statusCode() < 300) {
-                    currentBook.setImageUrl(res.body()); // Gán URL trả về từ server
-                    executeFinalSave();
-                } else {
-                    showError("Upload failed!");
-                }
-            });
-        } catch (Exception e) { showError("IO Error!"); }
-    }
+            currentBook.setPrice(Double.parseDouble(txtPrice.getText().trim()));
+            currentBook.setQuantity(Integer.parseInt(txtQuantity.getText().trim()));
+        } catch (NumberFormatException e) {
+            showError("Giá bán và Số lượng phải là chữ số hợp lệ!");
+            return;
+        }
 
-    private void executeFinalSave() {
-        var future = isEditMode ? bookApiService.updateBook(currentBook.getId(), currentBook) : bookApiService.createBook(currentBook);
+        String pubName = cbPublisher.getValue();
+        Long pubId = masterPublishers.get(pubName);
+        if (pubId == null) {
+            showError("Nhà xuất bản không hợp lệ!");
+            return;
+        }
+        currentBook.setPublisherName(pubName);
+        currentBook.setPublisherId(pubId);
 
-        future.thenAccept(success -> Platform.runLater(() -> {
+        List<String> selectedAuthors = tagInputAuthor.getTags();
+        List<String> selectedCategories = tagInputCategory.getTags();
+        currentBook.setAuthorNames(selectedAuthors);
+        currentBook.setCategoryNames(selectedCategories);
+
+        // Xử lý kiểm tra/tạo mới Tác giả và Thể loại bất đồng bộ trên Server
+        CompletableFuture<List<Long>> authorIdsFuture = resolveAuthorIds(selectedAuthors);
+        CompletableFuture<List<Long>> categoryIdsFuture = resolveCategoryIds(selectedCategories);
+
+        authorIdsFuture.thenCombine(categoryIdsFuture, (aIds, cIds) -> {
+            if (aIds.contains(-1L) || cIds.contains(-1L)) {
+                throw new RuntimeException("Không thể cấu hình dữ liệu Master Data trên máy chủ.");
+            }
+            currentBook.setAuthorIds(aIds);
+            currentBook.setCategoryIds(cIds);
+            return currentBook;
+        }).thenCompose(book -> {
+            // 3. [DELEGATE] Giao toàn bộ trách nhiệm xử lý lưu dữ liệu cho Strategy quyết định
+            return formStrategy != null
+                    ? formStrategy.handleSave(book, selectedImageFile)
+                    : CompletableFuture.completedFuture(false);
+        }).thenAccept(success -> Platform.runLater(() -> {
             if (success) {
                 this.saveClicked = true;
                 ((Stage) btnSave.getScene().getWindow()).close();
             } else {
-                showError("Save failed!");
+                showError("Thao tác thất bại. Vui lòng kiểm tra lại trạng thái kết nối!");
             }
-        }));
+        })).exceptionally(ex -> {
+            showError(ex.getMessage());
+            return null;
+        });
+    }
+
+    private CompletableFuture<List<Long>> resolveAuthorIds(List<String> names) {
+        List<CompletableFuture<Long>> futures = names.stream().map(name -> {
+            if (masterAuthors.containsKey(name)) {
+                return CompletableFuture.completedFuture(masterAuthors.get(name));
+            }
+            return masterDataApi.createAuthor(name).thenApply(dto -> {
+                if (dto != null) {
+                    masterAuthors.put(dto.getName(), dto.getId());
+                    return dto.getId();
+                }
+                return -1L;
+            });
+        }).toList();
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).toList());
+    }
+
+    private CompletableFuture<List<Long>> resolveCategoryIds(List<String> names) {
+        List<CompletableFuture<Long>> futures = names.stream().map(name -> {
+            if (masterCategories.containsKey(name)) {
+                return CompletableFuture.completedFuture(masterCategories.get(name));
+            }
+            return masterDataApi.createCategory(name).thenApply(dto -> {
+                if (dto != null) {
+                    masterCategories.put(dto.getName(), dto.getId());
+                    return dto.getId();
+                }
+                return -1L;
+            });
+        }).toList();
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).toList());
     }
 
     private void showError(String msg) {
         Platform.runLater(() -> {
             btnSave.setDisable(false);
-            btnSave.setText(isEditMode ? "Update Book" : "Save Book");
-            new Alert(Alert.AlertType.ERROR, msg).show();
+            btnSave.setText(btnSave.getText()); // Giữ nguyên chữ hiển thị hiện tại của luồng
+            AlertUtils.show(Alert.AlertType.ERROR, "Hệ Thống", msg);
         });
     }
 
     @FXML void handleCancel() { ((Stage) btnSave.getScene().getWindow()).close(); }
+
+    public Label getLblFormTitle() { return lblFormTitle; }
+    public Button getBtnSave() { return btnSave; }
+    public TextField getTxtPrice() { return txtPrice; }
+    public TextField getTxtQuantity() { return txtQuantity; }
+
+    public BookModel getCurrentBook() { return currentBook; }
+    public File getSelectedImageFile() { return selectedImageFile; }
+
     public boolean isSaveClicked() { return saveClicked; }
 }

@@ -34,7 +34,6 @@
                             <items>
                                 <MenuItem onAction="#handleTypeSelect" text="Title" />
                                 <MenuItem onAction="#handleTypeSelect" text="Author" />
-                                <MenuItem onAction="#handleTypeSelect" text="Category" />
                             </items>
                         </MenuButton>
                         <Separator maxHeight="20" orientation="VERTICAL" style="-fx-opacity: 0.2;" />

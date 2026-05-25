@@ -48,6 +48,12 @@ public class BookApiService {
     private CompletableFuture<Boolean> sendWriteRequest(String url, String method, Object body) {
         try {
             String jsonBody = objectMapper.writeValueAsString(body);
+
+            // BẬT ĐÈN: In ra Payload để xem Front-End đang gửi cái gì
+            System.out.println("\n--- THỰC THI API " + method + " ---");
+            System.out.println("URL: " + url);
+            System.out.println("Payload: " + jsonBody);
+
             HttpRequest.Builder rb = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")
@@ -55,8 +61,20 @@ public class BookApiService {
             attachToken(rb);
 
             return httpClient.sendAsync(rb.build(), HttpResponse.BodyHandlers.ofString())
-                    .thenApply(res -> res.statusCode() == 200 || res.statusCode() == 201);
+                    .thenApply(res -> {
+                        if (res.statusCode() == 200 || res.statusCode() == 201) {
+                            System.out.println("=> THÀNH CÔNG!");
+                            return true;
+                        } else {
+                            // BẬT ĐÈN: In ra lý do Backend từ chối
+                            System.err.println("=> API THẤT BẠI (HTTP " + res.statusCode() + "):");
+                            System.err.println("Lý do từ Backend: " + res.body() + "\n");
+                            return false;
+                        }
+                    });
         } catch (Exception e) {
+            System.err.println("Lỗi nội bộ khi gửi Request: " + e.getMessage());
+            e.printStackTrace();
             return CompletableFuture.completedFuture(false);
         }
     }

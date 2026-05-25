@@ -77,23 +77,17 @@ public class HomeController extends BaseController {
             return;
         }
 
-        // CẢI TIẾN: Chuẩn hóa Unicode loại bỏ hoàn toàn sự lệch pha tổ hợp dấu tiếng Việt
+        // Chuẩn hóa Unicode loại bỏ hoàn toàn sự lệch pha tổ hợp dấu tiếng Việt
         String query = Normalizer.normalize(rawQuery, Normalizer.Form.NFC);
         String activeType = searchType != null ? searchType.trim() : "Title";
 
         List<BookModel> filteredBooks = originalBooksList.stream()
                 .filter(book -> {
                     if (activeType.equalsIgnoreCase("Author")) {
-                        if (book.getAuthorName() == null) return false;
-                        String author = Normalizer.normalize(book.getAuthorName().toLowerCase(), Normalizer.Form.NFC);
+                        // ĐÃ FIX: Sử dụng getFormattedAuthors() thay vì getAuthorName()
+                        if (book.getFormattedAuthors() == null) return false;
+                        String author = Normalizer.normalize(book.getFormattedAuthors().toLowerCase(), Normalizer.Form.NFC);
                         return author.contains(query);
-                    }
-                    else if (activeType.equalsIgnoreCase("Category")) {
-                        if (book.getCategoryNames() == null) return false;
-                        return book.getCategoryNames().stream().anyMatch(catName -> {
-                            String category = Normalizer.normalize(catName.toLowerCase(), Normalizer.Form.NFC);
-                            return category.contains(query);
-                        });
                     }
                     else {
                         if (book.getTitle() == null) return false;
@@ -125,7 +119,9 @@ public class HomeController extends BaseController {
                         : DEFAULT_COVER_URL;
 
                 BookCardController cardController = loader.getController();
-                cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath);
+
+                // ĐÃ FIX: Sử dụng getFormattedAuthors()
+                cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), formattedPrice, imagePath);
 
                 cardController.setCallbacks(
                         () -> bookDetailSidePanelController.setBookDetailDataAndShow(book),

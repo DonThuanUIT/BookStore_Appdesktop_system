@@ -38,10 +38,9 @@
                     <items>
                         <MenuItem onAction="#handleTypeSelect" text="Title" />
                         <MenuItem onAction="#handleTypeSelect" text="Author" />
-                        <MenuItem onAction="#handleTypeSelect" text="Category" />
                     </items>
                 </MenuButton>
-                <Separator maxHeight="18" orientation="VERTICAL" style="-fx-opacity: 0.2;" />
+                <Separator maxHeight="18" orientation="VERTICAL" style="-fx-opacity: 0.2;"/>
                 <TextField fx:id="txtSearch" promptText="Search your book..." styleClass="search-input-modern" style="-fx-background-color: transparent; -fx-text-fill: white;" HBox.hgrow="ALWAYS" />
             </HBox>
         </VBox>
@@ -49,20 +48,23 @@
         <VBox spacing="15.0">
             <Label text="Price Range" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <TextField fx:id="txtMinPrice" promptText="Min $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+                <TextField fx:id="txtMinPrice" promptText="Min đ" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white;"/>
                 <Label text="-" style="-fx-text-fill: white;"/>
-                <TextField fx:id="txtMaxPrice" promptText="Max $" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05);"/>
+                <TextField fx:id="txtMaxPrice" promptText="Max đ" styleClass="custom-text-field" prefWidth="80.0" style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white;"/>
             </HBox>
         </VBox>
 
         <VBox spacing="15.0">
             <Label text="Categories" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
-            <VBox fx:id="categoriesContainer" spacing="10.0">
-                <CheckBox text="Fantasy" styleClass="custom-checkbox"/>
-                <CheckBox text="Mystery &amp; Thriller" styleClass="custom-checkbox" selected="true"/>
-                <CheckBox text="Classics" styleClass="custom-checkbox"/>
-                <CheckBox text="Science Fiction" styleClass="custom-checkbox"/>
-            </VBox>
+
+            <TextField fx:id="txtCategorySearch" promptText="Tìm thể loại..." styleClass="custom-text-field" style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white; -fx-padding: 5 10; -fx-background-radius: 4px;"/>
+
+            <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;" prefHeight="250.0">
+                <content>
+                    <VBox fx:id="categoriesContainer" spacing="10.0">
+                    </VBox>
+                </content>
+            </ScrollPane>
         </VBox>
     </VBox>
 

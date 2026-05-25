@@ -75,7 +75,7 @@ public class ImportHistoryController {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(String.format("$%.2f", item));
+                    setText(String.format("%,.0f đ", item));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold;");
                 }
             }

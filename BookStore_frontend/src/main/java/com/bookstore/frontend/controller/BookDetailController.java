@@ -24,15 +24,18 @@ public class BookDetailController {
         this.currentBook = book;
 
         lblTitle.setText(book.getTitle());
-        lblAuthor.setText("Tác giả: " + book.getAuthorName());
+
+        // ĐÃ FIX: Chuyển sang getFormattedAuthors() để hỗ trợ nhiều tác giả
+        lblAuthor.setText("Tác giả: " + book.getFormattedAuthors());
 
         if (book.getDescription() != null && !book.getDescription().isBlank()) {
             lblDescription.setText(book.getDescription());
         } else {
-            lblDescription.setText("No description available.");
+            lblDescription.setText("Chưa có mô tả cho cuốn sách này.");
         }
 
-        lblPrice.setText(String.format("$%.2f", book.getPrice()));
+        // ĐÃ FIX: Đồng bộ định dạng tiền tệ Việt Nam (VNĐ) giống màn hình Shop/Home
+        lblPrice.setText(String.format("%,.0f đ", book.getPrice()));
 
         String url = (book.getImageUrl() != null && !book.getImageUrl().isBlank())
                 ? book.getImageUrl()
