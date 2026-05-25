@@ -3,15 +3,17 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.ShopInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.ShopModel;
+import com.bookstore.frontend.model.dto.Response.CategoryResponseDto;
+import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.util.CartStore;
 import com.bookstore.frontend.utils.AlertUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -22,17 +24,21 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ShopController {
 
     @FXML private TextField txtSearch;
-    @FXML private MenuButton btnSearchType; // Nút chọn kiểu tìm kiếm (Title/Author)
+    @FXML private MenuButton btnSearchType;
     @FXML private TextField txtMinPrice;
     @FXML private TextField txtMaxPrice;
     @FXML private ComboBox<String> cbSort;
     @FXML private FlowPane booksContainer;
     @FXML private Label lblStatus;
+
+    @FXML private TextField txtCategorySearch;
     @FXML private VBox categoriesContainer;
 
     @FXML private BookDetailSidePanelController bookDetailSidePanelController;
@@ -40,6 +46,9 @@ public class ShopController {
     private ShopModel model;
     private ShopInteractor interactor;
     private List<BookModel> originalBooksList = new ArrayList<>();
+
+    private List<String> allCategoryNames = new ArrayList<>();
+    private final Set<String> activeSelectedCategories = new HashSet<>();
 
     private static final String DEFAULT_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
 
@@ -52,6 +61,7 @@ public class ShopController {
     public void initialize() {
         setupUI();
         setupRealTimeFilters();
+        loadCategoriesFromApi();
         loadInitialData();
     }
 
@@ -65,9 +75,57 @@ public class ShopController {
             cbSort.setValue("Newest");
         }
 
-        // Đặt nhãn ban đầu hiển thị mặc định
         if (btnSearchType != null) {
             btnSearchType.setText("Title");
+        }
+    }
+
+
+    private void loadCategoriesFromApi() {
+        ApiClient.getInstance().get("/categories").thenAccept(res -> {
+            if (res.statusCode() == 200) {
+                try {
+                    JsonNode root = ApiClient.getInstance().getMapper().readTree(res.body());
+                    List<CategoryResponseDto> dtoList = ApiClient.getInstance().getMapper()
+                            .readerForListOf(CategoryResponseDto.class)
+                            .readValue(root);
+
+                    allCategoryNames = dtoList.stream().map(CategoryResponseDto::getName).toList();
+
+                    Platform.runLater(() -> {
+                        renderCategoryCheckboxes("");
+                    });
+                } catch (Exception e) {
+                    System.err.println("Lỗi parse JSON Thể loại: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void renderCategoryCheckboxes(String filterText) {
+        if (categoriesContainer == null) return;
+        categoriesContainer.getChildren().clear();
+
+        String lowerFilter = filterText == null ? "" : filterText.toLowerCase();
+
+        for (String categoryName : allCategoryNames) {
+            if (categoryName.toLowerCase().contains(lowerFilter)) {
+                CheckBox cb = new CheckBox(categoryName);
+                cb.setStyle("-fx-text-fill: #AAAAAA; -fx-padding: 2 0 2 0;");
+
+                cb.setSelected(activeSelectedCategories.contains(categoryName));
+
+                cb.selectedProperty().addListener((obs, old, isSelected) -> {
+                    if (isSelected) {
+                        activeSelectedCategories.add(categoryName);
+                    } else {
+                        activeSelectedCategories.remove(categoryName);
+                    }
+                    executeFilter();
+                });
+
+                categoriesContainer.getChildren().add(cb);
+            }
         }
     }
 
@@ -94,25 +152,18 @@ public class ShopController {
         txtMaxPrice.textProperty().addListener((obs, old, newVal) -> executeFilter());
         cbSort.valueProperty().addListener((obs, old, newVal) -> executeFilter());
 
-        if (categoriesContainer != null) {
-            for (Node node : categoriesContainer.getChildren()) {
-                if (node instanceof CheckBox cb) {
-                    cb.selectedProperty().addListener((obs, old, newVal) -> executeFilter());
-                }
-            }
+        if (txtCategorySearch != null) {
+            txtCategorySearch.textProperty().addListener((obs, old, newVal) -> {
+                renderCategoryCheckboxes(newVal);
+            });
         }
     }
 
-    /**
-     * Bắt sự kiện khi chuyển đổi kiểu tìm kiếm (Title / Author)
-     */
     @FXML
     public void handleTypeSelect(ActionEvent event) {
         MenuItem item = (MenuItem) event.getSource();
         String selectedType = item.getText();
         btnSearchType.setText(selectedType);
-
-        // Chạy lại bộ lọc thời gian thực ngay khi người dùng bấm đổi kiểu
         executeFilter();
     }
 
@@ -120,16 +171,10 @@ public class ShopController {
         String keyword = txtSearch.getText() != null ? txtSearch.getText().trim() : "";
         String searchType = btnSearchType != null ? btnSearchType.getText().trim() : "Title";
 
-        // Khởi tạo dữ liệu gán 1 lần duy nhất (effectively final)
-        final List<String> selectedCategories = (categoriesContainer == null) ? new ArrayList<>()
-                : categoriesContainer.getChildren().stream()
-                .filter(node -> node instanceof CheckBox && ((CheckBox) node).isSelected())
-                .map(node -> ((CheckBox) node).getText())
-                .toList();
+        final List<String> selectedCategories = new ArrayList<>(activeSelectedCategories);
 
         if (lblStatus != null) lblStatus.setText("Searching...");
 
-        // TRƯỜNG HỢP 1: Ô tìm kiếm trống -> Chỉ lọc theo khoảng giá, checkbox bên dưới và sắp xếp
         if (keyword.isEmpty()) {
             List<BookModel> finalFilteredBooks = interactor.applyClientSideFilters(
                     originalBooksList, "", selectedCategories,
@@ -140,21 +185,17 @@ public class ShopController {
             return;
         }
 
-        // TRƯỜNG HỢP 2: Tìm kiếm theo Title hoặc Author -> Gọi xuống API Backend truy vết sâu dưới DB
         interactor.searchBooksFromBackend(keyword).thenAccept(booksFromBackend -> {
             Platform.runLater(() -> {
-                // Sàng lọc lớp hai đảm bảo kết quả trùng khít với Type (Title hay Author) đang chọn trên MenuButton
                 List<BookModel> typeSafetyBooks = booksFromBackend.stream()
                         .filter(book -> {
                             if (searchType.equalsIgnoreCase("Author")) {
-                                // ĐÃ FIX: Sử dụng getFormattedAuthors()
                                 return book.getFormattedAuthors().toLowerCase().contains(keyword.toLowerCase());
-                            } else { // Mặc định là Title
+                            } else {
                                 return book.getTitle() != null && book.getTitle().toLowerCase().contains(keyword.toLowerCase());
                             }
                         }).toList();
 
-                // Chạy tiếp qua bộ lọc giá, thể loại (Checkbox) và sắp xếp
                 List<BookModel> finalFilteredBooks = interactor.applyClientSideFilters(
                         typeSafetyBooks, "", selectedCategories,
                         parseDoubleSafe(txtMinPrice.getText()), parseDoubleSafe(txtMaxPrice.getText()), cbSort.getValue()
@@ -189,7 +230,6 @@ public class ShopController {
 
                 BookCardController cardController = loader.getController();
 
-                // ĐÃ FIX: Sử dụng getFormattedAuthors() thay vì getAuthorName()
                 cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), formattedPrice, imageUrl);
 
                 cardController.setCallbacks(

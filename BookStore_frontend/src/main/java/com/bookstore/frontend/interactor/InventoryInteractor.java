@@ -36,7 +36,6 @@ public class InventoryInteractor {
                     List<BookModel> bookList = new ArrayList<>();
                     int lowStock = 0;
 
-                    // Sử dụng BookMapper chuẩn xác từ nhánh của bạn
                     for (BookResponseDto dto : dtoList) {
                         BookModel book = BookMapper.toModel(dto);
 
@@ -61,6 +60,77 @@ public class InventoryInteractor {
                 }
             }
         });
+    }
+
+    public CompletableFuture<Boolean> createBook(BookModel book, File imageFile) {
+        if (imageFile != null) {
+            try {
+                return ApiClient.getInstance().uploadFile("/images", imageFile).thenCompose(imgResponse -> {
+                    if (imgResponse.statusCode() == 200) {
+                        try {
+                            JsonNode imgJson = ApiClient.getInstance().getMapper().readTree(imgResponse.body());
+                            String cloudinaryUrl = imgJson.get("url").asText();
+                            return sendCreateRequest(book, cloudinaryUrl);
+                        } catch (Exception e) {
+                            System.err.println("ERROR parsing Cloudinary image JSON: " + e.getMessage());
+                            return CompletableFuture.completedFuture(false);
+                        }
+                    }
+                    return CompletableFuture.completedFuture(false);
+                });
+            } catch (Exception e) {
+                System.err.println("ERROR reading local image file: " + e.getMessage());
+                return CompletableFuture.completedFuture(false);
+            }
+        } else {
+            return sendCreateRequest(book, book.getImageUrl());
+        }
+    }
+
+    private CompletableFuture<Boolean> sendCreateRequest(BookModel book, String imageUrl) {
+        try {
+            if (imageUrl != null) {
+                book.setImageUrl(imageUrl);
+            }
+
+            BookUpsertRequestDto requestDTO = BookMapper.toUpsertRequest(book);
+            String jsonBody = ApiClient.getInstance().getMapper().writeValueAsString(requestDTO);
+
+            System.out.println("\n--- PAYLOAD GỬI ĐI TẠO SÁCH MỚI ---");
+            System.out.println(jsonBody);
+
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://localhost:8080/api/books")) // Gửi POST đến /api/books
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + com.bookstore.frontend.util.UserSession.getInstance().getToken())
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+
+            return java.net.http.HttpClient.newHttpClient()
+                    .sendAsync(request, java.net.http.HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() == 200 || response.statusCode() == 201) {
+                            System.out.println("=> TẠO SÁCH THÀNH CÔNG!");
+                            try {
+                                JsonNode responseNode = ApiClient.getInstance().getMapper().readTree(response.body());
+                                if (responseNode.has("id")) {
+                                    book.setId(responseNode.get("id").asLong());
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Lỗi khi đọc ID sách mới trả về: " + e.getMessage());
+                            }
+                            return true;
+                        } else {
+                            System.err.println("=> TẠO SÁCH THẤT BẠI (HTTP " + response.statusCode() + "):");
+                            System.err.println("Lý do từ Backend: " + response.body() + "\n");
+                            return false;
+                        }
+                    });
+        } catch (Exception e) {
+            System.err.println("LỖI KHI GỬI REQUEST TẠO SÁCH: " + e.getMessage());
+            e.printStackTrace();
+            return CompletableFuture.completedFuture(false);
+        }
     }
 
     public CompletableFuture<Boolean> updateBook(BookModel book, File imageFile) {
@@ -94,7 +164,6 @@ public class InventoryInteractor {
                 book.setImageUrl(imageUrl);
             }
 
-            // Đồng bộ dữ liệu bằng Mapper thay vì Map<String, Object> thủ công
             BookUpsertRequestDto requestDTO = BookMapper.toUpsertRequest(book);
             String jsonBody = ApiClient.getInstance().getMapper().writeValueAsString(requestDTO);
 

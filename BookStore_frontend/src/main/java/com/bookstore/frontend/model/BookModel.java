@@ -8,8 +8,8 @@ public class BookModel {
     private String title;
     private String publisherName;
     private Long publisherId;
+    private Integer publishYear;
 
-    // Đã chuẩn hóa: Xóa bỏ chữ "List" thừa thãi
     private List<String> authorNames = new ArrayList<>();
     private List<Long> authorIds = new ArrayList<>();
 
@@ -24,12 +24,12 @@ public class BookModel {
     public BookModel() {}
 
     public String getFormattedCategories() {
-        if(categoryNames == null || categoryNames.isEmpty()) return "General";
+        if (categoryNames == null || categoryNames.isEmpty()) return "General";
         return String.join(", ", categoryNames);
     }
 
     public String getFormattedAuthors() {
-        if(authorNames == null || authorNames.isEmpty()) return "Unknown Author";
+        if (authorNames == null || authorNames.isEmpty()) return "Unknown Author";
         return String.join(", ", authorNames);
     }
 
@@ -57,7 +57,9 @@ public class BookModel {
     public Long getPublisherId() { return publisherId; }
     public void setPublisherId(Long publisherId) { this.publisherId = publisherId; }
 
-    // --- GETTERS & SETTERS ĐÃ ĐƯỢC CHUẨN HÓA TÊN ---
+    public Integer getPublishYear() { return publishYear; }
+    public void setPublishYear(Integer publishYear) { this.publishYear = publishYear; }
+
     public List<String> getAuthorNames() { return authorNames; }
     public void setAuthorNames(List<String> authorNames) { this.authorNames = authorNames; }
 

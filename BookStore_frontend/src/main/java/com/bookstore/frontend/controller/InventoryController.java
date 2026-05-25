@@ -1,5 +1,6 @@
 package com.bookstore.frontend.controller;
 
+import com.bookstore.frontend.controller.strategy.EditBookStrategy;
 import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.InventoryModel;
@@ -105,7 +106,6 @@ public class InventoryController extends BaseController {
             VBox page = loader.load();
 
             Stage dialogStage = new Stage();
-
             dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
 
@@ -114,12 +114,10 @@ public class InventoryController extends BaseController {
             dialogStage.setScene(scene);
 
             BookFormController controller = loader.getController();
-            controller.setBook(selectedBook, true);
 
-            controller.setInteractor(this.interactor);
+            controller.setBook(selectedBook, new EditBookStrategy(this.interactor));
 
             dialogStage.showAndWait();
-
 
             if (controller.isSaveClicked()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật sách thành công!");
@@ -150,7 +148,6 @@ public class InventoryController extends BaseController {
 
     @FXML
     public void handleFilterLowStock() {
-        System.out.println("Filtering books that are out of stock...");
         // TODO: Gọi API lấy sách quantity < 10
     }
 

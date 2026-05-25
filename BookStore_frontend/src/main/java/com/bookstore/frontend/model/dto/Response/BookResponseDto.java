@@ -10,8 +10,9 @@ public class BookResponseDto {
     private String title;
     private String description;
     private String imageUrl;
-    private Boolean isDeleted; // Biến mới từ nhánh của đồng đội
+    private Boolean isDeleted;
     private Integer quantity;
+    private Integer publishYear;
 
     @JsonProperty("sellPrice")
     private Double sellPrice;
@@ -42,6 +43,9 @@ public class BookResponseDto {
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public Integer getPublishYear() { return publishYear; }
+    public void setPublishYear(Integer publishYear) { this.publishYear = publishYear; }
 
     public Double getSellPrice() { return sellPrice; }
     public void setSellPrice(Double sellPrice) { this.sellPrice = sellPrice; }

@@ -11,6 +11,10 @@ public class BookUpsertRequestDto {
     private Long publisherId;
     private List<Long> authorIds;
     private List<Long> categoryIds;
+    private Integer publishYear;
+
+    public Integer getPublishYear() { return publishYear; }
+    public void setPublishYear(Integer publishYear) { this.publishYear = publishYear; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

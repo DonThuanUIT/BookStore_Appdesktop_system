@@ -1,9 +1,12 @@
 package com.bookstore.frontend.controller;
 
+import com.bookstore.frontend.controller.strategy.AddBookStrategy;
 import com.bookstore.frontend.interactor.ImportInteractor;
+import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.ImportDetailModel;
 import com.bookstore.frontend.model.ImportManagementModel;
+import com.bookstore.frontend.model.InventoryModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.service.api.BookApiService;
@@ -22,6 +25,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+import java.io.File;
+
 public class ImportCreateController {
 
     @FXML private ComboBox<BookModel> cbBooks;
@@ -36,8 +41,6 @@ public class ImportCreateController {
     @FXML private TableColumn<ImportDetailModel, Void> colAction;
 
     @FXML private Label lblTotalCartCost;
-
-    // Nút Hoàn tất
     @FXML private Button btnSubmit;
 
     private final ObservableList<ImportDetailModel> cartList = FXCollections.observableArrayList();
@@ -58,19 +61,14 @@ public class ImportCreateController {
         cartList.addListener((ListChangeListener<ImportDetailModel>) c -> calculateTotalCost());
     }
 
-    // --- 1. CẤU HÌNH COMBOBOX & AUTOCOMPLETE (ĐÃ FIX LỖI CRASH JAVAFX) ---
     private void setupComboBox() {
         cbBooks.setConverter(new StringConverter<BookModel>() {
             @Override
-            public String toString(BookModel book) {
-                return book == null ? "" : book.getTitle();
-            }
+            public String toString(BookModel book) { return book == null ? "" : book.getTitle(); }
 
             @Override
             public BookModel fromString(String string) {
-                return cbBooks.getItems().stream()
-                        .filter(b -> b.getTitle().equals(string))
-                        .findFirst().orElse(null);
+                return cbBooks.getItems().stream().filter(b -> b.getTitle().equals(string)).findFirst().orElse(null);
             }
         });
 
@@ -81,11 +79,7 @@ public class ImportCreateController {
             final TextField editor = cbBooks.getEditor();
             final BookModel selected = cbBooks.getSelectionModel().getSelectedItem();
 
-            if (selected != null && selected.getTitle().equals(editor.getText())) {
-                return;
-            }
-
-            // Fix bug JavaFX: Bỏ qua nếu giá trị null
+            if (selected != null && selected.getTitle().equals(editor.getText())) return;
             if (newValue == null) return;
 
             filteredBooks.setPredicate(book -> {
@@ -93,18 +87,13 @@ public class ImportCreateController {
                 return book.getTitle().toLowerCase().contains(newValue.toLowerCase());
             });
 
-            // Bọc việc xổ UI vào luồng chạy sau để tránh lỗi "The start must be <= the end"
             Platform.runLater(() -> {
-                if (editor.isFocused() && !filteredBooks.isEmpty()) {
-                    cbBooks.show();
-                } else {
-                    cbBooks.hide();
-                }
+                if (editor.isFocused() && !filteredBooks.isEmpty()) cbBooks.show();
+                else cbBooks.hide();
             });
         });
     }
 
-    // --- 2. GỌI API LẤY DANH SÁCH SÁCH ---
     private void loadBooksFromApi() {
         bookApiService.fetchBooks(0, 1000).thenAccept(pageData -> {
             Platform.runLater(() -> {
@@ -124,7 +113,6 @@ public class ImportCreateController {
         });
     }
 
-    // --- 3. CẤU HÌNH BẢNG GIỎ HÀNG ---
     private void setupTable() {
         colTitle.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
@@ -163,7 +151,6 @@ public class ImportCreateController {
         tvCart.setItems(cartList);
     }
 
-    // --- 4. XỬ LÝ NÚT: THÊM VÀO DANH SÁCH ---
     @FXML
     private void handleAddToList() {
         BookModel selectedBook = cbBooks.getSelectionModel().getSelectedItem();
@@ -218,7 +205,6 @@ public class ImportCreateController {
         lblTotalCartCost.setText(String.format("$%.2f", total));
     }
 
-    // --- 5. SUBMIT PHIẾU NHẬP LÊN BACKEND ---
     @FXML
     private void handleSubmitImport() {
         if (cartList.isEmpty()) {
@@ -226,7 +212,6 @@ public class ImportCreateController {
             return;
         }
 
-        // CHỐNG DOUBLE-CLICK: Khóa nút ngay khi bắt đầu gửi request
         btnSubmit.setDisable(true);
 
         interactor.createImport(cartList).thenAccept(success -> {
@@ -245,32 +230,38 @@ public class ImportCreateController {
         });
     }
 
-    // --- 6. XỬ LÝ MỞ FORM THÊM SÁCH ---
     @FXML
     private void handleAddNewBook() {
         try {
-            // Mở Pop-up BookFormView với đường dẫn đã sửa chuẩn xác
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/BookFormView.fxml"));
             Parent root = loader.load();
 
             BookFormController controller = loader.getController();
-            controller.setBook(new BookModel(), false); // Tạo mới sách
+
+            InventoryInteractor tempInventoryInteractor = new InventoryInteractor(new InventoryModel());
+            controller.setBook(new BookModel(), new AddBookStrategy(tempInventoryInteractor));
 
             Stage stage = new Stage();
-
             stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             stage.initModality(Modality.APPLICATION_MODAL);
 
             Scene scene = new Scene(root);
             scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-
             stage.setScene(scene);
             stage.showAndWait();
 
-            // Nếu user bấm "Save", tải lại danh sách sách
             if (controller.isSaveClicked()) {
-                System.out.println("Đã thêm sách mới, đang tải lại danh sách dropdown...");
-                loadBooksFromApi();
+                BookModel newBook = controller.getCurrentBook();
+
+                ImportDetailModel newItem = new ImportDetailModel();
+                newItem.setBookId(newBook.getId());
+                newItem.setBookTitle(newBook.getTitle());
+                newItem.setQuantity(newBook.getQuantity() != null ? newBook.getQuantity() : 1);
+                newItem.setImportPrice(newBook.getPrice() != null ? newBook.getPrice() : 0.0);
+
+                cartList.add(newItem);
+
+                allBooks.add(newBook);
             }
 
         } catch (Exception e) {

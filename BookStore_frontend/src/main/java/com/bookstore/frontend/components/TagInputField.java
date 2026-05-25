@@ -38,9 +38,8 @@ public class TagInputField extends FlowPane {
         searchField.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-pref-width: 180;");
 
         suggestionMenu = new ContextMenu();
-        suggestionMenu.setStyle("-fx-background-color: #333; -fx-text-fill: white; -fx-font-size: 13px;");
+        suggestionMenu.setStyle("-fx-background-color: #333; -fx-border-color: #555; -fx-border-width: 1px; -fx-border-radius: 4px;");
 
-        // Khởi tạo Debounce Timer (Đợi 400 mili-giây)
         debounceTimer = new PauseTransition(Duration.millis(400));
 
         this.getChildren().add(searchField);
@@ -70,11 +69,8 @@ public class TagInputField extends FlowPane {
         searchField.setPromptText(text);
     }
 
-    // --- LÕI LOGIC (DEBOUNCE + ASYNC RENDERING) ---
-
     private void setupLogic() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            // Mỗi lần gõ chữ, khởi động lại Timer để tránh spam API
             debounceTimer.setOnFinished(event -> performSearch(newValue));
             debounceTimer.playFromStart();
         });
@@ -94,17 +90,14 @@ public class TagInputField extends FlowPane {
 
         String safeKeyword = keyword.trim();
 
-        // Hiện chữ "Đang tìm kiếm..." tạm thời để tăng trải nghiệm UX
         MenuItem loadingItem = new MenuItem("⏳ Đang tìm kiếm...");
         loadingItem.setDisable(true);
-        loadingItem.setStyle("-fx-text-fill: #AAAAAA;");
+        loadingItem.setStyle("-fx-text-fill: #BBBBBB; -fx-background-color: transparent;");
         suggestionMenu.getItems().add(loadingItem);
         suggestionMenu.show(searchField, javafx.geometry.Side.BOTTOM, 0, 0);
 
-        // Gọi Callback (Chạy API ngầm)
         if (searchAsyncCallback != null) {
             searchAsyncCallback.apply(safeKeyword).thenAccept(results -> {
-                // Kết quả từ Thread mạng phải được render trên Thread UI (Platform.runLater)
                 Platform.runLater(() -> renderSuggestions(safeKeyword, results));
             });
         } else {
@@ -116,23 +109,31 @@ public class TagInputField extends FlowPane {
         suggestionMenu.getItems().clear();
         boolean exactMatchFound = false;
 
-        // Render kết quả thực tế từ API
+        String normalizedKeyword = keyword.trim().toLowerCase();
+
         if (apiResults != null) {
             for (String item : apiResults) {
                 if (!selectedTags.contains(item)) {
                     MenuItem mi = new MenuItem(item);
+                    mi.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
+
                     mi.setOnAction(e -> createChip(item));
                     suggestionMenu.getItems().add(mi);
                 }
-                if (item.equalsIgnoreCase(keyword)) exactMatchFound = true;
+                if (item.trim().toLowerCase().equals(normalizedKeyword)) {
+                    exactMatchFound = true;
+                }
             }
         }
 
-        // Nếu API không trả về kết quả khớp 100%, tự động hiển thị nút Thêm mới
-        if (!exactMatchFound && !selectedTags.contains(keyword)) {
-            MenuItem addNewItem = new MenuItem("➕ Thêm mới: \"" + keyword + "\"");
-            addNewItem.setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold;");
-            addNewItem.setOnAction(e -> createChip(keyword));
+
+        boolean isAlreadySelected = selectedTags.stream()
+                .anyMatch(tag -> tag.trim().toLowerCase().equals(normalizedKeyword));
+
+        if (!exactMatchFound && !isAlreadySelected) {
+            MenuItem addNewItem = new MenuItem("➕ Thêm mới: \"" + keyword.trim() + "\"");
+            addNewItem.setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-font-size: 13px;");
+            addNewItem.setOnAction(e -> createChip(keyword.trim())); // Tạo chip với tên đã được trim()
             suggestionMenu.getItems().add(addNewItem);
         }
 
@@ -165,7 +166,6 @@ public class TagInputField extends FlowPane {
 
         chip.getChildren().addAll(lblName, btnRemove);
 
-        // Chèn Chip vào vị trí ngay trước TextField
         this.getChildren().add(this.getChildren().size() - 1, chip);
 
         searchField.clear();
