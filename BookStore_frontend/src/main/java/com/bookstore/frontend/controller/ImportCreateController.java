@@ -10,11 +10,11 @@ import com.bookstore.frontend.model.InventoryModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.service.api.BookApiService;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -23,6 +23,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 import java.io.File;
@@ -56,7 +57,7 @@ public class ImportCreateController {
 
         setupTable();
         setupComboBox();
-        loadBooksFromApi();
+        cbBooks.setPromptText("TÃ¬m kiáº¿m tÃªn sÃ¡ch...");
 
         cartList.addListener((ListChangeListener<ImportDetailModel>) c -> calculateTotalCost());
     }
@@ -72,8 +73,8 @@ public class ImportCreateController {
             }
         });
 
-        FilteredList<BookModel> filteredBooks = new FilteredList<>(allBooks, p -> true);
-        cbBooks.setItems(filteredBooks);
+        cbBooks.setItems(allBooks);
+        PauseTransition searchDebounce = new PauseTransition(Duration.millis(300));
 
         cbBooks.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
             final TextField editor = cbBooks.getEditor();
@@ -82,22 +83,29 @@ public class ImportCreateController {
             if (selected != null && selected.getTitle().equals(editor.getText())) return;
             if (newValue == null) return;
 
-            filteredBooks.setPredicate(book -> {
-                if (newValue.isEmpty()) return true;
-                return book.getTitle().toLowerCase().contains(newValue.toLowerCase());
-            });
-
-            Platform.runLater(() -> {
-                if (editor.isFocused() && !filteredBooks.isEmpty()) cbBooks.show();
-                else cbBooks.hide();
-            });
+            String keyword = newValue.trim();
+            searchDebounce.setOnFinished(event -> loadBookSuggestions(keyword));
+            searchDebounce.playFromStart();
         });
     }
 
-    private void loadBooksFromApi() {
-        bookApiService.fetchBooks(0, 1000).thenAccept(pageData -> {
+    private void loadBookSuggestions(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
             Platform.runLater(() -> {
-                var bookModels = pageData.getContent().stream().map(dto -> {
+                allBooks.clear();
+                cbBooks.hide();
+            });
+            return;
+        }
+
+        bookApiService.searchBooksByName(keyword).thenAccept(dtoList -> {
+            Platform.runLater(() -> {
+                String currentText = cbBooks.getEditor().getText();
+                if (currentText == null || !currentText.trim().equals(keyword)) {
+                    return;
+                }
+
+                var bookModels = dtoList.stream().map(dto -> {
                     BookModel book = new BookModel();
                     book.setId(dto.getId());
                     book.setTitle(dto.getTitle());
@@ -105,6 +113,11 @@ public class ImportCreateController {
                 }).toList();
 
                 allBooks.setAll(bookModels);
+                if (cbBooks.getEditor().isFocused() && !allBooks.isEmpty()) {
+                    cbBooks.show();
+                } else {
+                    cbBooks.hide();
+                }
                 cbBooks.setPromptText("Tìm kiếm tên sách...");
             });
         }).exceptionally(ex -> {
