@@ -46,8 +46,15 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponse create(CategoryUpsertRequest request) {
+        String name = request.name().trim();
+        Category existingCategory = categoryRepository.findFirstByNameIgnoreCaseOrderByIdAsc(name)
+                .orElse(null);
+        if (existingCategory != null) {
+            return toResponse(existingCategory);
+        }
+
         Category category = Category.builder()
-                .name(request.name().trim())
+                .name(name)
                 .build();
         Category saved = categoryRepository.save(category);
         return toResponse(saved);
