@@ -174,9 +174,23 @@ public class ApiClient {
                 com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(data);
                 com.bookstore.frontend.model.ImportModel importModel = new com.bookstore.frontend.model.ImportModel();
                 importModel.setId(node.get("id").asLong());
-                importModel.setStaffUsername(node.has("staffUsername") && !node.get("staffUsername").isNull() ? node.get("staffUsername").asText() : "N/A");
                 importModel.setTotalCost(node.get("totalCost").asDouble());
-                importModel.setImportDate("N/A"); // Map tạm như logic cũ của bạn
+
+                String importDateStr = "N/A";
+                if (node.has("importDate") && !node.get("importDate").isNull()) {
+                    com.fasterxml.jackson.databind.JsonNode dateNode = node.get("importDate");
+                    if (dateNode.isArray() && dateNode.size() >= 3) {
+                        importDateStr = String.format("%02d/%02d/%04d %02d:%02d",
+                                dateNode.get(2).asInt(), dateNode.get(1).asInt(), dateNode.get(0).asInt(),
+                                dateNode.size() > 3 ? dateNode.get(3).asInt() : 0,
+                                dateNode.size() > 4 ? dateNode.get(4).asInt() : 0);
+                    } else {
+                        String raw = dateNode.asText();
+                        importDateStr = raw.replace("T", " ");
+                        if(importDateStr.indexOf('.') > 0) importDateStr = importDateStr.substring(0, importDateStr.indexOf('.'));
+                    }
+                }
+                importModel.setImportDate(importDateStr);
 
                 importCreateListeners.forEach(listener -> listener.accept(importModel));
 

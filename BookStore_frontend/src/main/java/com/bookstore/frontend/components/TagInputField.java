@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-
 
 public class TagInputField extends FlowPane {
 
@@ -77,6 +77,17 @@ public class TagInputField extends FlowPane {
 
         searchField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) suggestionMenu.hide();
+        });
+
+        searchField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                String currentText = searchField.getText();
+                if (currentText != null && !currentText.trim().isEmpty()) {
+                    createChip(currentText.trim());
+                    suggestionMenu.hide();
+                }
+                event.consume();
+            }
         });
     }
 

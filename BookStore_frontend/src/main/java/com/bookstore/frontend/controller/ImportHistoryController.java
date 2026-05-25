@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class ImportHistoryController {
 
@@ -23,7 +24,6 @@ public class ImportHistoryController {
 
     @FXML private TableView<ImportModel> tvImports;
     @FXML private TableColumn<ImportModel, Long> colId;
-    @FXML private TableColumn<ImportModel, String> colStaff;
     @FXML private TableColumn<ImportModel, String> colDate;
     @FXML private TableColumn<ImportModel, Double> colTotal;
     @FXML private TableColumn<ImportModel, Void> colActions;
@@ -52,9 +52,7 @@ public class ImportHistoryController {
         ApiClient.getInstance().onImportCreated(newImport -> {
             Platform.runLater(() -> {
                 model.getImports().add(0, newImport);
-
-                int newSize = model.getImports().size();
-                model.setTotalRecords(newSize);
+                model.setTotalRecords(model.getImports().size());
                 applyFilters();
             });
         });
@@ -68,8 +66,7 @@ public class ImportHistoryController {
                     importDetailSidePanel.setManaged(false);
                 }
 
-                int newSize = model.getImports().size();
-                model.setTotalRecords(newSize);
+                model.setTotalRecords(model.getImports().size());
                 applyFilters();
             });
         });
@@ -77,7 +74,6 @@ public class ImportHistoryController {
 
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colStaff.setCellValueFactory(new PropertyValueFactory<>("staffUsername"));
         colDate.setCellValueFactory(new PropertyValueFactory<>("importDate"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalCost"));
 
@@ -141,11 +137,27 @@ public class ImportHistoryController {
     private void setupFilters() {
         filteredData = new FilteredList<>(model.getImports(), p -> true);
         tvImports.setItems(filteredData);
+
         txtSearch.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        dpFrom.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        dpTo.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+
+        dpFrom.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                dpFrom.setValue(null);
+            }
+        });
+        dpTo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                dpTo.setValue(null);
+            }
+        });
     }
 
     @FXML
-    private void handleFilter() { applyFilters(); }
+    private void handleFilter() {
+        applyFilters();
+    }
 
     private void applyFilters() {
         String searchText = txtSearch.getText() != null ? txtSearch.getText().toLowerCase().trim() : "";
@@ -157,10 +169,37 @@ public class ImportHistoryController {
             if (!searchText.isEmpty()) {
                 String idStr = String.valueOf(importRecord.getId());
                 String cleanSearchText = searchText.replace("#", "").replace("imp-", "");
-                String staff = importRecord.getStaffUsername() != null ? importRecord.getStaffUsername().toLowerCase() : "";
-                matchesSearch = idStr.contains(cleanSearchText) || staff.contains(searchText);
+                matchesSearch = idStr.contains(cleanSearchText);
             }
+
             boolean matchesDate = true;
+            if (fromDate != null || toDate != null) {
+                String recordDateStr = importRecord.getImportDate();
+                if (recordDateStr == null || "N/A".equals(recordDateStr)) {
+                    matchesDate = false;
+                } else {
+                    try {
+                        String datePart = recordDateStr.split(" ")[0];
+                        LocalDate recordDate;
+
+                        if (datePart.contains("-")) {
+                            recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        } else {
+                            recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                        }
+
+                        if (fromDate != null && recordDate.isBefore(fromDate)) {
+                            matchesDate = false;
+                        }
+                        if (toDate != null && recordDate.isAfter(toDate)) {
+                            matchesDate = false;
+                        }
+                    } catch (Exception e) {
+                        matchesDate = false;
+                    }
+                }
+            }
+
             return matchesSearch && matchesDate;
         });
 
@@ -190,9 +229,7 @@ public class ImportHistoryController {
         if (alert.getResult() == ButtonType.YES) {
             interactor.deleteImport(importRecord.getId()).thenAccept(success -> {
                 Platform.runLater(() -> {
-                    if (success) {
-                        interactor.loadImportHistory();
-                    } else {
+                    if (!success) {
                         new Alert(Alert.AlertType.ERROR, "Xóa thất bại!").show();
                     }
                 });

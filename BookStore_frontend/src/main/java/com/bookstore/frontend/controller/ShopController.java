@@ -10,15 +10,12 @@ import com.bookstore.frontend.utils.AlertUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
@@ -31,7 +28,6 @@ import java.util.Set;
 public class ShopController {
 
     @FXML private TextField txtSearch;
-    @FXML private MenuButton btnSearchType;
     @FXML private TextField txtMinPrice;
     @FXML private TextField txtMaxPrice;
     @FXML private ComboBox<String> cbSort;
@@ -64,6 +60,7 @@ public class ShopController {
         loadCategoriesFromApi();
         loadInitialData();
 
+        // Bật bộ đàm lắng nghe tín hiệu Real-time SSE từ Backend
         setupRealTimeSync();
     }
 
@@ -76,12 +73,8 @@ public class ShopController {
             ));
             cbSort.setValue("Newest");
         }
-
-        if (btnSearchType != null) {
-            btnSearchType.setText("Title");
-        }
+        // Đã xóa bỏ hoàn toàn các logic liên quan đến btnSearchType
     }
-
 
     private void loadCategoriesFromApi() {
         ApiClient.getInstance().get("/categories").thenAccept(res -> {
@@ -161,18 +154,8 @@ public class ShopController {
         }
     }
 
-    @FXML
-    public void handleTypeSelect(ActionEvent event) {
-        MenuItem item = (MenuItem) event.getSource();
-        String selectedType = item.getText();
-        btnSearchType.setText(selectedType);
-        executeFilter();
-    }
-
     private void executeFilter() {
         String keyword = txtSearch.getText() != null ? txtSearch.getText().trim() : "";
-        String searchType = btnSearchType != null ? btnSearchType.getText().trim() : "Title";
-
         final List<String> selectedCategories = new ArrayList<>(activeSelectedCategories);
 
         if (lblStatus != null) lblStatus.setText("Searching...");
@@ -189,17 +172,8 @@ public class ShopController {
 
         interactor.searchBooksFromBackend(keyword).thenAccept(booksFromBackend -> {
             Platform.runLater(() -> {
-                List<BookModel> typeSafetyBooks = booksFromBackend.stream()
-                        .filter(book -> {
-                            if (searchType.equalsIgnoreCase("Author")) {
-                                return book.getFormattedAuthors().toLowerCase().contains(keyword.toLowerCase());
-                            } else {
-                                return book.getTitle() != null && book.getTitle().toLowerCase().contains(keyword.toLowerCase());
-                            }
-                        }).toList();
-
                 List<BookModel> finalFilteredBooks = interactor.applyClientSideFilters(
-                        typeSafetyBooks, "", selectedCategories,
+                        booksFromBackend, "", selectedCategories,
                         parseDoubleSafe(txtMinPrice.getText()), parseDoubleSafe(txtMaxPrice.getText()), cbSort.getValue()
                 );
 
@@ -274,7 +248,6 @@ public class ShopController {
                 if (!found) {
                     originalBooksList.add(0, updatedBook);
                 }
-
                 executeFilter();
             });
         });

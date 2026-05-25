@@ -52,7 +52,8 @@ public class ImportService {
 
     @Transactional(readOnly = true)
     public List<ImportResponse> getAll() {
-        return importRepository.findAll().stream()
+        return importRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }

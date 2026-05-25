@@ -137,18 +137,20 @@ public class ImportCreateController {
         colPrice.setCellValueFactory(new PropertyValueFactory<>("importPrice"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("lineTotal"));
 
+        // ĐÃ FIX: Chuyển $%.2f thành %,.0f đ cho Giá Nhập
         colPrice.setCellFactory(tc -> new TableCell<>() {
             @Override protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
-                setText((empty || price == null) ? null : String.format("$%.2f", price));
+                setText((empty || price == null) ? null : String.format("%,.0f đ", price));
             }
         });
+
         colTotal.setCellFactory(tc -> new TableCell<>() {
             @Override protected void updateItem(Double total, boolean empty) {
                 super.updateItem(total, empty);
                 if (empty || total == null) setText(null);
                 else {
-                    setText(String.format("$%.2f", total));
+                    setText(String.format("%,.0f đ", total));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
@@ -211,7 +213,8 @@ public class ImportCreateController {
             cbBooks.getSelectionModel().clearSelection();
             cbBooks.getEditor().clear();
             txtQuantity.setText("1");
-            txtImportPrice.setText("0.00");
+
+            txtImportPrice.setText("0");
 
         } catch (NumberFormatException e) {
             new Alert(Alert.AlertType.ERROR, "Vui lòng nhập định dạng số hợp lệ!").show();
@@ -220,7 +223,7 @@ public class ImportCreateController {
 
     private void calculateTotalCost() {
         double total = cartList.stream().mapToDouble(ImportDetailModel::getLineTotal).sum();
-        lblTotalCartCost.setText(String.format("$%.2f", total));
+        lblTotalCartCost.setText(String.format("%,.0f đ", total));
     }
 
     @FXML
@@ -278,7 +281,6 @@ public class ImportCreateController {
                 newItem.setImportPrice(newBook.getPrice() != null ? newBook.getPrice() : 0.0);
 
                 cartList.add(newItem);
-
                 allBooks.add(newBook);
             }
 

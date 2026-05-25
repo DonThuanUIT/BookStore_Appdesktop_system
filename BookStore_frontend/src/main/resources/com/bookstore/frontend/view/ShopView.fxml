@@ -5,10 +5,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -34,13 +31,6 @@
             <Label text="Search" styleClass="login-title" style="-fx-font-size: 16px; -fx-text-fill: -fx-accent-gold;"/>
 
             <HBox alignment="CENTER_LEFT" styleClass="search-container-modern" style="-fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 4px; -fx-padding: 2px;">
-                <MenuButton fx:id="btnSearchType" styleClass="btn-search-type-modern" text="Title" style="-fx-text-fill: #f4f00f; -fx-background-color: transparent;">
-                    <items>
-                        <MenuItem onAction="#handleTypeSelect" text="Title" />
-                        <MenuItem onAction="#handleTypeSelect" text="Author" />
-                    </items>
-                </MenuButton>
-                <Separator maxHeight="18" orientation="VERTICAL" style="-fx-opacity: 0.2;"/>
                 <TextField fx:id="txtSearch" promptText="Search your book..." styleClass="search-input-modern" style="-fx-background-color: transparent; -fx-text-fill: white;" HBox.hgrow="ALWAYS" />
             </HBox>
         </VBox>

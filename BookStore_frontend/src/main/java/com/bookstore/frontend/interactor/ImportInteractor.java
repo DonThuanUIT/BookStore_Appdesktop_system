@@ -26,9 +26,7 @@ public class ImportInteractor {
         this.managementModel = managementModel;
     }
 
-    // --- 1. LẤY LỊCH SỬ NHẬP HÀNG ---
     public void loadImportHistory() {
-        // Backend đang trả về một List (Mảng JSON)
         ApiClient.getInstance().get("/imports").thenAccept(response -> {
             if (response.statusCode() == 200) {
                 try {
@@ -38,11 +36,28 @@ public class ImportInteractor {
                     for (JsonNode node : rootArray) {
                         ImportModel importModel = new ImportModel();
                         importModel.setId(node.get("id").asLong());
-                        importModel.setStaffUsername(node.has("staffUsername") && !node.get("staffUsername").isNull() ? node.get("staffUsername").asText() : "N/A");
                         importModel.setTotalCost(node.get("totalCost").asDouble());
 
-                        // Note: Backend chưa trả về importDate, tạm thời dùng string mặc định hoặc tự format nếu sau này BE thêm vào
-                        importModel.setImportDate("N/A");
+                        String importDateStr = "N/A";
+                        if (node.has("importDate") && !node.get("importDate").isNull()) {
+                            JsonNode dateNode = node.get("importDate");
+                            if (dateNode.isArray() && dateNode.size() >= 3) {
+                                // Định dạng: dd/MM/yyyy HH:mm
+                                importDateStr = String.format("%02d/%02d/%04d %02d:%02d",
+                                        dateNode.get(2).asInt(), // Ngày
+                                        dateNode.get(1).asInt(), // Tháng
+                                        dateNode.get(0).asInt(), // Năm
+                                        dateNode.size() > 3 ? dateNode.get(3).asInt() : 0, // Giờ
+                                        dateNode.size() > 4 ? dateNode.get(4).asInt() : 0); // Phút
+                            } else {
+                                String raw = dateNode.asText();
+                                importDateStr = raw.replace("T", " ");
+                                if(importDateStr.indexOf('.') > 0) {
+                                    importDateStr = importDateStr.substring(0, importDateStr.indexOf('.'));
+                                }
+                            }
+                        }
+                        importModel.setImportDate(importDateStr);
 
                         importList.add(importModel);
                     }
@@ -59,7 +74,6 @@ public class ImportInteractor {
         });
     }
 
-    // --- 2. LẤY CHI TIẾT MỘT PHIẾU NHẬP (Dùng cho Side Panel) ---
     public CompletableFuture<ImportModel> getImportDetails(Long importId) {
         return ApiClient.getInstance().get("/imports/" + importId).thenApply(response -> {
             if (response.statusCode() == 200) {
@@ -67,10 +81,23 @@ public class ImportInteractor {
                     JsonNode node = ApiClient.getInstance().getMapper().readTree(response.body());
                     ImportModel importModel = new ImportModel();
                     importModel.setId(node.get("id").asLong());
-                    importModel.setStaffUsername(node.has("staffUsername") && !node.get("staffUsername").isNull() ? node.get("staffUsername").asText() : "N/A");
                     importModel.setTotalCost(node.get("totalCost").asDouble());
 
-                    // Lấy danh sách sản phẩm bên trong
+                    String importDateStr = "N/A";
+                    if (node.has("importDate") && !node.get("importDate").isNull()) {
+                        JsonNode dateNode = node.get("importDate");
+                        if (dateNode.isArray() && dateNode.size() >= 3) {
+                            importDateStr = String.format("%02d/%02d/%04d %02d:%02d",
+                                    dateNode.get(2).asInt(), dateNode.get(1).asInt(), dateNode.get(0).asInt(),
+                                    dateNode.size() > 3 ? dateNode.get(3).asInt() : 0,
+                                    dateNode.size() > 4 ? dateNode.get(4).asInt() : 0);
+                        } else {
+                            importDateStr = dateNode.asText().replace("T", " ");
+                            if(importDateStr.indexOf('.') > 0) importDateStr = importDateStr.substring(0, importDateStr.indexOf('.'));
+                        }
+                    }
+                    importModel.setImportDate(importDateStr);
+
                     if (node.has("details") && node.get("details").isArray()) {
                         for (JsonNode detailNode : node.get("details")) {
                             ImportDetailModel detail = new ImportDetailModel();
@@ -91,10 +118,8 @@ public class ImportInteractor {
         });
     }
 
-    // --- 3. TẠO PHIẾU NHẬP MỚI (Submit Transaction) ---
     public CompletableFuture<Boolean> createImport(List<ImportDetailModel> cartItems) {
         try {
-            // Chuẩn bị payload chuẩn khớp với ImportUpsertRequest
             ObjectNode requestData = ApiClient.getInstance().getMapper().createObjectNode();
             ArrayNode detailsArray = requestData.putArray("details");
 
@@ -123,7 +148,6 @@ public class ImportInteractor {
         }
     }
 
-    // --- 4. XÓA PHIẾU NHẬP ---
     public CompletableFuture<Boolean> deleteImport(Long importId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
