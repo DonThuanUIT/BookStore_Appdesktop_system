@@ -63,6 +63,8 @@ public class ShopController {
         setupRealTimeFilters();
         loadCategoriesFromApi();
         loadInitialData();
+
+        setupRealTimeSync();
     }
 
     private void setupUI() {
@@ -256,5 +258,32 @@ public class ShopController {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    private void setupRealTimeSync() {
+        ApiClient.getInstance().onBookUpdated(updatedBook -> {
+            Platform.runLater(() -> {
+                boolean found = false;
+                for (int i = 0; i < originalBooksList.size(); i++) {
+                    if (originalBooksList.get(i).getId().equals(updatedBook.getId())) {
+                        originalBooksList.set(i, updatedBook);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    originalBooksList.add(0, updatedBook);
+                }
+
+                executeFilter();
+            });
+        });
+
+        ApiClient.getInstance().onBookDeleted(bookId -> {
+            Platform.runLater(() -> {
+                originalBooksList.removeIf(b -> b.getId().equals(bookId));
+                executeFilter();
+            });
+        });
     }
 }

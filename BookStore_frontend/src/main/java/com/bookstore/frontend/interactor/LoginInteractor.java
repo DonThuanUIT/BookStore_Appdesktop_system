@@ -32,7 +32,6 @@ public class LoginInteractor {
         model.loadingProperty().set(true);
         model.messageProperty().set("");
 
-        // Đóng gói data bằng Map, ApiClient sẽ tự convert thành JSON an toàn
         Map<String, String> payload = Map.of("username", user, "password", pass);
 
         ApiClient.getInstance().post("/auth/login", payload)
@@ -40,7 +39,6 @@ public class LoginInteractor {
                     model.loadingProperty().set(false);
                     if (res.statusCode() == 200) {
                         try {
-                            // Dùng Mapper dùng chung từ ApiClient
                             JsonNode jsonNode = ApiClient.getInstance().getMapper().readTree(res.body());
                             String token = jsonNode.get("token").asText();
 
@@ -56,7 +54,11 @@ public class LoginInteractor {
 
                             UserSession.getInstance().init(token, user, roles);
                             System.out.println("Login thành công. Token: " + token);
+
+                            ApiClient.getInstance().startSseConnection();
+
                             navigateToHome(user);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                             AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi xử lý phản hồi từ server.");

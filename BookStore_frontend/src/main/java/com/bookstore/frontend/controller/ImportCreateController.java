@@ -10,11 +10,11 @@ import com.bookstore.frontend.model.InventoryModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.service.api.BookApiService;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -23,9 +23,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
-
-import java.io.File;
 
 public class ImportCreateController {
 
@@ -49,6 +48,8 @@ public class ImportCreateController {
     private ImportInteractor interactor;
     private BookApiService bookApiService;
 
+    private final PauseTransition searchDebounce = new PauseTransition(Duration.millis(400));
+
     @FXML
     public void initialize() {
         this.interactor = new ImportInteractor(new ImportManagementModel());
@@ -56,13 +57,15 @@ public class ImportCreateController {
 
         setupTable();
         setupComboBox();
-        loadBooksFromApi();
+
+        loadDefaultBooks();
 
         cartList.addListener((ListChangeListener<ImportDetailModel>) c -> calculateTotalCost());
     }
 
     private void setupComboBox() {
-        cbBooks.setConverter(new StringConverter<BookModel>() {
+        cbBooks.setItems(allBooks);
+        cbBooks.setConverter(new StringConverter<>() {
             @Override
             public String toString(BookModel book) { return book == null ? "" : book.getTitle(); }
 
@@ -72,30 +75,45 @@ public class ImportCreateController {
             }
         });
 
-        FilteredList<BookModel> filteredBooks = new FilteredList<>(allBooks, p -> true);
-        cbBooks.setItems(filteredBooks);
-
         cbBooks.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
-            final TextField editor = cbBooks.getEditor();
-            final BookModel selected = cbBooks.getSelectionModel().getSelectedItem();
-
-            if (selected != null && selected.getTitle().equals(editor.getText())) return;
             if (newValue == null) return;
 
-            filteredBooks.setPredicate(book -> {
-                if (newValue.isEmpty()) return true;
-                return book.getTitle().toLowerCase().contains(newValue.toLowerCase());
-            });
+            final BookModel selected = cbBooks.getSelectionModel().getSelectedItem();
+            if (selected != null && selected.getTitle().equals(newValue)) return;
 
-            Platform.runLater(() -> {
-                if (editor.isFocused() && !filteredBooks.isEmpty()) cbBooks.show();
-                else cbBooks.hide();
-            });
+            searchDebounce.setOnFinished(event -> performSearch(newValue));
+            searchDebounce.playFromStart();
         });
     }
 
-    private void loadBooksFromApi() {
-        bookApiService.fetchBooks(0, 1000).thenAccept(pageData -> {
+    private void performSearch(String keyword) {
+        if (keyword.trim().isEmpty()) {
+            loadDefaultBooks();
+            return;
+        }
+
+        bookApiService.searchBooks(keyword.trim()).thenAccept(dtoList -> {
+            Platform.runLater(() -> {
+                var bookModels = dtoList.stream().map(dto -> {
+                    BookModel book = new BookModel();
+                    book.setId(dto.getId());
+                    book.setTitle(dto.getTitle());
+                    return book;
+                }).toList();
+
+                allBooks.setAll(bookModels);
+                if (!bookModels.isEmpty() && cbBooks.getEditor().isFocused()) {
+                    cbBooks.show();
+                }
+            });
+        }).exceptionally(ex -> {
+            System.err.println("Lỗi khi tìm kiếm sách: " + ex.getMessage());
+            return null;
+        });
+    }
+
+    private void loadDefaultBooks() {
+        bookApiService.fetchBooks(0, 50).thenAccept(pageData -> {
             Platform.runLater(() -> {
                 var bookModels = pageData.getContent().stream().map(dto -> {
                     BookModel book = new BookModel();
@@ -108,7 +126,7 @@ public class ImportCreateController {
                 cbBooks.setPromptText("Tìm kiếm tên sách...");
             });
         }).exceptionally(ex -> {
-            System.err.println("Lỗi tải danh sách sách: " + ex.getMessage());
+            System.err.println("Lỗi tải danh sách sách ban đầu: " + ex.getMessage());
             return null;
         });
     }
