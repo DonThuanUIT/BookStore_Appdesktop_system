@@ -61,6 +61,18 @@ public class BookService {
         return toResponse(book);
     }
 
+    @Transactional(readOnly = true)
+    public List<BookResponse> getByName(String keyword) {
+        String trimmed = keyword == null ? "" : keyword.trim();
+        if (trimmed.isEmpty()) {
+            return List.of();
+        }
+        return bookRepository.findByTitleContainingIgnoreCaseActiveOrderByTitleAsc(trimmed)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
 
     @Transactional
     public BookResponse create(BookUpsertRequest request) {
