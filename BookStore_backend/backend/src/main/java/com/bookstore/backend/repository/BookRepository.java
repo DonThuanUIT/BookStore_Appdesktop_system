@@ -4,6 +4,7 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,15 @@ public interface BookRepository extends JpaRepository<Book, Long>{
             WHERE b.id = :id AND (b.isDeleted = false OR b.isDeleted IS NULL)
             """)
     Optional<Book> findByIdActive(Long id);
+
+    @Query("""
+            SELECT b
+            FROM Book b
+            WHERE (b.isDeleted = false OR b.isDeleted IS NULL)
+              AND LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            ORDER BY b.title ASC
+            """)
+    List<Book> findByTitleContainingIgnoreCaseActiveOrderByTitleAsc(@Param("keyword") String keyword);
 
     @Query("""
             SELECT DISTINCT b
