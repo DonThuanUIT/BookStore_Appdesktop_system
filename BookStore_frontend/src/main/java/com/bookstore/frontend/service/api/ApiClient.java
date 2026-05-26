@@ -3,7 +3,7 @@ package com.bookstore.frontend.service.api;
 import com.bookstore.frontend.util.UserSession;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule; // Thêm import này
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,20 +24,15 @@ public class ApiClient {
     public static final String BASE_URL = "http://localhost:8080/api";
 
     private ApiClient() {
-        // Khởi tạo HttpClient dùng chung, set timeout 10s để tránh treo app
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
         this.objectMapper = new ObjectMapper();
-
-        // 1. Đăng ký module để xử lý LocalDateTime
         this.objectMapper.registerModule(new JavaTimeModule());
-
-        // 2. Cấu hình để bỏ qua các trường lạ (như 'discount')
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public static ApiClient getInstance() {
+    public static synchronized ApiClient getInstance() {
         if (instance == null) {
             instance = new ApiClient();
         }
@@ -49,79 +44,77 @@ public class ApiClient {
     }
 
     // =========================================================================
-    // CÁC HÀM GỌI API CHÍNH (GET, POST, UPLOAD)
+    // HÀM GỌI API (GET, POST, PUT, PATCH, UPLOAD)
     // =========================================================================
 
     public CompletableFuture<HttpResponse<String>> get(String endpoint) {
-        try {
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + endpoint))
-                    .GET();
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
+        return sendRequest(HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .GET());
     }
 
     public CompletableFuture<HttpResponse<String>> post(String endpoint, Object body) {
         try {
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+            return sendRequest(HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + endpoint))
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body))));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
+    }
+
+    public CompletableFuture<HttpResponse<String>> post(String endpoint) {
+        return sendRequest(HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .POST(HttpRequest.BodyPublishers.noBody()));
     }
 
     public CompletableFuture<HttpResponse<String>> put(String endpoint, Object body) {
         try {
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+            return sendRequest(HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + endpoint))
                     .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody));
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+                    .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body))));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
     }
 
-    public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) throws IOException {
-        String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
-        // Đẩy logic xử lý byte phức tạp xuống hàm helper để class sạch sẽ hơn
-        byte[] bodyData = buildMultipartBody(file, boundary);
+    public CompletableFuture<HttpResponse<String>> patch(String endpoint, Object body) {
+        try {
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body))));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
 
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + endpoint))
-                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(bodyData));
+    public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) {
+        try {
+            String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
+            byte[] bodyData = buildMultipartBody(file, boundary);
 
-        attachAuthToken(requestBuilder);
-
-        return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                    .POST(HttpRequest.BodyPublishers.ofByteArray(bodyData)));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     // =========================================================================
-    // HÀM PHỤ TRỢ (HELPERS) - Tách biệt logic để code dễ bảo trì
+    // HÀM HỖ TRỢ (HELPERS)
     // =========================================================================
 
-    /**
-     * Tự động lấy token từ Két sắt (UserSession) và gắn vào Header
-     */
+    private CompletableFuture<HttpResponse<String>> sendRequest(HttpRequest.Builder builder) {
+        attachAuthToken(builder);
+        return httpClient.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
     private void attachAuthToken(HttpRequest.Builder requestBuilder) {
         String token = UserSession.getInstance().getToken();
         if (token != null && !token.isEmpty()) {
@@ -129,46 +122,21 @@ public class ApiClient {
         }
     }
 
-    /**
-     * Đóng gói file thành khối byte theo chuẩn multipart/form-data
-     */
     private byte[] buildMultipartBody(File file, String boundary) throws IOException {
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         String mimeType = Files.probeContentType(file.toPath());
-        if (mimeType == null) {
-            mimeType = "application/octet-stream";
-        }
+        if (mimeType == null) mimeType = "application/octet-stream";
 
-        StringBuilder headerBuilder = new StringBuilder();
-        headerBuilder.append("--").append(boundary).append("\r\n");
-        headerBuilder.append("Content-Disposition: form-data; name=\"file\"; filename=\"").append(file.getName()).append("\"\r\n");
-        headerBuilder.append("Content-Type: ").append(mimeType).append("\r\n\r\n");
-        byte[] headerBytes = headerBuilder.toString().getBytes(StandardCharsets.UTF_8);
+        String header = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n" +
+                "Content-Type: " + mimeType + "\r\n\r\n";
+        String footer = "\r\n--" + boundary + "--\r\n";
 
-        byte[] footerBytes = ("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer body = ByteBuffer.allocate(headerBytes.length + fileBytes.length + footerBytes.length);
-        body.put(headerBytes);
+        ByteBuffer body = ByteBuffer.allocate(header.length() + fileBytes.length + footer.length());
+        body.put(header.getBytes(StandardCharsets.UTF_8));
         body.put(fileBytes);
-        body.put(footerBytes);
+        body.put(footer.getBytes(StandardCharsets.UTF_8));
 
         return body.array();
     }
-
-    // Thêm vào class ApiClient
-    public CompletableFuture<HttpResponse<String>> patch(String endpoint, String jsonBody) {
-        try {
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + endpoint))
-                    .header("Content-Type", "application/json")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody));
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
-    }
-
 }

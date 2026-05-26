@@ -10,8 +10,9 @@ public enum PageType {
     IMPORT_CREATE("/com/bookstore/frontend/view/ImportCreateView.fxml"),
     PROFILE("/com/bookstore/frontend/view/components/ProfileView.fxml"),
     ORDER_HISTORY("/com/bookstore/frontend/view/components/OrderHistoryView.fxml"),
-    LOGIN("/com/bookstore/frontend/view/LoginView.fxml");
-
+    LOGIN("/com/bookstore/frontend/view/LoginView.fxml"),
+    // Trong PageType.java
+    REVENUE_REPORT("/com/bookstore/frontend/view/RevenueReportView.fxml");
     private final String fxmlPath;
 
     PageType(String fxmlPath) {

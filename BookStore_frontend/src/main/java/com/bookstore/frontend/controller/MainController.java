@@ -22,7 +22,7 @@ public class MainController implements Initializable {
 
     // --- UI Components ---
     @FXML private StackPane contentArea;
-    @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart;
+    @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart, btnRevenue;
     @FXML private Label lblCartBadge;
 
     // --- Custom Components ---
@@ -89,10 +89,13 @@ public class MainController implements Initializable {
     @FXML void onCartClick() { NavigationService.getInstance().navigateTo(PageType.CART); }
     @FXML void onInventoryClick() { NavigationService.getInstance().navigateTo(PageType.INVENTORY); }
     @FXML void onImportClick() { NavigationService.getInstance().navigateTo(PageType.IMPORT); }
+    @FXML void onRevenueClick() {NavigationService.getInstance().navigateTo(PageType.REVENUE_REPORT);}
 
     private void applyCustomerNavVisibilityForRole() {
         boolean customer = UserSession.getInstance().isCustomer();
         btnImport.setVisible(!customer); btnImport.setManaged(!customer);
         btnInventory.setVisible(!customer); btnInventory.setManaged(!customer);
+        btnRevenue.setVisible(!customer);
+        btnRevenue.setManaged(!customer);
     }
 }

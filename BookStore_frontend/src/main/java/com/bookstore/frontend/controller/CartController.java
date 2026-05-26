@@ -3,6 +3,7 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.CartInteractor;
 import com.bookstore.frontend.model.CartModel;
 import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -47,9 +48,10 @@ public class CartController extends BaseController {
 
     @FXML
     private void handleCheckout() {
-        System.out.println("===== CHECKOUT CLICKED =====");
+        // 1. Kiểm tra giỏ hàng trống bằng AlertUtils
         if (model.getItems().isEmpty()) {
-            System.out.println("Cart empty");
+            AlertUtils.show(Alert.AlertType.WARNING, "Giỏ hàng trống",
+                    "Giỏ hàng của bạn đang trống. Vui lòng thêm sách trước khi thanh toán!");
             return;
         }
 
@@ -60,35 +62,40 @@ public class CartController extends BaseController {
             VBox root = loader.load();
             PaymentController paymentCtrl = loader.getController();
 
-            // THAY ĐỔI TẠI ĐÂY: Khớp hoàn toàn kiểu trả về CompletableFuture<Boolean> với CartInteractor
             paymentCtrl.setOnConfirm(() -> {
                 String method = paymentCtrl.getSelectedMethod();
-                System.out.println("FRONTEND PROCESSING ORDER VIA API FOR: " + method);
 
-                // Gọi hàm async từ interactor và xâu chuỗi xử lý dọn giỏ hàng khi thành công
+                // Xử lý đặt hàng
                 return interactor.placeOrder(model.getItems(), method).thenApply(isSuccess -> {
                     if (isSuccess) {
                         Platform.runLater(() -> {
-                            System.out.println("Đặt hàng thành công! Đang dọn giỏ hàng...");
+                            // 2. Thông báo thành công
+                            AlertUtils.show(Alert.AlertType.INFORMATION, "Thành công",
+                                    "Đơn hàng của bạn đã được đặt thành công!");
                             model.clearCart();
                             renderCart();
                         });
                         return true;
+                    } else {
+                        // 3. Thông báo lỗi đặt hàng
+                        Platform.runLater(() ->
+                                AlertUtils.show(Alert.AlertType.ERROR, "Lỗi", "Có lỗi xảy ra khi xử lý đơn hàng.")
+                        );
+                        return false;
                     }
-                    return false;
                 });
             });
 
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Payment");
+            stage.setScene(new Scene(root));
+            stage.setTitle("Phương thức thanh toán");
             stage.show();
 
-            System.out.println("PAYMENT OPENED");
         } catch (Exception e) {
-            System.out.println("ERROR OPENING PAYMENT:");
+            // 4. Thông báo lỗi hệ thống
+            AlertUtils.show(Alert.AlertType.ERROR, "Lỗi hệ thống",
+                    "Không thể mở cửa sổ thanh toán: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -149,8 +156,12 @@ public class CartController extends BaseController {
             Button removeBtn = new Button("Remove");
             removeBtn.getStyleClass().add("btn-huy-payment");
             removeBtn.setOnAction(e -> {
-                model.removeItem(item);
-                renderCart();
+                boolean confirmed = AlertUtils.confirm("Xác nhận xóa",
+                        "Bạn có chắc muốn xóa '" + item.getBook().getTitle() + "' khỏi giỏ hàng?");
+                if(confirmed) {
+                    model.removeItem(item);
+                    renderCart();
+                }
             });
 
             row.getChildren().addAll(thumbView, infoBox, spacer, subtotal, removeBtn);

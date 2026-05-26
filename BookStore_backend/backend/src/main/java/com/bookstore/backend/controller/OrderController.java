@@ -80,14 +80,25 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getSalesHistory(page, size));
     }
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')") // THÊM DÒNG NÀY VÀO
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable @Positive(message = "id is invalid") Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody UpdateOrderStatusRequest request
     ) {
         return ResponseEntity.ok(orderService.updateStatus(id, request.status()));
     }
 
+    // Customer hủy đơn
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<OrderResponse> cancelOrder(
+            @PathVariable @Positive Long id,
+            @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt
+    ) {
+        String username = jwt.getSubject();
+        User currentUser = userService.findByUsername(username);
+        return ResponseEntity.ok(orderService.cancelOrder(id, currentUser));
+    }
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<OrderResponse> createOrder(

@@ -35,14 +35,16 @@ public class OrderHistoryController implements Navigatable {
         colPayment.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
         colDiscount.setCellValueFactory(new PropertyValueFactory<>("discount"));
 
+        setupActionColumn();
+        determineAndLoadData();
+    }
+
+    private void setupActionColumn() {
         colAction.setCellFactory(param -> new TableCell<>() {
-            private final Button btnAccept = new Button();
+            private final Button btnAction = new Button();
             {
-                btnAccept.setStyle("-fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
-                btnAccept.setOnAction(event -> {
-                    OrderResponseDTO order = getTableView().getItems().get(getIndex());
-                    handleStatusUpdate(order);
-                });
+                btnAction.setStyle("-fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
+                btnAction.setOnAction(event -> handleAction(getTableView().getItems().get(getIndex())));
             }
 
             @Override
@@ -52,70 +54,78 @@ public class OrderHistoryController implements Navigatable {
                     setGraphic(null);
                 } else {
                     OrderResponseDTO order = getTableView().getItems().get(getIndex());
-                    String status = order.getStatus();
+                    String status = order.getStatus().toUpperCase();
                     boolean isAdmin = UserSession.getInstance().isAdminOrStaff();
 
-                    // Hiển thị nút dựa trên trạng thái
-                    if (isAdmin && ("PENDING".equalsIgnoreCase(status) || "SHIPPING".equalsIgnoreCase(status))) {
-                        btnAccept.setText("PENDING".equalsIgnoreCase(status) ? "✓ Duyệt" : "✓ Hoàn tất");
-                        btnAccept.setStyle("-fx-background-color: " + ("PENDING".equalsIgnoreCase(status) ? "#27ae60" : "#2980b9") + "; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
-                        btnAccept.setVisible(true);
-                        setGraphic(btnAccept);
+                    if (isAdmin) {
+                        // Admin/Staff: Duyệt (PENDING->SHIPPING) hoặc Hoàn tất (SHIPPING->COMPLETED)
+                        if ("PENDING".equals(status) || "SHIPPING".equals(status)) {
+                            btnAction.setText("PENDING".equals(status) ? "✓ Duyệt" : "✓ Hoàn tất");
+                            btnAction.setStyle("-fx-background-color: " + ("PENDING".equals(status) ? "#27ae60" : "#2980b9") + "; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
+                            setGraphic(btnAction);
+                        } else setGraphic(null);
                     } else {
-                        btnAccept.setVisible(false);
-                        setGraphic(null);
+                        // Customer: Chỉ được Hủy khi PENDING
+                        if ("PENDING".equals(status)) {
+                            btnAction.setText("✕ Hủy đơn");
+                            btnAction.setStyle("-fx-background-color: #e74c3c; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
+                            setGraphic(btnAction);
+                        } else setGraphic(null);
                     }
                 }
             }
         });
-
-        determineAndLoadData();
     }
 
-    @Override
-    public void onNavigate(Object data) {
-        determineAndLoadData();
+    private void handleAction(OrderResponseDTO order) {
+        if (UserSession.getInstance().isAdminOrStaff()) {
+            String nextStatus = "PENDING".equalsIgnoreCase(order.getStatus()) ? "SHIPPING" : "COMPLETED";
+            updateStatusAPI(order.getId(), nextStatus);
+        } else {
+            cancelOrderAPI(order.getId());
+        }
+    }
+
+    // Sửa hàm updateStatusAPI và cancelOrderAPI
+    private void updateStatusAPI(Long id, String status) {
+        String jsonBody = "{\"status\": \"" + status + "\"}";
+        ApiClient.getInstance().patch("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
+            if (response.statusCode() == 200) {
+                // Cập nhật lại UI sau khi thành công
+                Platform.runLater(this::determineAndLoadData);
+            } else {
+                Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Cập nhật thất bại!").show());
+            }
+        });
     }
 
     private void determineAndLoadData() {
-        orderTable.getItems().clear();
-
+        // Chỉ clear khi load xong (để tránh màn hình trắng)
         if (UserSession.getInstance().isAdminOrStaff()) {
-            lblTitle.setText("Lịch sử Bán hàng (Quản trị)");
-            colAction.setVisible(true);
             loadOrderHistory("/orders?page=0&size=20&sortBy=orderDate&direction=desc");
         } else {
-            lblTitle.setText("Lịch sử Mua hàng của tôi");
-            colAction.setVisible(false);
             loadOrderHistory("/orders/history?page=0&size=20");
         }
     }
 
-    private void handleStatusUpdate(OrderResponseDTO order) {
-        String nextStatus = "PENDING".equalsIgnoreCase(order.getStatus()) ? "SHIPPING" : "COMPLETED";
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Xác nhận trạng thái");
-        alert.setHeaderText("Chuyển trạng thái đơn hàng #" + order.getId());
-        alert.setContentText("Bạn có chắc chắn muốn chuyển đơn hàng sang trạng thái " + nextStatus + "?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            updateStatusAPI(order.getId(), nextStatus);
-        }
-    }
-
-    private void updateStatusAPI(Long orderId, String status) {
-        String jsonBody = "{\"status\": \"" + status + "\"}";
-        ApiClient.getInstance().patch("/orders/" + orderId + "/status", jsonBody)
-                .thenAccept(response -> {
-                    if (response.statusCode() == 200) {
+    private void cancelOrderAPI(Long id) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn chắc chắn muốn hủy đơn này?");
+        alert.showAndWait().ifPresent(type -> {
+            if (type == ButtonType.OK) {
+                // Gọi hàm post mới chỉ với endpoint
+                ApiClient.getInstance().post("/orders/" + id + "/cancel").thenAccept(res -> {
+                    if (res.statusCode() == 200) {
                         Platform.runLater(this::determineAndLoadData);
                     } else {
-                        Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Cập nhật thất bại!").show());
+                        Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Hủy đơn thất bại!").show());
                     }
                 });
+            }
+        });
     }
+
+    @Override
+    public void onNavigate(Object data) { determineAndLoadData(); }
 
     private void loadOrderHistory(String endpoint) {
         ApiClient.getInstance().get(endpoint).thenAccept(response -> {

@@ -30,6 +30,7 @@
                             <Button fx:id="btnInventory" onAction="#onInventoryClick" styleClass="nav-button" text="Inventory" />
 
                             <Button fx:id="btnImport" onAction="#onImportClick" styleClass="nav-button" text="Import" />
+                            <Button fx:id="btnRevenue" onAction="#onRevenueClick" styleClass="nav-button" text="Revenue"/>
                         </children>
                     </HBox>
                     <Region HBox.hgrow="ALWAYS" />

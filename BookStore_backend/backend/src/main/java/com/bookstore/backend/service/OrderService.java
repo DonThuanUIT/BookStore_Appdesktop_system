@@ -75,38 +75,47 @@ public class OrderService {
     @Transactional
     public OrderResponse updateStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng với ID: " + id));
-        String currentStatus = order.getStatus();
-        String targetStatus = newStatus.toUpperCase();
-        if ("COMPLETED".equalsIgnoreCase(currentStatus) || "CANCELED".equalsIgnoreCase(currentStatus)) {
-            throw new AppException(HttpStatus.BAD_REQUEST,
-                    "Không thể cập nhật đơn hàng đã hoàn thành (COMPLETED) hoặc đã hủy (CANCELED).");
-        }
-        if (!"SHIPPING".equalsIgnoreCase(targetStatus) &&
-                !"CANCELED".equalsIgnoreCase(targetStatus) &&
-                !"COMPLETED".equalsIgnoreCase(targetStatus)) {
-            throw new AppException(HttpStatus.BAD_REQUEST,
-                    "Trạng thái mới không hợp lệ. Chỉ chấp nhận: SHIPPING, CANCELED hoặc COMPLETED.");
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng ID: " + id));
+
+        String current = order.getStatus().toUpperCase();
+        String target = newStatus.toUpperCase();
+
+        // Luồng: PENDING -> SHIPPING (Duyệt) hoặc SHIPPING -> COMPLETED (Hoàn tất)
+        boolean isValid = ("PENDING".equals(current) && "SHIPPING".equals(target)) ||
+                ("SHIPPING".equals(current) && "COMPLETED".equals(target));
+
+        if (!isValid) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Luồng trạng thái không hợp lệ: " + current + " -> " + target);
         }
 
-        if ("SHIPPING".equalsIgnoreCase(currentStatus) && "CANCELED".equalsIgnoreCase(targetStatus)) {
-            throw new AppException(HttpStatus.BAD_REQUEST,
-                    "Đơn hàng đang trong quá trình giao (SHIPPING), không thể thực hiện hủy đơn.");
+        order.setStatus(target);
+        return convertToResponse(orderRepository.save(order));
+    }
+
+    // --- Dành cho CUSTOMER: Chỉ được hủy khi PENDING ---
+    @Transactional
+    public OrderResponse cancelOrder(Long orderId, User user) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new AppException(HttpStatus.FORBIDDEN, "Bạn không có quyền hủy đơn này.");
         }
 
-        if ("CANCELED".equalsIgnoreCase(targetStatus)) {
-            if (order.getOrderDetails() != null) {
-                for (OrderDetail detail : order.getOrderDetails()) {
-                    Book book = detail.getBook();
-                    if (book != null) {
-                        book.setQuantity(book.getQuantity() + detail.getQuantity());
-                        bookRepository.save(book);
-                    }
-                }
+        if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy đơn khi đang ở trạng thái PENDING.");
+        }
+
+        // Hoàn kho
+        if (order.getOrderDetails() != null) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                Book book = detail.getBook();
+                book.setQuantity(book.getQuantity() + detail.getQuantity());
+                bookRepository.save(book);
             }
         }
 
-        order.setStatus(targetStatus);
+        order.setStatus("CANCELED");
         return convertToResponse(orderRepository.save(order));
     }
     @Transactional
