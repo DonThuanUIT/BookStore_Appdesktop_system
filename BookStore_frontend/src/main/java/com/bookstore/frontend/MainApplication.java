@@ -7,61 +7,75 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.net.URL;
 
 public class MainApplication extends Application {
-
+    private static final String VIEW_BASE_PATH = "/com/bookstore/frontend/";
+    private static final String THEME_STYLESHEET = "/com/bookstore/frontend/css/theme.css";
+    private static final Path SOURCE_RESOURCES_PATH = Path.of("src", "main", "resources", "com", "bookstore", "frontend");
     private static Stage primaryStage;
-    private static final String VIEW_BASE_PATH = "/com/bookstore/frontend/view/";
-    private static final String CSS_PATH = "/com/bookstore/frontend/css/theme.css";
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         primaryStage = stage;
-        try {
-            showView("LoginView.fxml", "BookStore - Login");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        showView("view/LoginView.fxml", "BookStore - Login");
     }
 
-    public static void showView(String fxmlFileName, String title) throws IOException {
-        String resourcePath = fxmlFileName.startsWith("/") ? fxmlFileName : VIEW_BASE_PATH + fxmlFileName;
-        URL fxmlLocation = MainApplication.class.getResource(resourcePath);
-
-        if (fxmlLocation == null) {
-            throw new IOException("Resource not found: " + resourcePath);
+    public static void showView(String fxmlPath, String title) throws IOException {
+        URL resource = resolveViewResource(fxmlPath);
+        if (resource == null) {
+            throw new IOException("FXML resource not found: " + fxmlPath);
         }
 
-        FXMLLoader loader = new FXMLLoader(fxmlLocation);
-        Parent root = loader.load();
-
+        FXMLLoader fxmlLoader = new FXMLLoader(resource);
+        Parent root = fxmlLoader.load();
+        Scene scene = new Scene(root, 1300, 600);
+        URL stylesheet = resolveStylesheetResource();
+        if (stylesheet != null && !scene.getStylesheets().contains(stylesheet.toExternalForm())) {
+            scene.getStylesheets().add(stylesheet.toExternalForm());
+        }
         primaryStage.setTitle(title);
-
-        Scene scene = new Scene(root);
-        addStylesheet(scene);
         primaryStage.setScene(scene);
-
-        primaryStage.setResizable(true);
-        primaryStage.setMinWidth(1200);
-        primaryStage.setMinHeight(700);
-
+        primaryStage.setResizable(false);
+        primaryStage.centerOnScreen();
         primaryStage.show();
-
-        if (primaryStage.isMaximized()) {
-            primaryStage.setMaximized(false);
-        }
-        primaryStage.setMaximized(true);
-    }
-
-    private static void addStylesheet(Scene scene) {
-        URL cssLocation = MainApplication.class.getResource(CSS_PATH);
-        if (cssLocation != null) {
-            scene.getStylesheets().add(cssLocation.toExternalForm());
-        }
     }
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private static String resolveResourcePath(String fxmlPath) {
+        if (fxmlPath.startsWith("/")) {
+            return fxmlPath;
+        }
+        return VIEW_BASE_PATH + fxmlPath;
+    }
+
+    private static URL resolveViewResource(String fxmlPath) throws IOException {
+        String normalizedPath = fxmlPath.startsWith("/") ? fxmlPath : VIEW_BASE_PATH + fxmlPath;
+        URL classpathResource = MainApplication.class.getResource(normalizedPath);
+        if (classpathResource != null) return classpathResource;
+
+        Path sourceResource = SOURCE_RESOURCES_PATH.resolve(fxmlPath.replace("/", java.io.File.separator));
+        if (Files.exists(sourceResource)) return sourceResource.toUri().toURL();
+
+        return null;
+    }
+
+    private static URL resolveStylesheetResource() throws IOException {
+        URL classpathResource = MainApplication.class.getResource(THEME_STYLESHEET);
+        if (classpathResource != null) {
+            return classpathResource;
+        }
+
+        Path sourceStylesheet = SOURCE_RESOURCES_PATH.resolve(Path.of("css", "theme.css"));
+        if (Files.exists(sourceStylesheet)) {
+            return sourceStylesheet.toUri().toURL();
+        }
+
+        return null;
     }
 }

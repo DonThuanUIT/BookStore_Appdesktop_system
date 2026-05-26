@@ -2,86 +2,50 @@ package com.bookstore.frontend.controller;
 
 import com.bookstore.frontend.interactor.RegisterInteractor;
 import com.bookstore.frontend.model.RegisterModel;
-import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 public class RegisterController {
-    @FXML private StackPane rootStackPane;
-    @FXML private ImageView backgroundImage;
-    @FXML private VBox registerForm, loadingProgress;
-
-    // Đã xóa txtEmail, txtAddress
-    @FXML private TextField txtUsername, txtPasswordVisible, txtConfirmPasswordVisible;
-    @FXML private PasswordField txtPassword, txtConfirmPassword;
-
-    // Đã xóa cbRole
-    @FXML private Button btnTogglePassword, btnToggleConfirm, btnRegister;
+    @FXML private TextField username;
+    @FXML private PasswordField password;
+    @FXML private TextField passwordVisible;
+    @FXML private PasswordField confirmPassword;
+    @FXML private TextField confirmPasswordVisible;
     @FXML private Label lblMessage;
+    @FXML private Button btnRegister;
+    @FXML private ComboBox<String> role; // Vẫn giữ để khớp FXML nhưng sẽ để trống
 
-    private RegisterModel model;
-    private RegisterInteractor interactor;
-
-    public RegisterController() {
-        this.model = new RegisterModel();
-        this.interactor = new RegisterInteractor(this.model);
-    }
+    private final RegisterModel model = new RegisterModel();
+    private final RegisterInteractor interactor = new RegisterInteractor(model);
 
     @FXML
     public void initialize() {
-        // Ràng buộc kích thước ảnh nền
-        backgroundImage.fitWidthProperty().bind(rootStackPane.widthProperty());
-        backgroundImage.fitHeightProperty().bind(rootStackPane.heightProperty());
+        // 1. Binding dữ liệu người dùng nhập
+        username.textProperty().bindBidirectional(model.usernameProperty());
+        password.textProperty().bindBidirectional(model.passwordProperty());
+        confirmPassword.textProperty().bindBidirectional(model.confirmPasswordProperty());
 
-        // Bindings thông thường (Đã xóa email, address, role)
-        txtUsername.textProperty().bindBidirectional(model.usernameProperty());
-        txtPassword.textProperty().bindBidirectional(model.passwordProperty());
-        txtConfirmPassword.textProperty().bindBidirectional(model.confirmPasswordProperty());
+        // 2. Binding cho các trường hiển thị text (khi nhấn nút Show)
+        passwordVisible.textProperty().bindBidirectional(model.passwordProperty());
+        confirmPasswordVisible.textProperty().bindBidirectional(model.confirmPasswordProperty());
+
+        // 3. Binding trạng thái loading và thông báo
         lblMessage.textProperty().bind(model.messageProperty());
+        btnRegister.disableProperty().bind(model.loadingProperty());
 
-        // Xử lý mật khẩu thông minh (giữ placeholder) cho từng ô
-        setupSmartVisibility(txtPassword, txtPasswordVisible, btnTogglePassword, model.passwordVisibleProperty());
-        setupSmartVisibility(txtConfirmPassword, txtConfirmPasswordVisible, btnToggleConfirm, model.confirmVisibleProperty());
+        // 4. Logic UI: Tự động ẩn/hiện dựa trên trạng thái trong Model
+        passwordVisible.visibleProperty().bind(model.passwordVisibleProperty());
+        password.visibleProperty().bind(model.passwordVisibleProperty().not());
 
-        // Hiệu ứng Loading hoán đổi nút bấm
-        model.loadingProperty().addListener((obs, old, isLoading) -> {
-            btnRegister.setVisible(!isLoading);
-            btnRegister.setManaged(!isLoading);
-            loadingProgress.setVisible(isLoading);
-            loadingProgress.setManaged(isLoading);
-            registerForm.setDisable(isLoading);
-        });
+        confirmPasswordVisible.visibleProperty().bind(model.confirmPasswordVisibleProperty());
+        confirmPassword.visibleProperty().bind(model.confirmPasswordVisibleProperty().not());
+
+        // Gợi ý: Set text mặc định cho ComboBox role nếu muốn người dùng thấy
+        if(role != null) role.setPromptText("CUSTOMER (Default)");
     }
 
-    private void setupSmartVisibility(PasswordField pf, TextField tf, Button btn, BooleanProperty visibleProp) {
-        // Đồng bộ dữ liệu giữa PasswordField và TextField
-        // LƯU Ý: Rút kinh nghiệm từ JavaFX, để bindBidirectional chạy mượt giữa 2 ô text,
-        // ta set giá trị khởi tạo trước khi bind để tránh vòng lặp (loop).
-        tf.setText(pf.getText());
-        tf.textProperty().bindBidirectional(pf.textProperty());
-
-        Runnable updateUI = () -> {
-            boolean isVisible = visibleProp.get();
-            // Chỉ hiện ô TextField (chữ thường) khi được bật mắt và CÓ TEXT
-            boolean hasText = pf.getText() != null && !pf.getText().isEmpty();
-            boolean showText = isVisible && hasText;
-
-            tf.setVisible(showText);
-            tf.setManaged(showText);
-            pf.setVisible(!showText);
-            pf.setManaged(!showText);
-            btn.setText(isVisible ? "🙈" : "👁");
-        };
-
-        visibleProp.addListener((obs, old, newVal) -> updateUI.run());
-        pf.textProperty().addListener((obs, old, newVal) -> updateUI.run());
-    }
-
-    @FXML public void togglePassword() { model.passwordVisibleProperty().set(!model.passwordVisibleProperty().get()); }
-    @FXML public void toggleConfirm() { model.confirmVisibleProperty().set(!model.confirmVisibleProperty().get()); }
     @FXML public void handleRegister() { interactor.register(); }
-    @FXML public void goToLogin() { interactor.navigateToLogin(); }
+    @FXML public void navigateToLogin() { interactor.goToLogin(); }
+    @FXML public void togglePassword() { interactor.togglePassword(); }
+    @FXML public void toggleConfirmPassword() { interactor.toggleConfirmPassword(); }
 }

@@ -73,6 +73,10 @@
                 <version>3.13.0</version>
                 <configuration>
                     <release>17</release>
+                    <compilerArgs>
+                        <arg>--add-modules</arg>
+                        <arg>java.net.http</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

@@ -10,7 +10,6 @@ import lombok.*;
 @Builder
 @Data
 @Table(name = "users")
-
 public class AppUser {
 
     @Id
@@ -29,8 +28,10 @@ public class AppUser {
 
 //    protected AppUser() {
 //    }
+
     public AppUser() {
     }
+
     public AppUser(String username, String password, Role role) {
         this.username = username;
         this.password = password;
@@ -49,7 +50,19 @@ public class AppUser {
         return password;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public Role getRole() {
         return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

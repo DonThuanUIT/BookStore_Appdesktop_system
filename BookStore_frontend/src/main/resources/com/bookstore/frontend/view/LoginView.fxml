@@ -1,82 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.image.*?>
+
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 
-<StackPane fx:id="rootStackPane" prefHeight="700.0" prefWidth="1100.0"
-           stylesheets="@../css/colors.css, @../css/theme.css"
-           xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.bookstore.frontend.controller.LoginController">
-   <children>
-      <ImageView fx:id="backgroundImage" pickOnBounds="true" preserveRatio="false">
-         <image>
-            <Image url="@../image/libraryBackground.jpg" />
-         </image>
-      </ImageView>
+<HBox fx:id="rootNode" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+         prefHeight="650.0" prefWidth="1100.0" stylesheets="@../css/theme.css"
+         xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="com.bookstore.frontend.controller.LoginController">
+      <children>
+         <StackPane fx:id="leftPane" style="-fx-background-color: black;" HBox.hgrow="ALWAYS">
+            <children>
+               <ImageView fitHeight="600.0" fitWidth="850" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_LEFT">
+                  <image>
+                     <Image url="@../image/Library.png" />
+                  </image>
+                  <StackPane.margin>
+                     <Insets left="-60.0" />
+                  </StackPane.margin>
+               </ImageView>
 
-      <Pane styleClass="overlay" />
+               <ImageView fitHeight="580.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_LEFT">
+                  <image>
+                     <Image url="@../image/student_boy.png" />
+                  </image>
+                  <StackPane.margin>
+                     <Insets left="40.0" />
+                  </StackPane.margin>
+               </ImageView>
+            </children>
+         </StackPane>
 
-      <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
-            prefHeight="550.0" prefWidth="450.0" spacing="10.0" styleClass="login-box">
+         <VBox alignment="CENTER_LEFT" spacing="40.0" styleClass="bg-black" HBox.hgrow="ALWAYS">
+            <padding>
+               <Insets bottom="30.0" left="60.0" right="60.0" top="50.0" />
+            </padding>
+            <children>
+               <VBox spacing="10.0">
+                  <children>
+                     <Label alignment="CENTER" styleClass="text-title-gold" text="Welcome to Neth BookPoint!" wrapText="true" maxWidth="Infinity" />
+                     <Label alignment="CENTER" styleClass="text-description" wrapText="true" maxWidth="450.0"
+                            text="Discover a seamless way to sell your books and unlock exclusive benefits. Enjoy a hassle-free experience, save valuable time, and take advantage of our amazing offers." />
+                  </children>
+               </VBox>
 
-         <children>
-            <VBox fx:id="loginForm" alignment="CENTER" spacing="24.0">
-               <children>
+               <Label alignment="CENTER" maxWidth="Infinity" styleClass="text-subtitle-gold" text="Login to Your Account!" />
 
-                  <VBox alignment="CENTER" spacing="5.0">
-                     <Label styleClass="login-title" text="Welcome Back" />
-                     <Label styleClass="login-subtitle" text="Sign in to access your premium collection." />
-                  </VBox>
+               <VBox maxWidth="420.0" spacing="18.0">
+                  <children>
+                     <StackPane alignment="CENTER_RIGHT">
+                        <children>
+                           <TextField fx:id="txtUsername" promptText="Enter Email" styleClass="custom-input" />
+                           <Label styleClass="input-icon" text="\@" />
+                        </children>
+                     </StackPane>
 
-                  <TextField fx:id="txtUsername" promptText="Username or Email" styleClass="custom-text-field" />
+                     <StackPane alignment="CENTER_RIGHT">
+                        <children>
+                           <TextField fx:id="txtPasswordVisible" promptText="Enter Password" styleClass="custom-input" visible="false" />
 
-                  <StackPane>
-                     <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-text-field" />
-                     <TextField fx:id="txtPasswordVisible" managed="false" visible="false"
-                                promptText="Password" styleClass="custom-text-field" />
-                     <Button fx:id="btnTogglePassword" onAction="#togglePassword" text="👁"
-                             StackPane.alignment="CENTER_RIGHT" styleClass="btn-icon" />
-                  </StackPane>
+                           <PasswordField fx:id="txtPassword" promptText="Enter Password" styleClass="custom-input" />
 
-                  <HBox alignment="CENTER_LEFT">
-                     <children>
-                        <CheckBox mnemonicParsing="false" styleClass="custom-checkbox" text="Remember Me" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Hyperlink onAction="#handleNavigateToForgotPassword" styleClass="text-link" text="Forgot Password?" />
-                     </children>
-                  </HBox>
+                           <Button fx:id="btnTogglePassword" onAction="#togglePassword" styleClass="btn-eye" text="👁">
+                              <StackPane.margin>
+                                 <Insets right="4.0" />
+                              </StackPane.margin>
+                           </Button>
+                        </children>
+                     </StackPane>
 
-                  <StackPane>
-                     <children>
-                        <Button fx:id="btnLogin" onAction="#handleLogin" maxWidth="Infinity"
-                                mnemonicParsing="false" styleClass="login-button" text="Sign In" />
+                     <Hyperlink alignment="CENTER_RIGHT" maxWidth="Infinity" styleClass="link-forgot" text="Forgot Password?" />
 
-                        <VBox fx:id="loadingContainer" alignment="CENTER" spacing="5.0" visible="false" managed="false">
-                           <children>
-                              <ProgressIndicator prefHeight="40.0" prefWidth="40.0" />
-                              <Label text="Authenticating..." style="-fx-text-fill: -fx-accent-gold; -fx-font-size: 12px;" />
-                           </children>
-                        </VBox>
-                     </children>
-                     <VBox.margin><Insets top="10.0" /></VBox.margin>
-                  </StackPane>
+                     <Label fx:id="lblMessage" style="-fx-text-fill: #ff5555; -fx-font-weight: bold;" wrapText="true" />
 
-                  <HBox alignment="CENTER" spacing="5.0">
-                     <children>
-                        <Label styleClass="login-subtitle" text="New to Neth Bookpoint?" />
-                        <Hyperlink onAction="#handleNavigateToRegister" styleClass="text-link" text="Register Now" />
-                     </children>
-                  </HBox>
-               </children>
-            </VBox>
+                     <HBox alignment="CENTER_LEFT" spacing="60.0" style="-fx-font-size: 16px;">
+                        <children>
+                           <Label style="-fx-text-fill: white;" text="Don't you have an account?" />
+                           <Hyperlink onAction="#navigateToRegister" styleClass="link-create" text="Create an account" />
+                        </children>
+                     </HBox>
 
-            <Label fx:id="lblMessage" textAlignment="CENTER" styleClass="text-error" wrapText="true" />
-         </children>
+                     <Separator prefWidth="200.0" styleClass="line-separator">
+                        <VBox.margin>
+                           <Insets bottom="10.0" />
+                        </VBox.margin>
+                     </Separator>
 
-         <padding>
-            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-         </padding>
-      </VBox>
-   </children>
-</StackPane>
+                     <HBox alignment="CENTER_LEFT" spacing="15.0">
+                        <children>
+                           <Button graphicTextGap="12.0" minWidth="190.0" styleClass="btn-google" text="Login with Google">
+                              <graphic>
+                                 <ImageView fitHeight="40.0" fitWidth="40.0"><Image url="@../image/google.png" /></ImageView>
+                              </graphic>
+                           </Button>
+                           <Region HBox.hgrow="ALWAYS" />
+                           <Button fx:id="btnLogin" minWidth="110.0" onAction="#handleLogin" styleClass="btn-login" text="LOGIN" />                        </children>
+                     </HBox>
+                  </children>
+               </VBox>
+            </children>
+         </VBox>
+      </children>
+   </HBox>

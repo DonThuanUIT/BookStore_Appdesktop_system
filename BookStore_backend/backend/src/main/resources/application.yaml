@@ -3,39 +3,22 @@ spring:
     active: local
   application:
     name: backend
-  jackson:
-    deserialization:
-      fail-on-unknown-properties: true
-
+  datasource:
+    url: jdbc:postgresql://localhost:5432/BOOKSTORE_DB?timezone=Asia/Ho_Chi_Minh
+    username: postgres
+    password: 240206
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
-        format_sql: false
-        default_batch_fetch_size: 50
-        jdbc:
-          batch_size: 30
-        order_inserts: true
-        order_updates: true
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 app:
-  cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8080}
   jwt:
-    secret: ${JWT_SECRET:bookstore-secret-key-for-jwt-signing-2026-safe}
-    issuer: bookstore-backend
+    # Chuỗi secret này dùng để mã hóa Token, phải đủ dài (ít nhất 32 ký tự)
+    secret: "DayLaChuoiBiMatSieuCapVipProChoBookStore2026!@#"
+    issuer: "BookStoreBackend"
     expiration-minutes: 60
-cloudinary:
-  cloud-name: diyllh0nb
-  api-key: 616741512236885
-  api-secret: ios3hWyIrsdljGXYyAYwVb3o3Rk

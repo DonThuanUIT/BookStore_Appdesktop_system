@@ -7,7 +7,6 @@ public class LoginModel {
     private final StringProperty password = new SimpleStringProperty("");
     private final StringProperty message = new SimpleStringProperty("");
     private final BooleanProperty passwordVisible = new SimpleBooleanProperty(false);
-    // Quản lý trạng thái đợi phản hồi từ HTTP API
     private final BooleanProperty loading = new SimpleBooleanProperty(false);
 
     public StringProperty usernameProperty() { return username; }
