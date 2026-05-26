@@ -48,19 +48,11 @@ class SecurityConfigTest {
     }
 
     @Test
-    void shouldRejectStaffFromAdminEndpoint() throws Exception {
+    void shouldRejectCustomerFromAdminEndpoint() throws Exception {
         mockMvc.perform(get("/api/test/admin")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))
-                                .jwt(jwt -> jwt.subject("staff-user").claim("roles", List.of("STAFF")))))
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
+                                .jwt(jwt -> jwt.subject("customer-user").claim("roles", List.of("CUSTOMER")))))
                 .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void shouldAllowStaffToStaffEndpoint() throws Exception {
-        mockMvc.perform(get("/api/test/staff")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))
-                                .jwt(jwt -> jwt.subject("staff-user").claim("roles", List.of("STAFF")))))
-                .andExpect(status().isOk());
     }
 
     @Test
@@ -69,14 +61,6 @@ class SecurityConfigTest {
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
                                 .jwt(jwt -> jwt.subject("customer-user").claim("roles", List.of("CUSTOMER")))))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void shouldRejectCustomerFromStaffEndpoint() throws Exception {
-        mockMvc.perform(get("/api/test/staff")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
-                                .jwt(jwt -> jwt.subject("customer-user").claim("roles", List.of("CUSTOMER")))))
-                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -108,11 +92,6 @@ class SecurityConfigTest {
             @GetMapping("/admin")
             String admin() {
                 return "admin";
-            }
-
-            @GetMapping("/staff")
-            String staff() {
-                return "staff";
             }
 
             @GetMapping("/customer")

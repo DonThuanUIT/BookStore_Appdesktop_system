@@ -4,6 +4,7 @@ import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.HomeModel;
 import com.bookstore.frontend.model.dto.Response.BookResponseDto;
 import com.bookstore.frontend.service.api.ApiClient;
+import com.bookstore.frontend.util.BookMapper; // KHAI THÁC SỨC MẠNH CỦA MAPPER
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Collections;
@@ -19,7 +20,7 @@ public class HomeInteractor {
     }
 
     public void loadDashboardData(String username) {
-        String message = "Welcome back, " + (username != null ? username : "Customer") + "!";
+        String message = "Chào mừng, " + (username != null ? username : "Khách iu") + "!";
         model.welcomeMessageProperty().set(message);
     }
 
@@ -37,31 +38,9 @@ public class HomeInteractor {
                                     .readerForListOf(BookResponseDto.class)
                                     .readValue(contentNode);
 
-                            return dtoList.stream().map(dto -> {
-                                BookModel bookModel = new BookModel();
-                                bookModel.setId(dto.getId());
-                                bookModel.setTitle(dto.getTitle());
-                                bookModel.setPrice(dto.getSellPrice() != null ? dto.getSellPrice().doubleValue() : 0.0);
-                                bookModel.setImageUrl(dto.getImageUrl());
-                                bookModel.setDescription(dto.getDescription());
-                                bookModel.setPublisherName(dto.getPublisherName());
-
-                                // 1. LẤY TÁC GIẢ PHẲNG: Gọi trực tiếp getAuthorNames() từ DTO mới
-                                if (dto.getAuthorNames() != null && !dto.getAuthorNames().isEmpty()) {
-                                    bookModel.setAuthorName(dto.getAuthorNames().get(0));
-                                } else {
-                                    bookModel.setAuthorName("Unknown Author");
-                                }
-
-                                // 2. LẤY THỂ LOẠI PHẲNG: Gán thẳng danh sách mảng chuỗi
-                                if (dto.getCategoryNames() != null) {
-                                    bookModel.setCategoryNames(dto.getCategoryNames());
-                                } else {
-                                    bookModel.setCategoryNames(Collections.emptyList());
-                                }
-
-                                return bookModel;
-                            }).collect(Collectors.toList());
+                            return dtoList.stream()
+                                    .map(BookMapper::toModel)
+                                    .collect(Collectors.toList());
 
                         } catch (Exception e) {
                             System.err.println("Lỗi Parse JSON tại HomeInteractor: " + e.getMessage());

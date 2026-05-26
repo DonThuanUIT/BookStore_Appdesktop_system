@@ -23,10 +23,6 @@
             </Label>
         </HBox>
         <HBox spacing="10.0">
-            <Label text="👤 Nhân viên:" textFill="#AAAAAA" />
-            <Label fx:id="lblStaff" text="..." textFill="WHITE" />
-        </HBox>
-        <HBox spacing="10.0">
             <Label text="📅 Ngày nhập:" textFill="#AAAAAA" />
             <Label fx:id="lblDate" text="..." textFill="WHITE" />
         </HBox>
@@ -51,7 +47,7 @@
         <Label text="TỔNG TIỀN PHIẾU NHẬP" textFill="#AAAAAA">
             <font><Font size="12.0" /></font>
         </Label>
-        <Label fx:id="lblTotalCost" text="\$0.00" textFill="#FFC107">
+        <Label fx:id="lblTotalCost" text="0 đ" textFill="#FFC107">
             <font><Font name="System Bold" size="28.0" /></font>
         </Label>
     </VBox>

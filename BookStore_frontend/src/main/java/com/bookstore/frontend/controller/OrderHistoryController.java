@@ -55,17 +55,16 @@ public class OrderHistoryController implements Navigatable {
                 } else {
                     OrderResponseDTO order = getTableView().getItems().get(getIndex());
                     String status = order.getStatus().toUpperCase();
-                    boolean isAdmin = UserSession.getInstance().isAdminOrStaff();
+
+                    boolean isAdmin = UserSession.getInstance().isAdmin();
 
                     if (isAdmin) {
-                        // Admin/Staff: Duyệt (PENDING->SHIPPING) hoặc Hoàn tất (SHIPPING->COMPLETED)
                         if ("PENDING".equals(status) || "SHIPPING".equals(status)) {
                             btnAction.setText("PENDING".equals(status) ? "✓ Duyệt" : "✓ Hoàn tất");
                             btnAction.setStyle("-fx-background-color: " + ("PENDING".equals(status) ? "#27ae60" : "#2980b9") + "; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
                             setGraphic(btnAction);
                         } else setGraphic(null);
                     } else {
-                        // Customer: Chỉ được Hủy khi PENDING
                         if ("PENDING".equals(status)) {
                             btnAction.setText("✕ Hủy đơn");
                             btnAction.setStyle("-fx-background-color: #e74c3c; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
@@ -78,7 +77,7 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void handleAction(OrderResponseDTO order) {
-        if (UserSession.getInstance().isAdminOrStaff()) {
+        if (UserSession.getInstance().isAdmin()) {
             String nextStatus = "PENDING".equalsIgnoreCase(order.getStatus()) ? "SHIPPING" : "COMPLETED";
             updateStatusAPI(order.getId(), nextStatus);
         } else {
@@ -86,12 +85,10 @@ public class OrderHistoryController implements Navigatable {
         }
     }
 
-    // Sửa hàm updateStatusAPI và cancelOrderAPI
     private void updateStatusAPI(Long id, String status) {
         String jsonBody = "{\"status\": \"" + status + "\"}";
         ApiClient.getInstance().patch("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
             if (response.statusCode() == 200) {
-                // Cập nhật lại UI sau khi thành công
                 Platform.runLater(this::determineAndLoadData);
             } else {
                 Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Cập nhật thất bại!").show());
@@ -100,8 +97,7 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void determineAndLoadData() {
-        // Chỉ clear khi load xong (để tránh màn hình trắng)
-        if (UserSession.getInstance().isAdminOrStaff()) {
+        if (UserSession.getInstance().isAdmin()) {
             loadOrderHistory("/orders?page=0&size=20&sortBy=orderDate&direction=desc");
         } else {
             loadOrderHistory("/orders/history?page=0&size=20");
@@ -112,7 +108,6 @@ public class OrderHistoryController implements Navigatable {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn chắc chắn muốn hủy đơn này?");
         alert.showAndWait().ifPresent(type -> {
             if (type == ButtonType.OK) {
-                // Gọi hàm post mới chỉ với endpoint
                 ApiClient.getInstance().post("/orders/" + id + "/cancel").thenAccept(res -> {
                     if (res.statusCode() == 200) {
                         Platform.runLater(this::determineAndLoadData);

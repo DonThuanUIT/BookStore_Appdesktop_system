@@ -18,7 +18,6 @@ import java.io.IOException;
 
 public class AccountPopup extends Popup {
 
-    // Không cần UserService hay OrderService vì đã có ApiClient
     private final Label lblName = new Label();
     private final Label lblEmail = new Label();
 
@@ -49,17 +48,13 @@ public class AccountPopup extends Popup {
         Button btnLogout = new Button("Log Out");
         btnLogout.setMaxWidth(Double.MAX_VALUE);
         btnLogout.setStyle("-fx-text-fill: #ff5555; -fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 10 0 0 0;");
-        // Trong lớp AccountPopup.java
 
-        // Trong sự kiện btnLogout.setOnAction
         btnLogout.setOnAction(e -> {
             // 1. Xóa session
             UserSession.getInstance().clean();
 
-            // 2. Xóa Cache để lần đăng nhập tới trang sẽ được load lại từ đầu
             NavigationService.getInstance().clearCache();
 
-            // 3. Chuyển về Login
             try {
                 MainApplication.showView("LoginView.fxml", "BookStore - Login");
             } catch (IOException ex) {
@@ -77,7 +72,6 @@ public class AccountPopup extends Popup {
         if (session.getUsername() != null) {
             lblName.setText(session.getUsername());
             lblEmail.setText("User Account");
-            // Sau này nếu cần lấy thông tin chi tiết hơn, bạn dùng ApiClient.getInstance().get("/users/profile") tại đây
         } else {
             lblName.setText("Guest");
             lblEmail.setText("Not Logged In");

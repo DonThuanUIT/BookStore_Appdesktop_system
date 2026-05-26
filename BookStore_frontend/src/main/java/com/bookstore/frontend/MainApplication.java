@@ -1,4 +1,5 @@
 package com.bookstore.frontend;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -17,27 +18,45 @@ public class MainApplication extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
         try {
-            // Load trang Login ban đầu
             showView("LoginView.fxml", "BookStore - Login");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    // Phương thức này giờ đây sẽ thay đổi Scene của primaryStage hiện tại
     public static void showView(String fxmlFileName, String title) throws IOException {
         String resourcePath = fxmlFileName.startsWith("/") ? fxmlFileName : VIEW_BASE_PATH + fxmlFileName;
         URL fxmlLocation = MainApplication.class.getResource(resourcePath);
 
+        if (fxmlLocation == null) {
+            throw new IOException("Resource not found: " + resourcePath);
+        }
+
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1300, 600);
-        URL cssLocation = MainApplication.class.getResource(CSS_PATH);
-        if (cssLocation != null) scene.getStylesheets().add(cssLocation.toExternalForm());
-
         primaryStage.setTitle(title);
-        primaryStage.setScene(scene); // Thay đổi Scene hiện tại
+
+        Scene scene = new Scene(root);
+
+        addStylesheet(scene);
+        primaryStage.setScene(scene);
+
+        primaryStage.setResizable(true);
+        primaryStage.setMinWidth(1200);
+        primaryStage.setMinHeight(700);
+
         primaryStage.show();
+
+        if (primaryStage.isMaximized()) {
+            primaryStage.setMaximized(false);
+        }
+        primaryStage.setMaximized(true);
+    }
+
+    private static void addStylesheet(Scene scene) {
+        URL cssLocation = MainApplication.class.getResource(CSS_PATH);
+        if (cssLocation != null) {
+            scene.getStylesheets().add(cssLocation.toExternalForm());
+        }
     }
 }

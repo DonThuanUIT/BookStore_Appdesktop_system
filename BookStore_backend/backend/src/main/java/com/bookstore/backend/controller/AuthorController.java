@@ -52,14 +52,14 @@ public class AuthorController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AuthorResponse> create(@Valid @RequestBody AuthorUpsertRequest request) {
         AuthorResponse created = authorService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AuthorResponse> update(
             @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody AuthorUpsertRequest request
@@ -68,7 +68,7 @@ public class AuthorController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         authorService.delete(id);
         return ResponseEntity.noContent().build();

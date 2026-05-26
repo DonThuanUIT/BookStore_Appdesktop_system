@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -44,6 +45,13 @@ public class BookController {
         return ResponseEntity.ok(bookService.getById(id));
     }
 
+    @GetMapping("/name/{name}")
+    public ResponseEntity<List<BookResponse>> getByName(
+            @PathVariable @NotBlank(message = "name is required") String name
+    ) {
+        return ResponseEntity.ok(bookService.getByName(name));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<BookResponse>> search(
             @RequestParam(required = false)
@@ -54,14 +62,14 @@ public class BookController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BookResponse> create(@Valid @RequestBody BookUpsertRequest request) {
         BookResponse created = bookService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BookResponse> update(
             @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody BookUpsertRequest request
@@ -70,7 +78,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         bookService.delete(id);
         return ResponseEntity.noContent().build();

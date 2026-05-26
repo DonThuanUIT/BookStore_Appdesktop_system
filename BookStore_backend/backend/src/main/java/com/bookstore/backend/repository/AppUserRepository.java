@@ -18,7 +18,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
             SELECT u
             FROM AppUser u
             JOIN u.role r
-            WHERE r.name IN ('ROLE_ADMIN', 'ROLE_STAFF')
+            WHERE r.name = 'ROLE_ADMIN'
               AND (
                     LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
                  OR LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%'))

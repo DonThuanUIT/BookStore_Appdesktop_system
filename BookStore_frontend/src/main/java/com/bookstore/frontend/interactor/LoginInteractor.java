@@ -54,7 +54,12 @@ public class LoginInteractor {
                             }
 
                             UserSession.getInstance().init(token, user, roles);
+
+                            System.out.println("Login thành công. Token: " + token);
+                            ApiClient.getInstance().startSseConnection();
+
                             navigateToHome(user);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                             AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi xử lý dữ liệu.");
@@ -76,11 +81,10 @@ public class LoginInteractor {
 
     private void navigateToHome(String username) {
         try {
-            // Thay đổi Scene hiện tại sang MainLayout
+            NavigationService.getInstance().clearCache();
+
             MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
 
-            // Sau khi MainLayout được load xong, NavigationService sẽ tự tìm thấy contentArea
-            // và điều hướng tới trang HOME
             NavigationService.getInstance().navigateTo(PageType.HOME, username);
         } catch (IOException e) {
             e.printStackTrace();

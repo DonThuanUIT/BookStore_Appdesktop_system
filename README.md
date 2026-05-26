@@ -60,7 +60,7 @@ erDiagram
         string full_name
         string phone
         string address
-        enum role "ADMIN, STAFF, CUSTOMER"
+        enum role "ADMIN (Vendor), CUSTOMER"
         boolean is_deleted
     }
 

@@ -4,14 +4,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import com.bookstore.frontend.components.TagInputField?>
 
-<VBox prefWidth="700.0" spacing="20.0" styleClass="login-box" stylesheets="@../css/colors.css, @../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.BookFormController">
+<VBox prefWidth="850.0" spacing="20.0" styleClass="login-box" stylesheets="@../css/colors.css, @../css/theme.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.BookFormController">
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
 
     <HBox alignment="CENTER_LEFT">
-        <Label fx:id="lblFormTitle" style="-fx-font-size: 24px;" styleClass="login-title" text="Edit Book Details" />
+        <Label fx:id="lblFormTitle" style="-fx-font-size: 24px;" styleClass="login-title" text="Cập nhật thông tin Sách" />
         <Region HBox.hgrow="ALWAYS" />
         <Button mnemonicParsing="false" onAction="#handleCancel" style="-fx-font-size: 18px;" styleClass="btn-icon" text="✕" />
     </HBox>
@@ -19,34 +20,58 @@
     <Separator style="-fx-background-color: rgba(255,255,255,0.1);" />
 
     <HBox spacing="40.0">
-
-        <VBox alignment="CENTER" spacing="15.0">
+        <VBox alignment="TOP_CENTER" spacing="15.0">
             <StackPane style="-fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 12; -fx-background-radius: 12; -fx-background-color: rgba(0,0,0,0.5); -fx-padding: 5;">
                 <ImageView fx:id="imgCover" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="false" />
             </StackPane>
-            <Button mnemonicParsing="false" onAction="#handleChangeImage" styleClass="btn-outline-small" text="📂 Change Cover Image" />
+            <Button mnemonicParsing="false" onAction="#handleChangeImage" styleClass="btn-outline-small" text="📂 Chọn ảnh bìa" />
         </VBox>
 
-        <VBox spacing="25.0" HBox.hgrow="ALWAYS">
-            <VBox spacing="8.0">
-                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1px;" text="BOOK TITLE" />
+        <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+
+            <VBox spacing="5.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="TIÊU ĐỀ SÁCH" />
                 <TextField fx:id="txtTitle" styleClass="custom-text-field" />
             </VBox>
 
-            <VBox spacing="8.0">
-                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1px;" text="AUTHOR" />
-                <ComboBox fx:id="cbAuthor" maxWidth="Infinity" styleClass="custom-combo-box" />
+            <VBox spacing="5.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="TÁC GIẢ (Gõ để tìm kiếm hoặc thêm mới)" />
+                <TagInputField fx:id="tagInputAuthor" />
+            </VBox>
+
+            <VBox spacing="5.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="THỂ LOẠI (Gõ để tìm kiếm hoặc thêm mới)" />
+                <TagInputField fx:id="tagInputCategory" />
+            </VBox>
+
+            <HBox spacing="15.0">
+                <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                    <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="NHÀ XUẤT BẢN" />
+                    <ComboBox fx:id="cbPublisher" maxWidth="Infinity" styleClass="custom-combo-box" />
+                </VBox>
+                <VBox spacing="5.0" prefWidth="130.0">
+                    <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="GIÁ BÁN (VNĐ)" />
+                    <TextField fx:id="txtPrice" styleClass="custom-text-field" />
+                </VBox>
+                <VBox spacing="5.0" prefWidth="100.0">
+                    <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="SỐ LƯỢNG" />
+                    <TextField fx:id="txtQuantity" styleClass="custom-text-field" />
+                </VBox>
+            </HBox>
+
+            <VBox spacing="5.0">
+                <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px; -fx-font-weight: bold;" text="MÔ TẢ NGẮN" />
+                <TextArea fx:id="txtDescription" prefRowCount="3" wrapText="true" style="-fx-control-inner-background: #1e2430; -fx-text-fill: white; -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 5; -fx-background-radius: 5;" />
             </VBox>
 
         </VBox>
-
     </HBox>
 
     <Separator style="-fx-background-color: rgba(255,255,255,0.1);" />
 
     <HBox alignment="CENTER_RIGHT" spacing="15.0">
-        <Button mnemonicParsing="false" onAction="#handleCancel" styleClass="btn-outline-small" style="-fx-padding: 10 25; -fx-font-size: 14px;" text="Cancel" />
-        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#handleSave" styleClass="btn-primary" style="-fx-padding: 10 25; -fx-font-size: 14px;" text="Update Book" />
+        <Button mnemonicParsing="false" onAction="#handleCancel" styleClass="btn-outline-small" style="-fx-padding: 10 25; -fx-font-size: 14px;" text="Hủy bỏ" />
+        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#handleSave" styleClass="btn-primary" style="-fx-padding: 10 25; -fx-font-size: 14px;" text="Lưu thay đổi" />
     </HBox>
 
 </VBox>

@@ -48,6 +48,12 @@ public class BookApiService {
     private CompletableFuture<Boolean> sendWriteRequest(String url, String method, Object body) {
         try {
             String jsonBody = objectMapper.writeValueAsString(body);
+
+            // BẬT ĐÈN: In ra Payload để xem Front-End đang gửi cái gì
+            System.out.println("\n--- THỰC THI API " + method + " ---");
+            System.out.println("URL: " + url);
+            System.out.println("Payload: " + jsonBody);
+
             HttpRequest.Builder rb = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")
@@ -55,8 +61,20 @@ public class BookApiService {
             attachToken(rb);
 
             return httpClient.sendAsync(rb.build(), HttpResponse.BodyHandlers.ofString())
-                    .thenApply(res -> res.statusCode() == 200 || res.statusCode() == 201);
+                    .thenApply(res -> {
+                        if (res.statusCode() == 200 || res.statusCode() == 201) {
+                            System.out.println("=> THÀNH CÔNG!");
+                            return true;
+                        } else {
+                            // BẬT ĐÈN: In ra lý do Backend từ chối
+                            System.err.println("=> API THẤT BẠI (HTTP " + res.statusCode() + "):");
+                            System.err.println("Lý do từ Backend: " + res.body() + "\n");
+                            return false;
+                        }
+                    });
         } catch (Exception e) {
+            System.err.println("Lỗi nội bộ khi gửi Request: " + e.getMessage());
+            e.printStackTrace();
             return CompletableFuture.completedFuture(false);
         }
     }
@@ -101,6 +119,39 @@ public class BookApiService {
                         }
                     } else {
                         System.err.println("Lỗi gọi API Search: HTTP " + response.statusCode());
+                    }
+                    return java.util.Collections.emptyList();
+                });
+    }
+
+    public CompletableFuture<java.util.List<BookResponseDto>> searchBooksByName(String keyword) {
+        String trimmedKeyword = keyword != null ? keyword.trim() : "";
+        if (trimmedKeyword.isEmpty()) {
+            return CompletableFuture.completedFuture(java.util.Collections.emptyList());
+        }
+
+        String encodedKeyword;
+        try {
+            encodedKeyword = java.net.URLEncoder.encode(trimmedKeyword, java.nio.charset.StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            encodedKeyword = trimmedKeyword;
+        }
+
+        String url = String.format("%s/name/%s", BASE_URL, encodedKeyword);
+
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+        attachToken(requestBuilder);
+
+        return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() == 200) {
+                        try {
+                            return objectMapper.readValue(response.body(), new TypeReference<java.util.List<BookResponseDto>>() {});
+                        } catch (Exception e) {
+                            System.err.println("Lá»—i Parse JSON táº¡i BookApiService: " + e.getMessage());
+                        }
+                    } else {
+                        System.err.println("Lá»—i gá»i API Search Book By Name: HTTP " + response.statusCode());
                     }
                     return java.util.Collections.emptyList();
                 });

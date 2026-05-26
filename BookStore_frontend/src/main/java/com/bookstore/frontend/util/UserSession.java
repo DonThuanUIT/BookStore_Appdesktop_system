@@ -18,7 +18,6 @@ public class UserSession {
         return instance;
     }
 
-    // Lưu Token vào đây sau khi login thành công
     public void init(String token, String username, List<String> roles) {
         this.token = token;
         this.username = username;
@@ -32,9 +31,18 @@ public class UserSession {
         return Collections.unmodifiableList(roles);
     }
 
-    /** true nếu JWT/login trả về role khách hàng (CUSTOMER hoặc ROLE_CUSTOMER). */
+    public boolean isAdmin() {
+        return roles.stream().anyMatch(UserSession::isAdminRoleName);
+    }
+
     public boolean isCustomer() {
         return roles.stream().anyMatch(UserSession::isCustomerRoleName);
+    }
+
+    private static boolean isAdminRoleName(String role) {
+        if (role == null) return false;
+        String n = role.trim();
+        return "ADMIN".equalsIgnoreCase(n) || "ROLE_ADMIN".equalsIgnoreCase(n);
     }
 
     private static boolean isCustomerRoleName(String role) {
@@ -47,13 +55,5 @@ public class UserSession {
         token = null;
         username = null;
         roles = List.of();
-    }
-
-    // Thêm vào trong class UserSession
-    public boolean isAdminOrStaff() {
-        return roles.stream().anyMatch(role -> {
-            String n = role.trim().toUpperCase();
-            return n.contains("ADMIN") || n.contains("STAFF");
-        });
     }
 }

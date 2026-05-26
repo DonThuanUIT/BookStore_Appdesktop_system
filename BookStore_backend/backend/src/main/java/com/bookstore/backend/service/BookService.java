@@ -14,12 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import com.bookstore.backend.entity.*;
 import com.bookstore.backend.exception.AppException;
-import com.bookstore.backend.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -32,16 +31,20 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final AuthorRepository authorRepository;
 
+    private final SseNotificationService sseNotificationService;
+
+
     public BookService(BookRepository bookRepository,
                        PublisherRepository publisherRepository,
                        CategoryRepository categoryRepository,
-                       AuthorRepository authorRepository) {
+                       AuthorRepository authorRepository,
+                       SseNotificationService sseNotificationService) {
         this.bookRepository = bookRepository;
         this.publisherRepository = publisherRepository;
         this.categoryRepository = categoryRepository;
         this.authorRepository = authorRepository;
+        this.sseNotificationService = sseNotificationService;
     }
-
 
     @Transactional(readOnly = true)
     public List<BookResponse> getAll() {
@@ -53,9 +56,21 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public BookResponse getById(Long id) {
-        Book book = bookRepository.findByIdActive(id)
+        Book book = bookRepository.findDetailsByIdActive(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
         return toResponse(book);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookResponse> getByName(String keyword) {
+        String trimmed = keyword == null ? "" : keyword.trim();
+        if (trimmed.isEmpty()) {
+            return List.of();
+        }
+        return bookRepository.findByTitleContainingIgnoreCaseActiveOrderByTitleAsc(trimmed)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
 
@@ -110,6 +125,13 @@ public class BookService {
         }
 
         Book saved = bookRepository.save(book);
+
+        BookResponse response = toResponse(saved);
+        try {
+            sseNotificationService.sendNotification("UPDATE_BOOK", response);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi SSE: " + e.getMessage());
+        }
         return toResponse(saved);
     }
 
@@ -149,7 +171,16 @@ public class BookService {
             book.setAuthors(resolveAuthors(request.authorIds()));
         }
 
-        return toResponse(bookRepository.save(book));
+        Book saved = bookRepository.save(book);
+        BookResponse response = toResponse(saved);
+
+        try {
+            sseNotificationService.sendNotification("UPDATE_BOOK", response);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi SSE: " + e.getMessage());
+        }
+
+        return response;
     }
 
 
@@ -160,6 +191,12 @@ public class BookService {
 
         book.setIsDeleted(true);
         bookRepository.save(book);
+
+        try {
+            sseNotificationService.sendNotification("DELETE_BOOK", id);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi SSE: " + e.getMessage());
+        }
     }
 
 
@@ -229,7 +266,7 @@ public class BookService {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending(): Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Book> bookPage = bookRepository.findAll(pageable);
+        Page<Book> bookPage = bookRepository.findAllActive(pageable);
 
         return bookPage.map(this::toResponse);
     }

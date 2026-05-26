@@ -5,6 +5,8 @@ import com.bookstore.backend.entity.Order;
 import com.bookstore.backend.entity.Role;
 import com.bookstore.backend.entity.User;
 import com.bookstore.backend.exception.AppException;
+import com.bookstore.backend.repository.BookRepository;
+import com.bookstore.backend.repository.OrderDetailRepository;
 import com.bookstore.backend.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,16 +26,25 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
+
     @Mock
     private OrderRepository orderRepository;
 
-    private OrderService orderService;
+    @Mock
+    private BookRepository bookRepository;
+    @Mock
+    private OrderDetailRepository orderDetailRepository;
+    @Mock
+    private SseNotificationService sseNotificationService;
+    @Mock
+    private BookService bookService;
 
+    private OrderService orderService;
     private PaymentService paymentService;
 
     @BeforeEach
     void setUp() {
-        orderService = new OrderService();
+        orderService = new OrderService(orderRepository, bookRepository, orderDetailRepository, sseNotificationService, bookService);
         paymentService = new PaymentService(orderRepository, orderService);
     }
 

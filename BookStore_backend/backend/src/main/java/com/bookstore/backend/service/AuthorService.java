@@ -46,8 +46,15 @@ public class AuthorService {
 
     @Transactional
     public AuthorResponse create(AuthorUpsertRequest request) {
+        String name = request.name().trim();
+        Author existingAuthor = authorRepository.findFirstByNameIgnoreCaseOrderByIdAsc(name)
+                .orElse(null);
+        if (existingAuthor != null) {
+            return toResponse(existingAuthor);
+        }
+
         Author author = Author.builder()
-                .name(request.name().trim())
+                .name(name)
                 .build();
         Author saved = authorRepository.save(author);
         return toResponse(saved);

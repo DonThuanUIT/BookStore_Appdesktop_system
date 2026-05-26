@@ -13,6 +13,10 @@ import com.bookstore.backend.repository.AppUserRepository;
 import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.ImportDetailRepository;
 import com.bookstore.backend.repository.ImportRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,21 +46,19 @@ public class ImportService {
     }
 
     @Transactional(readOnly = true)
-    public List<ImportResponse> getAll() {
-        return importRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<ImportResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return importRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<ImportResponse> search(String keyword) {
+    public Page<ImportResponse> search(String keyword, int page, int size) {
         if (keyword == null || keyword.isBlank()) {
-            return getAll();
+            return getAll(page, size);
         }
 
-        return importRepository.search(keyword.trim()).stream()
-                .map(this::toResponse)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return importRepository.search(keyword.trim(), pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
