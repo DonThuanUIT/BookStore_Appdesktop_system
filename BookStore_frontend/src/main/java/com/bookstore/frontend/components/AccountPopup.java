@@ -1,17 +1,23 @@
 package com.bookstore.frontend.components;
 
+import com.bookstore.frontend.MainApplication;
 import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.util.UserSession;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class AccountPopup extends Popup {
 
-    // Không cần UserService hay OrderService vì đã có ApiClient
     private final Label lblName = new Label();
     private final Label lblEmail = new Label();
 
@@ -42,9 +48,18 @@ public class AccountPopup extends Popup {
         Button btnLogout = new Button("Log Out");
         btnLogout.setMaxWidth(Double.MAX_VALUE);
         btnLogout.setStyle("-fx-text-fill: #ff5555; -fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 10 0 0 0;");
+
         btnLogout.setOnAction(e -> {
+            // 1. Xóa session
             UserSession.getInstance().clean();
-           // NavigationService.getInstance().navigateTo(PageType.LOGIN);
+
+            NavigationService.getInstance().clearCache();
+
+            try {
+                MainApplication.showView("LoginView.fxml", "BookStore - Login");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             this.hide();
         });
 
@@ -57,7 +72,6 @@ public class AccountPopup extends Popup {
         if (session.getUsername() != null) {
             lblName.setText(session.getUsername());
             lblEmail.setText("User Account");
-            // Sau này nếu cần lấy thông tin chi tiết hơn, bạn dùng ApiClient.getInstance().get("/users/profile") tại đây
         } else {
             lblName.setText("Guest");
             lblEmail.setText("Not Logged In");

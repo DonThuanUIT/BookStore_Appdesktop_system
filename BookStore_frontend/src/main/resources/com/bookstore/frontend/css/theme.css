@@ -466,3 +466,50 @@
 .btn-huy-payment:hover {
     -fx-text-fill: white;
 }
+
+/* Nút Điều hướng (Dùng class .btn-nav-small) */
+.btn-nav-small {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-padding: 5 12;
+}
+
+.btn-nav-small:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: -fx-accent-gold;
+}
+
+.btn-nav-small:pressed {
+    -fx-background-color: -fx-accent-gold;
+    -fx-text-fill: -fx-primary-black;
+}
+/* Doanh thu (Vàng) */
+.data0.chart-bar { -fx-bar-fill: #FFCC00; }
+
+/* Lợi nhuận (Cyan mặc định) */
+.data1.chart-bar { -fx-bar-fill: #00bcd4; }
+
+/* Cấu hình chung cho Chart */
+.chart-plot-background { -fx-background-color: transparent; }
+.chart-vertical-grid-lines { -fx-stroke: rgba(255, 255, 255, 0.05); }
+.chart-horizontal-grid-lines { -fx-stroke: rgba(255, 255, 255, 0.05); }
+.chart-bar.data0 { -fx-bar-fill: #FFCC00; }
+
+/* Lợi nhuận (Xanh Cyan hoặc Đỏ nếu âm) */
+.chart-bar.data1 { -fx-bar-fill: #00bcd4; }
+
+/* Tăng khoảng cách giữa các nhãn trục X */
+.chart-category-axis .tick-label {
+    -fx-font-size: 11px;
+    -fx-padding: 10px 5px 0px 5px; /* Padding top làm nhãn cách xa trục */
+    -fx-text-fill: #b3b3b3;
+}
+
+/* Đảm bảo khung chứa biểu đồ có đủ độ rộng */
+.chart-content {
+    -fx-padding: 20px;
+}

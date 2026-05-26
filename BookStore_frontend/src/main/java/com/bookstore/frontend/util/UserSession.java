@@ -31,12 +31,10 @@ public class UserSession {
         return Collections.unmodifiableList(roles);
     }
 
-    /** Admin / Vendor (người bán). */
     public boolean isAdmin() {
         return roles.stream().anyMatch(UserSession::isAdminRoleName);
     }
 
-    /** Customer (người mua). */
     public boolean isCustomer() {
         return roles.stream().anyMatch(UserSession::isCustomerRoleName);
     }
@@ -44,10 +42,7 @@ public class UserSession {
     private static boolean isAdminRoleName(String role) {
         if (role == null) return false;
         String n = role.trim();
-        return "ADMIN".equalsIgnoreCase(n)
-                || "ROLE_ADMIN".equalsIgnoreCase(n)
-                || "STAFF".equalsIgnoreCase(n)
-                || "ROLE_STAFF".equalsIgnoreCase(n);
+        return "ADMIN".equalsIgnoreCase(n) || "ROLE_ADMIN".equalsIgnoreCase(n);
     }
 
     private static boolean isCustomerRoleName(String role) {

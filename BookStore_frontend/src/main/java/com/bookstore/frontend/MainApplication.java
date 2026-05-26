@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.URL;
 
 public class MainApplication extends Application {
-
     private static Stage primaryStage;
     private static final String VIEW_BASE_PATH = "/com/bookstore/frontend/view/";
     private static final String CSS_PATH = "/com/bookstore/frontend/css/theme.css";
@@ -24,7 +23,6 @@ public class MainApplication extends Application {
             e.printStackTrace();
         }
     }
-
     public static void showView(String fxmlFileName, String title) throws IOException {
         String resourcePath = fxmlFileName.startsWith("/") ? fxmlFileName : VIEW_BASE_PATH + fxmlFileName;
         URL fxmlLocation = MainApplication.class.getResource(resourcePath);
@@ -39,6 +37,7 @@ public class MainApplication extends Application {
         primaryStage.setTitle(title);
 
         Scene scene = new Scene(root);
+
         addStylesheet(scene);
         primaryStage.setScene(scene);
 
@@ -59,9 +58,5 @@ public class MainApplication extends Application {
         if (cssLocation != null) {
             scene.getStylesheets().add(cssLocation.toExternalForm());
         }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

@@ -8,8 +8,11 @@ public enum PageType {
     INVENTORY("/com/bookstore/frontend/view/InventoryView.fxml"),
     IMPORT("/com/bookstore/frontend/view/ImportHistoryView.fxml"),
     IMPORT_CREATE("/com/bookstore/frontend/view/ImportCreateView.fxml"),
-    PROFILE("/com/bookstore/frontend/view/ProfileView.fxml"),
-    ORDER_HISTORY("/com/bookstore/frontend/view/OrderHistoryView.fxml");
+
+    PROFILE("/com/bookstore/frontend/view/components/ProfileView.fxml"),
+    ORDER_HISTORY("/com/bookstore/frontend/view/components/OrderHistoryView.fxml"),
+    LOGIN("/com/bookstore/frontend/view/LoginView.fxml"),
+    REVENUE_REPORT("/com/bookstore/frontend/view/RevenueReportView.fxml");
 
     private final String fxmlPath;
 

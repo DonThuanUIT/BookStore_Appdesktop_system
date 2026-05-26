@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class LoginInteractor {
         String user = model.usernameProperty().get();
         String pass = model.passwordProperty().get();
 
-        if (user.isEmpty() || pass.isEmpty()) {
+        if (user == null || user.isEmpty() || pass == null || pass.isEmpty()) {
             AlertUtils.show(AlertType.WARNING, "Input Required", "Please enter both username and password.");
             return;
         }
@@ -53,19 +54,19 @@ public class LoginInteractor {
                             }
 
                             UserSession.getInstance().init(token, user, roles);
-                            System.out.println("Login thành công. Token: " + token);
 
+                            System.out.println("Login thành công. Token: " + token);
                             ApiClient.getInstance().startSseConnection();
 
                             navigateToHome(user);
 
                         } catch (Exception e) {
                             e.printStackTrace();
-                            AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi xử lý phản hồi từ server.");
+                            AlertUtils.show(AlertType.ERROR, "System Error", "Lỗi xử lý dữ liệu.");
                         }
                     } else {
                         model.messageProperty().set("Invalid username or password.");
-                        AlertUtils.show(AlertType.ERROR, "Login Failed", "Invalid username or password. Please try again.");
+                        AlertUtils.show(AlertType.ERROR, "Login Failed", "Invalid credentials.");
                     }
                 }))
                 .exceptionally(ex -> {
@@ -81,18 +82,24 @@ public class LoginInteractor {
     private void navigateToHome(String username) {
         try {
             NavigationService.getInstance().clearCache();
+
             MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
+
             NavigationService.getInstance().navigateTo(PageType.HOME, username);
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertUtils.show(AlertType.ERROR, "Navigation Error", "Không thể tải trang chính.");
+        }
     }
 
     public void navigateToRegister() {
         try { MainApplication.showView("RegisterView.fxml", "Register - BookStore"); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (IOException e) { e.printStackTrace(); }
     }
+
     public void navigateToForgotPassword() {
         try { MainApplication.showView("ForgotPasswordView.fxml", "Forgot Password - BookStore"); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (IOException e) { e.printStackTrace(); }
     }
 
     public void togglePasswordVisibility() {

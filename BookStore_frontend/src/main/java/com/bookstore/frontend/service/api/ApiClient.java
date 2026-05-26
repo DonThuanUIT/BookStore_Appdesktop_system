@@ -4,7 +4,9 @@ import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.dto.Response.BookResponseDto;
 import com.bookstore.frontend.util.BookMapper;
 import com.bookstore.frontend.util.UserSession;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,25 +32,19 @@ public class ApiClient {
 
     private final List<Consumer<BookModel>> bookUpdateListeners = new CopyOnWriteArrayList<>();
     private final List<Consumer<Long>> bookDeleteListeners = new CopyOnWriteArrayList<>();
-
     private final List<Consumer<com.bookstore.frontend.model.ImportModel>> importCreateListeners = new CopyOnWriteArrayList<>();
     private final List<Consumer<Long>> importDeleteListeners = new CopyOnWriteArrayList<>();
-
-    public void onImportCreated(Consumer<com.bookstore.frontend.model.ImportModel> listener) {
-        importCreateListeners.add(listener);
-    }
-    public void onImportDeleted(Consumer<Long> listener) {
-        importDeleteListeners.add(listener);
-    }
 
     private ApiClient() {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public static ApiClient getInstance() {
+    public static synchronized ApiClient getInstance() {
         if (instance == null) {
             instance = new ApiClient();
         }
@@ -59,76 +55,89 @@ public class ApiClient {
         return objectMapper;
     }
 
-    public CompletableFuture<HttpResponse<String>> get(String endpoint) {
-        try {
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + endpoint))
-                    .GET();
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
+    public void onImportCreated(Consumer<com.bookstore.frontend.model.ImportModel> listener) {
+        importCreateListeners.add(listener);
     }
-
-    public CompletableFuture<HttpResponse<String>> post(String endpoint, Object body) {
-        try {
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + endpoint))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
+    public void onImportDeleted(Consumer<Long> listener) {
+        importDeleteListeners.add(listener);
     }
-
-    public CompletableFuture<HttpResponse<String>> put(String endpoint, Object body) {
-        try {
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + endpoint))
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody));
-
-            attachAuthToken(requestBuilder);
-
-            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
-    }
-
-    public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) throws IOException {
-        String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
-        byte[] bodyData = buildMultipartBody(file, boundary);
-
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + endpoint))
-                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(bodyData));
-
-        attachAuthToken(requestBuilder);
-
-        return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-    }
-
     public void onBookUpdated(Consumer<BookModel> listener) {
         bookUpdateListeners.add(listener);
     }
-
     public void onBookDeleted(Consumer<Long> listener) {
         bookDeleteListeners.add(listener);
     }
 
+    public CompletableFuture<HttpResponse<String>> get(String endpoint) {
+        return sendRequest(HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .GET());
+    }
+
+    public CompletableFuture<HttpResponse<String>> post(String endpoint, Object body) {
+        try {
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body))));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    public CompletableFuture<HttpResponse<String>> post(String endpoint) {
+        return sendRequest(HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .POST(HttpRequest.BodyPublishers.noBody()));
+    }
+
+    public CompletableFuture<HttpResponse<String>> put(String endpoint, Object body) {
+        try {
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body))));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    public CompletableFuture<HttpResponse<String>> patch(String endpoint, Object body) {
+        try {
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body))));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) {
+        try {
+            String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
+            byte[] bodyData = buildMultipartBody(file, boundary);
+
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                    .POST(HttpRequest.BodyPublishers.ofByteArray(bodyData)));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    private CompletableFuture<HttpResponse<String>> sendRequest(HttpRequest.Builder builder) {
+        attachAuthToken(builder);
+        return httpClient.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
+    private void attachAuthToken(HttpRequest.Builder requestBuilder) {
+        String token = UserSession.getInstance().getToken();
+        if (token != null && !token.isEmpty()) {
+            requestBuilder.header("Authorization", "Bearer " + token);
+        }
+    }
 
     public void startSseConnection() {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -163,13 +172,12 @@ public class ApiClient {
             if ("UPDATE_BOOK".equals(eventName)) {
                 BookResponseDto dto = objectMapper.readValue(data, BookResponseDto.class);
                 BookModel updatedBook = BookMapper.toModel(dto);
-
                 bookUpdateListeners.forEach(listener -> listener.accept(updatedBook));
 
             } else if ("DELETE_BOOK".equals(eventName)) {
                 Long bookId = Long.parseLong(data);
-
                 bookDeleteListeners.forEach(listener -> listener.accept(bookId));
+
             } else if ("CREATE_IMPORT".equals(eventName)) {
                 com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(data);
                 com.bookstore.frontend.model.ImportModel importModel = new com.bookstore.frontend.model.ImportModel();
@@ -191,7 +199,6 @@ public class ApiClient {
                     }
                 }
                 importModel.setImportDate(importDateStr);
-
                 importCreateListeners.forEach(listener -> listener.accept(importModel));
 
             } else if ("DELETE_IMPORT".equals(eventName)) {
@@ -203,33 +210,20 @@ public class ApiClient {
         }
     }
 
-
-    private void attachAuthToken(HttpRequest.Builder requestBuilder) {
-        String token = UserSession.getInstance().getToken();
-        if (token != null && !token.isEmpty()) {
-            requestBuilder.header("Authorization", "Bearer " + token);
-        }
-    }
-
     private byte[] buildMultipartBody(File file, String boundary) throws IOException {
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         String mimeType = Files.probeContentType(file.toPath());
-        if (mimeType == null) {
-            mimeType = "application/octet-stream";
-        }
+        if (mimeType == null) mimeType = "application/octet-stream";
 
-        StringBuilder headerBuilder = new StringBuilder();
-        headerBuilder.append("--").append(boundary).append("\r\n");
-        headerBuilder.append("Content-Disposition: form-data; name=\"file\"; filename=\"").append(file.getName()).append("\"\r\n");
-        headerBuilder.append("Content-Type: ").append(mimeType).append("\r\n\r\n");
-        byte[] headerBytes = headerBuilder.toString().getBytes(StandardCharsets.UTF_8);
+        String header = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n" +
+                "Content-Type: " + mimeType + "\r\n\r\n";
+        String footer = "\r\n--" + boundary + "--\r\n";
 
-        byte[] footerBytes = ("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer body = ByteBuffer.allocate(headerBytes.length + fileBytes.length + footerBytes.length);
-        body.put(headerBytes);
+        ByteBuffer body = ByteBuffer.allocate(header.length() + fileBytes.length + footer.length());
+        body.put(header.getBytes(StandardCharsets.UTF_8));
         body.put(fileBytes);
-        body.put(footerBytes);
+        body.put(footer.getBytes(StandardCharsets.UTF_8));
 
         return body.array();
     }

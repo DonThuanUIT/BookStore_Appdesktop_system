@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.RevenueReportController"
+      style="-fx-background-color: transparent;" stylesheets="@../css/theme.css">
+
+    <HBox spacing="20" alignment="CENTER" style="-fx-padding: 20 0 20 0;">
+        <HBox spacing="10" alignment="CENTER">
+            <ComboBox fx:id="yearPicker" styleClass="custom-combo-box" />
+            <Button fx:id="btnLoad" text="Xem báo cáo" onAction="#handleLoadReport" styleClass="btn-primary-modern" />
+        </HBox>
+
+        <HBox spacing="15" alignment="CENTER">
+            <VBox styleClass="kpi-card" alignment="CENTER" prefWidth="160">
+                <Label text="DOANH THU" style="-fx-text-fill: #b3b3b3; -fx-font-size: 11px;" />
+                <Label fx:id="lblTotalRevenue" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #FFCC00;" />
+            </VBox>
+            <VBox styleClass="kpi-card" alignment="CENTER" prefWidth="160">
+                <Label text="LỢI NHUẬN" style="-fx-text-fill: #b3b3b3; -fx-font-size: 11px;" />
+                <Label fx:id="lblTotalProfit" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #00bcd4;" />
+            </VBox>
+        </HBox>
+    </HBox>
+
+    <StackPane VBox.vgrow="ALWAYS" style="-fx-padding: 0 15 15 15;">
+        <BarChart fx:id="revenueChart" categoryGap="20" barGap="5" legendVisible="true">
+            <xAxis>
+                <CategoryAxis side="BOTTOM" fx:id="xAxis" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxis" side="LEFT" />
+            </yAxis>
+        </BarChart>
+        <Label fx:id="lblEmpty" text="Chưa có dữ liệu cho năm này"
+               style="-fx-text-fill: -text-muted; -fx-font-size: 16px;" visible="false" />
+        <ProgressIndicator fx:id="loadingIndicator" maxHeight="50" maxWidth="50" visible="false" />
+    </StackPane>
+</VBox>

@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 public class MainController implements Initializable {
 
     @FXML private StackPane contentArea;
-    @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart;
+    @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart, btnRevenue;
     @FXML private Label lblCartBadge;
 
     private AccountPopup accountPopup;
@@ -75,16 +75,27 @@ public class MainController implements Initializable {
     }
 
     @FXML void onHomeClick() { navigateAndUpdateState(PageType.HOME); }
+
     @FXML void onShopNavClick() { navigateAndUpdateState(PageType.SHOP); }
+
     @FXML void onCartClick() { navigateAndUpdateState(PageType.CART); }
-    @FXML void onInventoryClick() {
+
+    @FXML
+    void onInventoryClick() {
         if (!ensureVendorAccess()) return;
         navigateAndUpdateState(PageType.INVENTORY);
     }
 
-    @FXML void onImportClick() {
+    @FXML
+    void onImportClick() {
         if (!ensureVendorAccess()) return;
         navigateAndUpdateState(PageType.IMPORT);
+    }
+
+    @FXML
+    void onRevenueClick() {
+        if (!ensureVendorAccess()) return;
+        navigateAndUpdateState(PageType.REVENUE_REPORT);
     }
 
     private void navigateAndUpdateState(PageType pageType) {
@@ -98,6 +109,9 @@ public class MainController implements Initializable {
         btnCart.getStyleClass().remove("nav-button-active");
         btnInventory.getStyleClass().remove("nav-button-active");
         btnImport.getStyleClass().remove("nav-button-active");
+        if (btnRevenue != null) {
+            btnRevenue.getStyleClass().remove("nav-button-active");
+        }
 
         if (pageType == null) return;
 
@@ -107,16 +121,25 @@ public class MainController implements Initializable {
             case CART -> btnCart.getStyleClass().add("nav-button-active");
             case INVENTORY -> btnInventory.getStyleClass().add("nav-button-active");
             case IMPORT -> btnImport.getStyleClass().add("nav-button-active");
+            case REVENUE_REPORT -> {
+                if (btnRevenue != null) btnRevenue.getStyleClass().add("nav-button-active");
+            }
         }
     }
 
-    /** Chỉ Admin (Vendor) thấy quản lý kho và nhập hàng; Customer chỉ mua sắm. */
     public void applyRoleBasedNavVisibility() {
         boolean vendor = UserSession.getInstance().isAdmin();
+
         btnImport.setVisible(vendor);
         btnImport.setManaged(vendor);
+
         btnInventory.setVisible(vendor);
         btnInventory.setManaged(vendor);
+
+        if (btnRevenue != null) {
+            btnRevenue.setVisible(vendor);
+            btnRevenue.setManaged(vendor);
+        }
     }
 
     private boolean ensureVendorAccess() {
