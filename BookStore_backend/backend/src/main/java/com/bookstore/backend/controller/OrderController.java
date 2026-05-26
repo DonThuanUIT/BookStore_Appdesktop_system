@@ -44,7 +44,7 @@ public class OrderController {
     private UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<OrderResponse>> getAllOrders(
             @RequestParam(defaultValue = "0")
             @Min(value = 0, message = "page must be greater than or equal to 0")
@@ -66,7 +66,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getAllOrders(page, size, sortBy, direction));
     }
     @GetMapping("/sales-history")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Page<OrderResponse>> getSalesHistory(
             @RequestParam(defaultValue = "0")

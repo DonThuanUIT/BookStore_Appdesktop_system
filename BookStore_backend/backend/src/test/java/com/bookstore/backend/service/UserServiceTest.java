@@ -44,20 +44,20 @@ class UserServiceTest {
 
     @Test
     void shouldCreateUserWithEncodedPasswordAndNormalizedRole() {
-        Role role = role(2L, "ROLE_STAFF");
+        Role role = role(2L, "ROLE_ADMIN");
         UserCreateRequest request = new UserCreateRequest(
-                " staff01 ",
+                " vendor01 ",
                 "Secret123",
-                "staff01@example.com",
-                "Staff 01",
+                "vendor01@example.com",
+                "Vendor 01",
                 "0909000000",
                 "Ho Chi Minh",
-                "staff"
+                "admin"
         );
 
-        when(userRepository.existsByUsername("staff01")).thenReturn(false);
-        when(userRepository.existsByEmail("staff01@example.com")).thenReturn(false);
-        when(roleRepository.findByName("ROLE_STAFF")).thenReturn(Optional.of(role));
+        when(userRepository.existsByUsername("vendor01")).thenReturn(false);
+        when(userRepository.existsByEmail("vendor01@example.com")).thenReturn(false);
+        when(roleRepository.findByName("ROLE_ADMIN")).thenReturn(Optional.of(role));
         when(passwordEncoder.encode("Secret123")).thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
@@ -68,9 +68,9 @@ class UserServiceTest {
         UserResponse response = userService.create(request);
 
         assertEquals(10L, response.id());
-        assertEquals("staff01", response.username());
-        assertEquals("staff01@example.com", response.email());
-        assertEquals("ROLE_STAFF", response.roleName());
+        assertEquals("vendor01", response.username());
+        assertEquals("vendor01@example.com", response.email());
+        assertEquals("ROLE_ADMIN", response.roleName());
         assertFalse(response.isDeleted());
     }
 

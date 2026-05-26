@@ -56,7 +56,7 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public BookResponse getById(Long id) {
-        Book book = bookRepository.findByIdActive(id)
+        Book book = bookRepository.findDetailsByIdActive(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
         return toResponse(book);
     }
@@ -266,7 +266,7 @@ public class BookService {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending(): Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Book> bookPage = bookRepository.findAll(pageable);
+        Page<Book> bookPage = bookRepository.findAllActive(pageable);
 
         return bookPage.map(this::toResponse);
     }
