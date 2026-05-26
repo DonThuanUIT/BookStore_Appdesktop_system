@@ -58,21 +58,20 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers("/api/categories/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/categories/**").hasRole("ADMIN")
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
-                        .requestMatchers("/api/books/**", "/api/orders/**", "/api/payments/**").hasAnyRole("ADMIN", "STAFF", "CUSTOMER")
-                        .requestMatchers("/api/imports/**").hasAnyRole("ADMIN", "STAFF")
-                        .requestMatchers("/api/revenue/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/books/**", "/api/orders/**", "/api/payments/**").hasAnyRole("ADMIN", "CUSTOMER")
+                        .requestMatchers("/api/imports/**").hasRole("ADMIN")
+                        .requestMatchers("/api/revenue/**").hasRole("ADMIN")
 
                         .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/test/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/test/staff").hasRole("STAFF")
                         .requestMatchers("/api/test/customer").hasRole("CUSTOMER")
-                        .requestMatchers("/api/images/**").hasAnyRole("ADMIN", "STAFF", "CUSTOMER") // hiện tại có customer để test, sau này xóa đi !
+                        .requestMatchers("/api/images/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 

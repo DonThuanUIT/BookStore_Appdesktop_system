@@ -3,6 +3,8 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.ImportInteractor;
 import com.bookstore.frontend.model.ImportManagementModel;
 import com.bookstore.frontend.model.ImportModel;
+import com.bookstore.frontend.navigation.Navigatable;
+import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.service.api.ApiClient;
 import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
@@ -15,12 +17,17 @@ import javafx.scene.layout.VBox;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class ImportHistoryController {
+public class ImportHistoryController implements Navigatable {
+
+    private static final int PAGE_SIZE = 10;
 
     @FXML private TextField txtSearch;
     @FXML private DatePicker dpFrom;
     @FXML private DatePicker dpTo;
     @FXML private Label lblPaginationInfo;
+    @FXML private Button btnPrevPage;
+    @FXML private Label lblCurrentPage;
+    @FXML private Button btnNextPage;
 
     @FXML private TableView<ImportModel> tvImports;
     @FXML private TableColumn<ImportModel, Long> colId;
@@ -42,32 +49,26 @@ public class ImportHistoryController {
 
         setupTableColumns();
         setupFilters();
-
-        interactor.loadImportHistory();
-
         setupRealTimeSync();
+        loadPage(0);
     }
 
     private void setupRealTimeSync() {
         ApiClient.getInstance().onImportCreated(newImport -> {
-            Platform.runLater(() -> {
-                model.getImports().add(0, newImport);
-                model.setTotalRecords(model.getImports().size());
-                applyFilters();
-            });
+            Platform.runLater(() -> loadPage(0));
         });
 
         ApiClient.getInstance().onImportDeleted(importId -> {
             Platform.runLater(() -> {
-                model.getImports().removeIf(imp -> imp.getId() == importId);
-
                 if (importDetailSidePanel != null && importDetailSidePanel.isVisible()) {
                     importDetailSidePanel.setVisible(false);
                     importDetailSidePanel.setManaged(false);
                 }
-
-                model.setTotalRecords(model.getImports().size());
-                applyFilters();
+                int page = model.getCurrentPage();
+                if (page > 0 && model.getImports().size() <= 1) {
+                    page--;
+                }
+                loadPage(page);
             });
         });
     }
@@ -132,15 +133,23 @@ public class ImportHistoryController {
         });
 
         lblPaginationInfo.textProperty().bind(model.paginationInfoProperty());
+        btnPrevPage.disableProperty().bind(model.hasPreviousProperty().not());
+        btnNextPage.disableProperty().bind(model.hasNextProperty().not());
+        lblCurrentPage.textProperty().bind(
+                javafx.beans.binding.Bindings.createStringBinding(
+                        () -> String.valueOf(model.getCurrentPage() + 1),
+                        model.currentPageProperty()
+                )
+        );
     }
 
     private void setupFilters() {
         filteredData = new FilteredList<>(model.getImports(), p -> true);
         tvImports.setItems(filteredData);
 
-        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
-        dpFrom.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
-        dpTo.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> loadPage(0));
+        dpFrom.valueProperty().addListener((observable, oldValue, newValue) -> applyDateFilter());
+        dpTo.valueProperty().addListener((observable, oldValue, newValue) -> applyDateFilter());
 
         dpFrom.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null || newVal.trim().isEmpty()) {
@@ -156,59 +165,69 @@ public class ImportHistoryController {
 
     @FXML
     private void handleFilter() {
-        applyFilters();
+        applyDateFilter();
     }
 
-    private void applyFilters() {
-        String searchText = txtSearch.getText() != null ? txtSearch.getText().toLowerCase().trim() : "";
+    @FXML
+    private void handlePrevPage() {
+        if (model.getCurrentPage() > 0) {
+            loadPage(model.getCurrentPage() - 1);
+        }
+    }
+
+    @FXML
+    private void handleNextPage() {
+        if (model.hasNextProperty().get()) {
+            loadPage(model.getCurrentPage() + 1);
+        }
+    }
+
+    private void loadPage(int page) {
+        String keyword = txtSearch != null ? txtSearch.getText() : null;
+        interactor.loadImportHistory(page, PAGE_SIZE, keyword);
+    }
+
+    private void applyDateFilter() {
         LocalDate fromDate = dpFrom.getValue();
         LocalDate toDate = dpTo.getValue();
 
         filteredData.setPredicate(importRecord -> {
-            boolean matchesSearch = true;
-            if (!searchText.isEmpty()) {
-                String idStr = String.valueOf(importRecord.getId());
-                String cleanSearchText = searchText.replace("#", "").replace("imp-", "");
-                matchesSearch = idStr.contains(cleanSearchText);
+            if (fromDate == null && toDate == null) {
+                return true;
             }
-
-            boolean matchesDate = true;
-            if (fromDate != null || toDate != null) {
-                String recordDateStr = importRecord.getImportDate();
-                if (recordDateStr == null || "N/A".equals(recordDateStr)) {
-                    matchesDate = false;
+            String recordDateStr = importRecord.getImportDate();
+            if (recordDateStr == null || "N/A".equals(recordDateStr)) {
+                return false;
+            }
+            try {
+                String datePart = recordDateStr.split(" ")[0];
+                LocalDate recordDate;
+                if (datePart.contains("-")) {
+                    recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 } else {
-                    try {
-                        String datePart = recordDateStr.split(" ")[0];
-                        LocalDate recordDate;
-
-                        if (datePart.contains("-")) {
-                            recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                        } else {
-                            recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                        }
-
-                        if (fromDate != null && recordDate.isBefore(fromDate)) {
-                            matchesDate = false;
-                        }
-                        if (toDate != null && recordDate.isAfter(toDate)) {
-                            matchesDate = false;
-                        }
-                    } catch (Exception e) {
-                        matchesDate = false;
-                    }
+                    recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 }
+                if (fromDate != null && recordDate.isBefore(fromDate)) {
+                    return false;
+                }
+                if (toDate != null && recordDate.isAfter(toDate)) {
+                    return false;
+                }
+                return true;
+            } catch (Exception e) {
+                return false;
             }
-
-            return matchesSearch && matchesDate;
         });
-
-        model.paginationInfoProperty().set("Showing " + filteredData.size() + " entries (Filtered)");
     }
 
     @FXML
     private void handleCreateImport() {
-        com.bookstore.frontend.navigation.NavigationService.getInstance().navigateTo(com.bookstore.frontend.navigation.PageType.IMPORT_CREATE);
+        com.bookstore.frontend.navigation.NavigationService.getInstance().navigateTo(PageType.IMPORT_CREATE);
+    }
+
+    @Override
+    public void onNavigate(Object data) {
+        loadPage(0);
     }
 
     private void onViewDetails(ImportModel importRecord) {
@@ -224,7 +243,9 @@ public class ImportHistoryController {
     }
 
     private void onDeleteImport(ImportModel importRecord) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc chắn muốn xóa phiếu nhập #IMP-" + importRecord.getId() + "?", ButtonType.YES, ButtonType.NO);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                "Bạn có chắc chắn muốn xóa phiếu nhập #IMP-" + importRecord.getId() + "?",
+                ButtonType.YES, ButtonType.NO);
         alert.showAndWait();
         if (alert.getResult() == ButtonType.YES) {
             interactor.deleteImport(importRecord.getId()).thenAccept(success -> {

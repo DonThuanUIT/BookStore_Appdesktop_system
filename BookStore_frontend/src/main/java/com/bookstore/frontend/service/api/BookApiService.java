@@ -123,4 +123,37 @@ public class BookApiService {
                     return java.util.Collections.emptyList();
                 });
     }
+
+    public CompletableFuture<java.util.List<BookResponseDto>> searchBooksByName(String keyword) {
+        String trimmedKeyword = keyword != null ? keyword.trim() : "";
+        if (trimmedKeyword.isEmpty()) {
+            return CompletableFuture.completedFuture(java.util.Collections.emptyList());
+        }
+
+        String encodedKeyword;
+        try {
+            encodedKeyword = java.net.URLEncoder.encode(trimmedKeyword, java.nio.charset.StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            encodedKeyword = trimmedKeyword;
+        }
+
+        String url = String.format("%s/name/%s", BASE_URL, encodedKeyword);
+
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+        attachToken(requestBuilder);
+
+        return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() == 200) {
+                        try {
+                            return objectMapper.readValue(response.body(), new TypeReference<java.util.List<BookResponseDto>>() {});
+                        } catch (Exception e) {
+                            System.err.println("Lá»—i Parse JSON táº¡i BookApiService: " + e.getMessage());
+                        }
+                    } else {
+                        System.err.println("Lá»—i gá»i API Search Book By Name: HTTP " + response.statusCode());
+                    }
+                    return java.util.Collections.emptyList();
+                });
+    }
 }

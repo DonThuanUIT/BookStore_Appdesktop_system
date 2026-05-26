@@ -2,7 +2,6 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.request.ImportDetailRequest;
 import com.bookstore.backend.dto.request.ImportUpsertRequest;
-import com.bookstore.backend.dto.response.BookResponse;
 import com.bookstore.backend.dto.response.ImportDetailResponse;
 import com.bookstore.backend.dto.response.ImportResponse;
 import com.bookstore.backend.entity.AppUser;
@@ -14,7 +13,10 @@ import com.bookstore.backend.repository.AppUserRepository;
 import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.ImportDetailRepository;
 import com.bookstore.backend.repository.ImportRepository;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,40 +35,30 @@ public class ImportService {
     private final BookRepository bookRepository;
     private final AppUserRepository appUserRepository;
 
-    private final SseNotificationService sseNotificationService;
-    private final BookService bookService;
-
     public ImportService(ImportRepository importRepository,
                          ImportDetailRepository importDetailRepository,
                          BookRepository bookRepository,
-                         AppUserRepository appUserRepository,
-                         SseNotificationService sseNotificationService,
-                         @Lazy BookService bookService) {
+                         AppUserRepository appUserRepository) {
         this.importRepository = importRepository;
         this.importDetailRepository = importDetailRepository;
         this.bookRepository = bookRepository;
         this.appUserRepository = appUserRepository;
-        this.sseNotificationService = sseNotificationService;
-        this.bookService = bookService;
     }
 
     @Transactional(readOnly = true)
-    public List<ImportResponse> getAll() {
-        return importRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<ImportResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return importRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<ImportResponse> search(String keyword) {
+    public Page<ImportResponse> search(String keyword, int page, int size) {
         if (keyword == null || keyword.isBlank()) {
-            return getAll();
+            return getAll(page, size);
         }
 
-        return importRepository.search(keyword.trim()).stream()
-                .map(this::toResponse)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return importRepository.search(keyword.trim(), pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -86,16 +78,7 @@ public class ImportService {
                 .toList();
 
         savedImport.setTotalCost(calculateTotalCost(savedDetails));
-
-        ImportResponse response = toResponse(importRepository.save(savedImport));
-
-        try {
-            sseNotificationService.sendNotification("CREATE_IMPORT", response);
-        } catch (Exception e) {
-            System.err.println("Lỗi gửi SSE CREATE_IMPORT: " + e.getMessage());
-        }
-
-        return response;
+        return toResponse(importRepository.save(savedImport));
     }
 
     @Transactional
@@ -122,12 +105,6 @@ public class ImportService {
         details.forEach(detail -> adjustBookStock(detail.getBook(), -detail.getQuantity(), null));
         importDetailRepository.deleteByImportOrderId(id);
         importRepository.delete(importOrder);
-
-        try {
-            sseNotificationService.sendNotification("DELETE_IMPORT", id);
-        } catch (Exception e) {
-            System.err.println("Lỗi gửi SSE DELETE_IMPORT: " + e.getMessage());
-        }
     }
 
     private ImportDetail createDetail(Import importOrder, ImportDetailRequest request) {
@@ -156,14 +133,6 @@ public class ImportService {
             book.setSellPrice(calculateSellPrice(importPrice));
         }
         bookRepository.save(book);
-
-        try {
-            BookResponse updatedBook = bookService.getById(book.getId());
-            sseNotificationService.sendNotification("UPDATE_BOOK", updatedBook);
-        } catch (Exception e) {
-            System.err.println("Không thể gửi SSE Notification: " + e.getMessage());
-        }
-
     }
 
     private BigDecimal calculateSellPrice(Double importPrice) {

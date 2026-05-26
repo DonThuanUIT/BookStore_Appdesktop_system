@@ -44,14 +44,14 @@ public class PublisherController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PublisherResponse> create(@Valid @RequestBody PublisherUpsertRequest request) {
         PublisherResponse created = publisherService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PublisherResponse> update(
             @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody PublisherUpsertRequest request
@@ -60,7 +60,7 @@ public class PublisherController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         publisherService.delete(id);
         return ResponseEntity.noContent().build();

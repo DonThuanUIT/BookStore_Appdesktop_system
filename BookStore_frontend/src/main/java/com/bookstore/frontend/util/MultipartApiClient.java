@@ -13,7 +13,7 @@ public class MultipartApiClient {
      * @param method Phương thức HTTP ("POST" để Thêm, "PUT" để Sửa)
      * @param jsonBody Chuỗi JSON chứa thông tin sách (title, price...)
      * @param imageFile File ảnh người dùng chọn từ máy tính (có thể null nếu không cập nhật ảnh)
-     * @param jwtToken Mã Token để xác thực người dùng (Bắt buộc vì API yêu cầu quyền ADMIN/STAFF)
+     * @param jwtToken Mã Token để xác thực người dùng (Bắt buộc vì API yêu cầu quyền ADMIN/Vendor)
      * @return Chuỗi JSON trả về từ Server
      */
     public static String sendMultipart(String url, String method, String jsonBody, File imageFile, String jwtToken) throws IOException {

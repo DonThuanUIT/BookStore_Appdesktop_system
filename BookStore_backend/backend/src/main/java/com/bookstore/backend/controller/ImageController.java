@@ -30,7 +30,7 @@ public class ImageController {
 
     @Operation(summary = "Upload a new image", description = "Receive file from client and return image URL after successfully uploading to Cloudinary")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> upload(
             @RequestParam("file") @NotNull(message = "file is required") MultipartFile file
     ) {

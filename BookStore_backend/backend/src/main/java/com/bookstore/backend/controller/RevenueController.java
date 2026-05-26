@@ -25,7 +25,7 @@ public class RevenueController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Object> getRevenue(
             @RequestParam
             @Min(value = 2000, message = "year must be at least 2000")

@@ -34,7 +34,7 @@ public class MainController implements Initializable {
 
         setupCartBindings();
 
-        applyCustomerNavVisibilityForRole();
+        applyRoleBasedNavVisibility();
 
         navigateAndUpdateState(PageType.HOME);
     }
@@ -77,10 +77,20 @@ public class MainController implements Initializable {
     @FXML void onHomeClick() { navigateAndUpdateState(PageType.HOME); }
     @FXML void onShopNavClick() { navigateAndUpdateState(PageType.SHOP); }
     @FXML void onCartClick() { navigateAndUpdateState(PageType.CART); }
-    @FXML void onInventoryClick() { navigateAndUpdateState(PageType.INVENTORY); }
-    @FXML void onImportClick() { navigateAndUpdateState(PageType.IMPORT); }
-    @FXML void onRevenueClick() {navigateAndUpdateState(PageType.REVENUE_REPORT);}
+    @FXML void onInventoryClick() {
+        if (!ensureVendorAccess()) return;
+        navigateAndUpdateState(PageType.INVENTORY);
+    }
 
+    @FXML void onImportClick() {
+        if (!ensureVendorAccess()) return;
+        navigateAndUpdateState(PageType.IMPORT);
+    }
+
+    @FXML void onRevenueClick() {
+        if(!ensureVendorAccess()) return;
+        navigateAndUpdateState(PageType.REVENUE_REPORT);
+    }
     private void navigateAndUpdateState(PageType pageType) {
         NavigationService.getInstance().navigateTo(pageType);
         updateNavbarActiveState(pageType);
@@ -106,10 +116,26 @@ public class MainController implements Initializable {
         }
     }
 
-    private void applyCustomerNavVisibilityForRole() {
-        boolean customer = UserSession.getInstance().isCustomer();
-        btnImport.setVisible(!customer); btnImport.setManaged(!customer);
-        btnInventory.setVisible(!customer); btnInventory.setManaged(!customer);
-        btnRevenue.setVisible(!customer); btnRevenue.setManaged(!customer);
+    /** Chỉ Admin (Vendor) thấy quản lý kho và nhập hàng; Customer chỉ mua sắm. */
+    public void applyRoleBasedNavVisibility() {
+        boolean vendor = UserSession.getInstance().isAdmin();
+        btnImport.setVisible(vendor);
+        btnImport.setManaged(vendor);
+        btnInventory.setVisible(vendor);
+        btnInventory.setManaged(vendor);
+        btnRevenue.setVisible(vendor);
+        btnRevenue.setManaged(vendor);
+    }
+
+    private boolean ensureVendorAccess() {
+        applyRoleBasedNavVisibility();
+        if (!UserSession.getInstance().isAdmin()) {
+            new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.WARNING,
+                    "Chỉ tài khoản Admin (Người bán) mới truy cập được tính năng này."
+            ).show();
+            return false;
+        }
+        return true;
     }
 }

@@ -5,8 +5,11 @@ import com.bookstore.backend.dto.response.ImportResponse;
 import com.bookstore.backend.service.ImportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/imports")
 @Tag(name = "Imports")
@@ -37,29 +38,47 @@ public class ImportController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<List<ImportResponse>> getAll() {
-        return ResponseEntity.ok(importService.getAll());
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<ImportResponse>> getAll(
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be greater than or equal to 0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100")
+            int size
+    ) {
+        return ResponseEntity.ok(importService.getAll(page, size));
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<List<ImportResponse>> search(
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<ImportResponse>> search(
             @RequestParam(required = false)
             @Size(max = 100, message = "keyword must not exceed 100 characters")
-            String keyword
+            String keyword,
+
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be greater than or equal to 0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100")
+            int size
     ) {
-        return ResponseEntity.ok(importService.search(keyword));
+        return ResponseEntity.ok(importService.search(keyword, page, size));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> getById(@PathVariable @Positive(message = "id is invalid") Long id) {
         return ResponseEntity.ok(importService.getById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> create(
             @Valid @RequestBody ImportUpsertRequest request,
             Authentication authentication
@@ -69,7 +88,7 @@ public class ImportController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> update(
             @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody ImportUpsertRequest request
@@ -78,7 +97,7 @@ public class ImportController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         importService.delete(id);
         return ResponseEntity.noContent().build();
