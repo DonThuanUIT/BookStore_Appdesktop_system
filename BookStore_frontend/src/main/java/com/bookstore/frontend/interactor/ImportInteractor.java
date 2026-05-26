@@ -11,14 +11,21 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Platform;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ImportInteractor {
+
+    private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final ImportManagementModel managementModel;
 
@@ -26,31 +33,41 @@ public class ImportInteractor {
         this.managementModel = managementModel;
     }
 
-    // --- 1. LẤY LỊCH SỬ NHẬP HÀNG ---
-    public void loadImportHistory() {
-        // Backend đang trả về một List (Mảng JSON)
-        ApiClient.getInstance().get("/imports").thenAccept(response -> {
+    public void loadImportHistory(int page, int size, String keyword) {
+        String endpoint = buildListEndpoint(page, size, keyword);
+
+        ApiClient.getInstance().get(endpoint).thenAccept(response -> {
             if (response.statusCode() == 200) {
                 try {
-                    JsonNode rootArray = ApiClient.getInstance().getMapper().readTree(response.body());
+                    JsonNode root = ApiClient.getInstance().getMapper().readTree(response.body());
+                    JsonNode content = root.get("content");
                     List<ImportModel> importList = new ArrayList<>();
 
-                    for (JsonNode node : rootArray) {
-                        ImportModel importModel = new ImportModel();
-                        importModel.setId(node.get("id").asLong());
-                        importModel.setStaffUsername(node.has("staffUsername") && !node.get("staffUsername").isNull() ? node.get("staffUsername").asText() : "N/A");
-                        importModel.setTotalCost(node.get("totalCost").asDouble());
-
-                        // Note: Backend chưa trả về importDate, tạm thời dùng string mặc định hoặc tự format nếu sau này BE thêm vào
-                        importModel.setImportDate("N/A");
-
-                        importList.add(importModel);
+                    if (content != null && content.isArray()) {
+                        for (JsonNode node : content) {
+                            importList.add(parseImportSummary(node));
+                        }
                     }
+
+                    int currentPage = root.has("number") ? root.get("number").asInt() : page;
+                    int totalPages = root.has("totalPages") ? root.get("totalPages").asInt() : 0;
+                    long totalElements = root.has("totalElements") ? root.get("totalElements").asLong() : importList.size();
+                    boolean hasNext = root.has("last") && !root.get("last").asBoolean();
+                    boolean hasPrevious = root.has("first") && !root.get("first").asBoolean();
+
+                    int from = totalElements == 0 ? 0 : currentPage * size + 1;
+                    int to = totalElements == 0 ? 0 : Math.min((currentPage + 1) * size, (int) totalElements);
+                    String paginationInfo = String.format("Hiển thị %d–%d / %d phiếu nhập", from, to, totalElements);
 
                     Platform.runLater(() -> {
                         managementModel.getImports().setAll(importList);
-                        managementModel.setTotalRecords(importList.size());
-                        managementModel.setPaginationInfo("Tổng cộng: " + importList.size() + " phiếu nhập");
+                        managementModel.setCurrentPage(currentPage);
+                        managementModel.setTotalPages(totalPages);
+                        managementModel.setPageSize(size);
+                        managementModel.setTotalRecords((int) totalElements);
+                        managementModel.setHasNext(hasNext);
+                        managementModel.setHasPrevious(hasPrevious);
+                        managementModel.setPaginationInfo(paginationInfo);
                     });
                 } catch (Exception e) {
                     System.err.println("Lỗi khi parse dữ liệu Lịch sử Import: " + e.getMessage());
@@ -59,26 +76,52 @@ public class ImportInteractor {
         });
     }
 
-    // --- 2. LẤY CHI TIẾT MỘT PHIẾU NHẬP (Dùng cho Side Panel) ---
+    private String buildListEndpoint(int page, int size, String keyword) {
+        if (keyword != null && !keyword.isBlank()) {
+            String encoded = URLEncoder.encode(keyword.trim(), StandardCharsets.UTF_8);
+            return String.format("/imports/search?keyword=%s&page=%d&size=%d", encoded, page, size);
+        }
+        return String.format("/imports?page=%d&size=%d", page, size);
+    }
+
+    private ImportModel parseImportSummary(JsonNode node) {
+        ImportModel importModel = new ImportModel();
+        importModel.setId(node.get("id").asLong());
+        importModel.setStaffUsername(node.has("staffUsername") && !node.get("staffUsername").isNull()
+                ? node.get("staffUsername").asText() : "N/A");
+        importModel.setTotalCost(node.get("totalCost").asDouble());
+        importModel.setImportDate(formatImportDate(node));
+        return importModel;
+    }
+
+    private String formatImportDate(JsonNode node) {
+        if (!node.has("importDate") || node.get("importDate").isNull()) {
+            return "N/A";
+        }
+        try {
+            String raw = node.get("importDate").asText();
+            LocalDateTime dateTime = LocalDateTime.parse(raw.substring(0, Math.min(19, raw.length())));
+            return dateTime.format(DISPLAY_DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            return node.get("importDate").asText();
+        }
+    }
+
     public CompletableFuture<ImportModel> getImportDetails(Long importId) {
         return ApiClient.getInstance().get("/imports/" + importId).thenApply(response -> {
             if (response.statusCode() == 200) {
                 try {
                     JsonNode node = ApiClient.getInstance().getMapper().readTree(response.body());
-                    ImportModel importModel = new ImportModel();
-                    importModel.setId(node.get("id").asLong());
-                    importModel.setStaffUsername(node.has("staffUsername") && !node.get("staffUsername").isNull() ? node.get("staffUsername").asText() : "N/A");
-                    importModel.setTotalCost(node.get("totalCost").asDouble());
+                    ImportModel importModel = parseImportSummary(node);
 
-                    // Lấy danh sách sản phẩm bên trong
                     if (node.has("details") && node.get("details").isArray()) {
                         for (JsonNode detailNode : node.get("details")) {
                             ImportDetailModel detail = new ImportDetailModel();
                             detail.setBookId(detailNode.get("bookId").asLong());
-                            detail.setBookTitle(detailNode.has("bookTitle") && !detailNode.get("bookTitle").isNull() ? detailNode.get("bookTitle").asText() : "N/A");
+                            detail.setBookTitle(detailNode.has("bookTitle") && !detailNode.get("bookTitle").isNull()
+                                    ? detailNode.get("bookTitle").asText() : "N/A");
                             detail.setQuantity(detailNode.get("quantity").asInt());
                             detail.setImportPrice(detailNode.get("importPrice").asDouble());
-
                             importModel.getDetails().add(detail);
                         }
                     }
@@ -91,10 +134,8 @@ public class ImportInteractor {
         });
     }
 
-    // --- 3. TẠO PHIẾU NHẬP MỚI (Submit Transaction) ---
     public CompletableFuture<Boolean> createImport(List<ImportDetailModel> cartItems) {
         try {
-            // Chuẩn bị payload chuẩn khớp với ImportUpsertRequest
             ObjectNode requestData = ApiClient.getInstance().getMapper().createObjectNode();
             ArrayNode detailsArray = requestData.putArray("details");
 
@@ -123,7 +164,6 @@ public class ImportInteractor {
         }
     }
 
-    // --- 4. XÓA PHIẾU NHẬP ---
     public CompletableFuture<Boolean> deleteImport(Long importId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()

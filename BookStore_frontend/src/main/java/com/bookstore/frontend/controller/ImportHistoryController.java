@@ -3,22 +3,25 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.ImportInteractor;
 import com.bookstore.frontend.model.ImportManagementModel;
 import com.bookstore.frontend.model.ImportModel;
+import com.bookstore.frontend.navigation.Navigatable;
 import javafx.application.Platform;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.time.LocalDate;
+public class ImportHistoryController implements Navigatable {
 
-public class ImportHistoryController {
+    private static final int PAGE_SIZE = 10;
 
     @FXML private TextField txtSearch;
     @FXML private DatePicker dpFrom;
     @FXML private DatePicker dpTo;
     @FXML private Label lblPaginationInfo;
+    @FXML private Button btnPrevPage;
+    @FXML private Label lblCurrentPage;
+    @FXML private Button btnNextPage;
 
     @FXML private TableView<ImportModel> tvImports;
     @FXML private TableColumn<ImportModel, Long> colId;
@@ -27,15 +30,11 @@ public class ImportHistoryController {
     @FXML private TableColumn<ImportModel, Double> colTotal;
     @FXML private TableColumn<ImportModel, Void> colActions;
 
-    // --- INJECT SIDE PANEL COMPONENTS ---
     @FXML private VBox importDetailSidePanel;
     @FXML private ImportDetailSidePanelController importDetailSidePanelController;
 
     private ImportManagementModel model;
     private ImportInteractor interactor;
-
-    // Lớp màng lọc dữ liệu
-    private FilteredList<ImportModel> filteredData;
 
     @FXML
     public void initialize() {
@@ -44,9 +43,7 @@ public class ImportHistoryController {
 
         setupTableColumns();
         setupFilters();
-
-        // Load dữ liệu ngay khi vừa mở màn hình
-        interactor.loadImportHistory();
+        loadPage(0);
     }
 
     private void setupTableColumns() {
@@ -109,66 +106,50 @@ public class ImportHistoryController {
             }
         });
 
+        tvImports.setItems(model.getImports());
         lblPaginationInfo.textProperty().bind(model.paginationInfoProperty());
+        btnPrevPage.disableProperty().bind(model.hasPreviousProperty().not());
+        btnNextPage.disableProperty().bind(model.hasNextProperty().not());
+        lblCurrentPage.textProperty().bind(
+                javafx.beans.binding.Bindings.createStringBinding(
+                        () -> String.valueOf(model.getCurrentPage() + 1),
+                        model.currentPageProperty()
+                )
+        );
     }
 
-    // --- LOGIC TÌM KIẾM VÀ LỌC (FILTER) ---
     private void setupFilters() {
-        // Bọc danh sách gốc vào FilteredList
-        filteredData = new FilteredList<>(model.getImports(), p -> true);
-
-        // Đổ danh sách ĐÃ LỌC vào TableView
-        tvImports.setItems(filteredData);
-
-        // Bắt sự kiện gõ phím để tìm kiếm Real-time
-        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            applyFilters();
-        });
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> loadPage(0));
     }
 
     @FXML
     private void handleFilter() {
-        // Khi nhấn nút Lọc (thường dùng cho ngày tháng)
-        applyFilters();
+        loadPage(0);
     }
 
-    private void applyFilters() {
-        String searchText = txtSearch.getText() != null ? txtSearch.getText().toLowerCase().trim() : "";
-        LocalDate fromDate = dpFrom.getValue();
-        LocalDate toDate = dpTo.getValue();
+    @FXML
+    private void handlePrevPage() {
+        if (model.getCurrentPage() > 0) {
+            loadPage(model.getCurrentPage() - 1);
+        }
+    }
 
-        filteredData.setPredicate(importRecord -> {
-            // 1. Kiểm tra khớp Text (Mã phiếu hoặc Tên nhân viên)
-            boolean matchesSearch = true;
-            if (!searchText.isEmpty()) {
-                String idStr = String.valueOf(importRecord.getId());
-                // Xóa chữ "IMP-" hoặc "#IMP-" nếu user lỡ gõ vào
-                String cleanSearchText = searchText.replace("#", "").replace("imp-", "");
+    @FXML
+    private void handleNextPage() {
+        if (model.hasNextProperty().get()) {
+            loadPage(model.getCurrentPage() + 1);
+        }
+    }
 
-                String staff = importRecord.getStaffUsername() != null ? importRecord.getStaffUsername().toLowerCase() : "";
-                matchesSearch = idStr.contains(cleanSearchText) || staff.contains(searchText);
-            }
-
-            // 2. Kiểm tra khớp Ngày tháng (Tạm thời bỏ qua vì Backend đang trả về "N/A")
-            boolean matchesDate = true;
-            /* * TODO: Khi Backend làm xong Ngày nhập, mở đoạn code này ra:
-             * if (!"N/A".equals(importRecord.getImportDate())) {
-             * LocalDate recordDate = LocalDate.parse(importRecord.getImportDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-             * if (fromDate != null && recordDate.isBefore(fromDate)) matchesDate = false;
-             * if (toDate != null && recordDate.isAfter(toDate)) matchesDate = false;
-             * }
-             */
-
-            return matchesSearch && matchesDate;
-        });
-
-        // Cập nhật lại nhãn đếm số lượng sau khi lọc
-        lblPaginationInfo.setText("Showing " + filteredData.size() + " entries (Filtered)");
+    private void loadPage(int page) {
+        String keyword = txtSearch.getText();
+        interactor.loadImportHistory(page, PAGE_SIZE, keyword);
     }
 
     @FXML
     private void handleCreateImport() {
-        com.bookstore.frontend.navigation.NavigationService.getInstance().navigateTo(com.bookstore.frontend.navigation.PageType.IMPORT_CREATE);
+        com.bookstore.frontend.navigation.NavigationService.getInstance()
+                .navigateTo(com.bookstore.frontend.navigation.PageType.IMPORT_CREATE);
     }
 
     private void onViewDetails(ImportModel importRecord) {
@@ -183,14 +164,25 @@ public class ImportHistoryController {
         });
     }
 
+    @Override
+    public void onNavigate(Object data) {
+        loadPage(0);
+    }
+
     private void onDeleteImport(ImportModel importRecord) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc chắn muốn xóa phiếu nhập #IMP-" + importRecord.getId() + "?", ButtonType.YES, ButtonType.NO);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                "Bạn có chắc chắn muốn xóa phiếu nhập #IMP-" + importRecord.getId() + "?",
+                ButtonType.YES, ButtonType.NO);
         alert.showAndWait();
         if (alert.getResult() == ButtonType.YES) {
             interactor.deleteImport(importRecord.getId()).thenAccept(success -> {
                 Platform.runLater(() -> {
                     if (success) {
-                        interactor.loadImportHistory();
+                        int page = model.getCurrentPage();
+                        if (page > 0 && model.getImports().size() <= 1) {
+                            page--;
+                        }
+                        loadPage(page);
                     } else {
                         new Alert(Alert.AlertType.ERROR, "Xóa thất bại!").show();
                     }
