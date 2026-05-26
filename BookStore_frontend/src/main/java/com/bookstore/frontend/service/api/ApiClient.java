@@ -1,5 +1,8 @@
 package com.bookstore.frontend.service.api;
 
+import com.bookstore.frontend.model.BookModel;
+import com.bookstore.frontend.model.dto.Response.BookResponseDto;
+import com.bookstore.frontend.util.BookMapper;
 import com.bookstore.frontend.util.UserSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -13,7 +16,11 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class ApiClient {
     private static ApiClient instance;
@@ -21,8 +28,20 @@ public class ApiClient {
     private final ObjectMapper objectMapper;
     public static final String BASE_URL = "http://localhost:8080/api";
 
+    private final List<Consumer<BookModel>> bookUpdateListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<Long>> bookDeleteListeners = new CopyOnWriteArrayList<>();
+
+    private final List<Consumer<com.bookstore.frontend.model.ImportModel>> importCreateListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<Long>> importDeleteListeners = new CopyOnWriteArrayList<>();
+
+    public void onImportCreated(Consumer<com.bookstore.frontend.model.ImportModel> listener) {
+        importCreateListeners.add(listener);
+    }
+    public void onImportDeleted(Consumer<Long> listener) {
+        importDeleteListeners.add(listener);
+    }
+
     private ApiClient() {
-        // Khởi tạo HttpClient dùng chung, set timeout 10s để tránh treo app
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
@@ -39,10 +58,6 @@ public class ApiClient {
     public ObjectMapper getMapper() {
         return objectMapper;
     }
-
-    // =========================================================================
-    // CÁC HÀM GỌI API CHÍNH (GET, POST, UPLOAD)
-    // =========================================================================
 
     public CompletableFuture<HttpResponse<String>> get(String endpoint) {
         try {
@@ -94,7 +109,6 @@ public class ApiClient {
 
     public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) throws IOException {
         String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
-        // Đẩy logic xử lý byte phức tạp xuống hàm helper để class sạch sẽ hơn
         byte[] bodyData = buildMultipartBody(file, boundary);
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -107,13 +121,89 @@ public class ApiClient {
         return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
     }
 
-    // =========================================================================
-    // HÀM PHỤ TRỢ (HELPERS) - Tách biệt logic để code dễ bảo trì
-    // =========================================================================
+    public void onBookUpdated(Consumer<BookModel> listener) {
+        bookUpdateListeners.add(listener);
+    }
 
-    /**
-     * Tự động lấy token từ Két sắt (UserSession) và gắn vào Header
-     */
+    public void onBookDeleted(Consumer<Long> listener) {
+        bookDeleteListeners.add(listener);
+    }
+
+
+    public void startSseConnection() {
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/notifications/stream"))
+                .header("Accept", "text/event-stream")
+                .GET();
+        attachAuthToken(requestBuilder);
+
+        httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofLines())
+                .thenAccept(response -> {
+                    final String[] currentEvent = {"message"};
+
+                    response.body().forEach(line -> {
+                        if (line.startsWith("event:")) {
+                            currentEvent[0] = line.substring(6).trim();
+                        } else if (line.startsWith("data:")) {
+                            String data = line.substring(5).trim();
+                            processSseEvent(currentEvent[0], data);
+                        }
+                    });
+                })
+                .exceptionally(e -> {
+                    System.err.println("SSE Connection Lost or Error: " + e.getMessage());
+                    CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)
+                            .execute(this::startSseConnection);
+                    return null;
+                });
+    }
+
+    private void processSseEvent(String eventName, String data) {
+        try {
+            if ("UPDATE_BOOK".equals(eventName)) {
+                BookResponseDto dto = objectMapper.readValue(data, BookResponseDto.class);
+                BookModel updatedBook = BookMapper.toModel(dto);
+
+                bookUpdateListeners.forEach(listener -> listener.accept(updatedBook));
+
+            } else if ("DELETE_BOOK".equals(eventName)) {
+                Long bookId = Long.parseLong(data);
+
+                bookDeleteListeners.forEach(listener -> listener.accept(bookId));
+            } else if ("CREATE_IMPORT".equals(eventName)) {
+                com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(data);
+                com.bookstore.frontend.model.ImportModel importModel = new com.bookstore.frontend.model.ImportModel();
+                importModel.setId(node.get("id").asLong());
+                importModel.setTotalCost(node.get("totalCost").asDouble());
+
+                String importDateStr = "N/A";
+                if (node.has("importDate") && !node.get("importDate").isNull()) {
+                    com.fasterxml.jackson.databind.JsonNode dateNode = node.get("importDate");
+                    if (dateNode.isArray() && dateNode.size() >= 3) {
+                        importDateStr = String.format("%02d/%02d/%04d %02d:%02d",
+                                dateNode.get(2).asInt(), dateNode.get(1).asInt(), dateNode.get(0).asInt(),
+                                dateNode.size() > 3 ? dateNode.get(3).asInt() : 0,
+                                dateNode.size() > 4 ? dateNode.get(4).asInt() : 0);
+                    } else {
+                        String raw = dateNode.asText();
+                        importDateStr = raw.replace("T", " ");
+                        if(importDateStr.indexOf('.') > 0) importDateStr = importDateStr.substring(0, importDateStr.indexOf('.'));
+                    }
+                }
+                importModel.setImportDate(importDateStr);
+
+                importCreateListeners.forEach(listener -> listener.accept(importModel));
+
+            } else if ("DELETE_IMPORT".equals(eventName)) {
+                Long importId = Long.parseLong(data);
+                importDeleteListeners.forEach(listener -> listener.accept(importId));
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing SSE data: " + e.getMessage());
+        }
+    }
+
+
     private void attachAuthToken(HttpRequest.Builder requestBuilder) {
         String token = UserSession.getInstance().getToken();
         if (token != null && !token.isEmpty()) {
@@ -121,9 +211,6 @@ public class ApiClient {
         }
     }
 
-    /**
-     * Đóng gói file thành khối byte theo chuẩn multipart/form-data
-     */
     private byte[] buildMultipartBody(File file, String boundary) throws IOException {
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         String mimeType = Files.probeContentType(file.toPath());
@@ -146,5 +233,4 @@ public class ApiClient {
 
         return body.array();
     }
-
 }

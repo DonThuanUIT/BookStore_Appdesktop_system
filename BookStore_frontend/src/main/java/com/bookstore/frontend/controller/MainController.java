@@ -18,12 +18,10 @@ import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
-    // --- UI Components ---
     @FXML private StackPane contentArea;
     @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart;
     @FXML private Label lblCartBadge;
 
-    // --- Custom Components ---
     private AccountPopup accountPopup;
     private MiniCartPopup miniCartPopup;
 

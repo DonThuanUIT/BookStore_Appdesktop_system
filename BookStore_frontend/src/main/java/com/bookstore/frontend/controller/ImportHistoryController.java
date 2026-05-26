@@ -3,6 +3,7 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.ImportInteractor;
 import com.bookstore.frontend.model.ImportManagementModel;
 import com.bookstore.frontend.model.ImportModel;
+import com.bookstore.frontend.service.api.ApiClient;
 import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
@@ -12,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class ImportHistoryController {
 
@@ -22,19 +24,15 @@ public class ImportHistoryController {
 
     @FXML private TableView<ImportModel> tvImports;
     @FXML private TableColumn<ImportModel, Long> colId;
-    @FXML private TableColumn<ImportModel, String> colStaff;
     @FXML private TableColumn<ImportModel, String> colDate;
     @FXML private TableColumn<ImportModel, Double> colTotal;
     @FXML private TableColumn<ImportModel, Void> colActions;
 
-    // --- INJECT SIDE PANEL COMPONENTS ---
     @FXML private VBox importDetailSidePanel;
     @FXML private ImportDetailSidePanelController importDetailSidePanelController;
 
     private ImportManagementModel model;
     private ImportInteractor interactor;
-
-    // Lớp màng lọc dữ liệu
     private FilteredList<ImportModel> filteredData;
 
     @FXML
@@ -45,13 +43,37 @@ public class ImportHistoryController {
         setupTableColumns();
         setupFilters();
 
-        // Load dữ liệu ngay khi vừa mở màn hình
         interactor.loadImportHistory();
+
+        setupRealTimeSync();
+    }
+
+    private void setupRealTimeSync() {
+        ApiClient.getInstance().onImportCreated(newImport -> {
+            Platform.runLater(() -> {
+                model.getImports().add(0, newImport);
+                model.setTotalRecords(model.getImports().size());
+                applyFilters();
+            });
+        });
+
+        ApiClient.getInstance().onImportDeleted(importId -> {
+            Platform.runLater(() -> {
+                model.getImports().removeIf(imp -> imp.getId() == importId);
+
+                if (importDetailSidePanel != null && importDetailSidePanel.isVisible()) {
+                    importDetailSidePanel.setVisible(false);
+                    importDetailSidePanel.setManaged(false);
+                }
+
+                model.setTotalRecords(model.getImports().size());
+                applyFilters();
+            });
+        });
     }
 
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colStaff.setCellValueFactory(new PropertyValueFactory<>("staffUsername"));
         colDate.setCellValueFactory(new PropertyValueFactory<>("importDate"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalCost"));
 
@@ -112,23 +134,28 @@ public class ImportHistoryController {
         lblPaginationInfo.textProperty().bind(model.paginationInfoProperty());
     }
 
-    // --- LOGIC TÌM KIẾM VÀ LỌC (FILTER) ---
     private void setupFilters() {
-        // Bọc danh sách gốc vào FilteredList
         filteredData = new FilteredList<>(model.getImports(), p -> true);
-
-        // Đổ danh sách ĐÃ LỌC vào TableView
         tvImports.setItems(filteredData);
 
-        // Bắt sự kiện gõ phím để tìm kiếm Real-time
-        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            applyFilters();
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        dpFrom.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        dpTo.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+
+        dpFrom.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                dpFrom.setValue(null);
+            }
+        });
+        dpTo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                dpTo.setValue(null);
+            }
         });
     }
 
     @FXML
     private void handleFilter() {
-        // Khi nhấn nút Lọc (thường dùng cho ngày tháng)
         applyFilters();
     }
 
@@ -138,32 +165,45 @@ public class ImportHistoryController {
         LocalDate toDate = dpTo.getValue();
 
         filteredData.setPredicate(importRecord -> {
-            // 1. Kiểm tra khớp Text (Mã phiếu hoặc Tên nhân viên)
             boolean matchesSearch = true;
             if (!searchText.isEmpty()) {
                 String idStr = String.valueOf(importRecord.getId());
-                // Xóa chữ "IMP-" hoặc "#IMP-" nếu user lỡ gõ vào
                 String cleanSearchText = searchText.replace("#", "").replace("imp-", "");
-
-                String staff = importRecord.getStaffUsername() != null ? importRecord.getStaffUsername().toLowerCase() : "";
-                matchesSearch = idStr.contains(cleanSearchText) || staff.contains(searchText);
+                matchesSearch = idStr.contains(cleanSearchText);
             }
 
-            // 2. Kiểm tra khớp Ngày tháng (Tạm thời bỏ qua vì Backend đang trả về "N/A")
             boolean matchesDate = true;
-            /* * TODO: Khi Backend làm xong Ngày nhập, mở đoạn code này ra:
-             * if (!"N/A".equals(importRecord.getImportDate())) {
-             * LocalDate recordDate = LocalDate.parse(importRecord.getImportDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-             * if (fromDate != null && recordDate.isBefore(fromDate)) matchesDate = false;
-             * if (toDate != null && recordDate.isAfter(toDate)) matchesDate = false;
-             * }
-             */
+            if (fromDate != null || toDate != null) {
+                String recordDateStr = importRecord.getImportDate();
+                if (recordDateStr == null || "N/A".equals(recordDateStr)) {
+                    matchesDate = false;
+                } else {
+                    try {
+                        String datePart = recordDateStr.split(" ")[0];
+                        LocalDate recordDate;
+
+                        if (datePart.contains("-")) {
+                            recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        } else {
+                            recordDate = LocalDate.parse(datePart, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                        }
+
+                        if (fromDate != null && recordDate.isBefore(fromDate)) {
+                            matchesDate = false;
+                        }
+                        if (toDate != null && recordDate.isAfter(toDate)) {
+                            matchesDate = false;
+                        }
+                    } catch (Exception e) {
+                        matchesDate = false;
+                    }
+                }
+            }
 
             return matchesSearch && matchesDate;
         });
 
-        // Cập nhật lại nhãn đếm số lượng sau khi lọc
-        lblPaginationInfo.setText("Showing " + filteredData.size() + " entries (Filtered)");
+        model.paginationInfoProperty().set("Showing " + filteredData.size() + " entries (Filtered)");
     }
 
     @FXML
@@ -189,9 +229,7 @@ public class ImportHistoryController {
         if (alert.getResult() == ButtonType.YES) {
             interactor.deleteImport(importRecord.getId()).thenAccept(success -> {
                 Platform.runLater(() -> {
-                    if (success) {
-                        interactor.loadImportHistory();
-                    } else {
+                    if (!success) {
                         new Alert(Alert.AlertType.ERROR, "Xóa thất bại!").show();
                     }
                 });

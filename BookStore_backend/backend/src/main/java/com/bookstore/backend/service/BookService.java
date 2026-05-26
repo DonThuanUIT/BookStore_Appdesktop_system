@@ -14,12 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import com.bookstore.backend.entity.*;
 import com.bookstore.backend.exception.AppException;
-import com.bookstore.backend.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -32,16 +31,20 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final AuthorRepository authorRepository;
 
+    private final SseNotificationService sseNotificationService;
+
+
     public BookService(BookRepository bookRepository,
                        PublisherRepository publisherRepository,
                        CategoryRepository categoryRepository,
-                       AuthorRepository authorRepository) {
+                       AuthorRepository authorRepository,
+                       SseNotificationService sseNotificationService) {
         this.bookRepository = bookRepository;
         this.publisherRepository = publisherRepository;
         this.categoryRepository = categoryRepository;
         this.authorRepository = authorRepository;
+        this.sseNotificationService = sseNotificationService;
     }
-
 
     @Transactional(readOnly = true)
     public List<BookResponse> getAll() {
@@ -122,6 +125,13 @@ public class BookService {
         }
 
         Book saved = bookRepository.save(book);
+
+        BookResponse response = toResponse(saved);
+        try {
+            sseNotificationService.sendNotification("UPDATE_BOOK", response);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi SSE: " + e.getMessage());
+        }
         return toResponse(saved);
     }
 
@@ -161,7 +171,16 @@ public class BookService {
             book.setAuthors(resolveAuthors(request.authorIds()));
         }
 
-        return toResponse(bookRepository.save(book));
+        Book saved = bookRepository.save(book);
+        BookResponse response = toResponse(saved);
+
+        try {
+            sseNotificationService.sendNotification("UPDATE_BOOK", response);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi SSE: " + e.getMessage());
+        }
+
+        return response;
     }
 
 
@@ -172,6 +191,12 @@ public class BookService {
 
         book.setIsDeleted(true);
         bookRepository.save(book);
+
+        try {
+            sseNotificationService.sendNotification("DELETE_BOOK", id);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi SSE: " + e.getMessage());
+        }
     }
 
 
