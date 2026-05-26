@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class DataInitializer {
 
+    private static final String LEGACY_STAFF_ROLE = "ROLE_STAFF";
+
     @Bean
     public CommandLineRunner seedUsers(
             RoleRepository roleRepository,
@@ -20,20 +22,39 @@ public class DataInitializer {
             PasswordEncoder passwordEncoder
     ) {
         return args -> {
-            seedRole(roleRepository, RoleNames.ADMIN, "Administrator");
-            seedRole(roleRepository, RoleNames.STAFF, "Staff");
-            seedRole(roleRepository, RoleNames.CUSTOMER, "Customer");
+            seedRole(roleRepository, RoleNames.ADMIN, "Vendor (Người bán)");
+            seedRole(roleRepository, RoleNames.CUSTOMER, "Customer (Người mua)");
+
+            migrateLegacyStaffUsers(roleRepository, appUserRepository);
 
 //            seedUser(appUserRepository, passwordEncoder, "admin", "Admin@123", roleRepository.findByName(RoleNames.ADMIN).orElseThrow());
-//            seedUser(appUserRepository, passwordEncoder, "staff", "Staff@123", roleRepository.findByName(RoleNames.STAFF).orElseThrow());
 //            seedUser(appUserRepository, passwordEncoder, "customer", "Customer@123", roleRepository.findByName(RoleNames.CUSTOMER).orElseThrow());
         };
     }
 
+    /** Chuyển tài khoản STAFF cũ sang ADMIN (vendor). */
+    private void migrateLegacyStaffUsers(RoleRepository roleRepository, AppUserRepository appUserRepository) {
+        roleRepository.findByName(LEGACY_STAFF_ROLE).ifPresent(staffRole -> {
+            Role adminRole = roleRepository.findByName(RoleNames.ADMIN).orElseThrow();
+            appUserRepository.findAll().stream()
+                    .filter(user -> user.getRole() != null && LEGACY_STAFF_ROLE.equals(user.getRole().getName()))
+                    .forEach(user -> {
+                        user.setRole(adminRole);
+                        appUserRepository.save(user);
+                    });
+        });
+    }
+
     private void seedRole(RoleRepository roleRepository, String name, String description) {
-        if (roleRepository.findByName(name).isEmpty()) {
-            roleRepository.save(new Role(name, description));
-        }
+        roleRepository.findByName(name).ifPresentOrElse(
+                existing -> {
+                    if (existing.getDescription() == null || !description.equals(existing.getDescription())) {
+                        existing.setDescription(description);
+                        roleRepository.save(existing);
+                    }
+                },
+                () -> roleRepository.save(new Role(name, description))
+        );
     }
 
     private void seedUser(

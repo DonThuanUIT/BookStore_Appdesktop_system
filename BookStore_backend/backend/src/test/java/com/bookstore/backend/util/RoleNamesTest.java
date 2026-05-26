@@ -5,14 +5,15 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RoleNamesTest {
 
     @Test
     void shouldNormalizeSupportedRoles() {
         assertEquals("ROLE_ADMIN", RoleNames.normalize("admin"));
-        assertEquals("ROLE_STAFF", RoleNames.normalize("ROLE_STAFF"));
         assertEquals("ROLE_CUSTOMER", RoleNames.normalize(" customer "));
     }
 
@@ -23,6 +24,15 @@ class RoleNamesTest {
 
     @Test
     void shouldRejectUnsupportedRole() {
+        assertThrows(IllegalArgumentException.class, () -> RoleNames.normalize("STAFF"));
         assertThrows(IllegalArgumentException.class, () -> RoleNames.normalize("SUPER_ADMIN"));
+    }
+
+    @Test
+    void shouldMatchAdminAndCustomer() {
+        assertTrue(RoleNames.matchesAdmin("ADMIN"));
+        assertTrue(RoleNames.matchesAdmin("ROLE_ADMIN"));
+        assertTrue(RoleNames.matchesCustomer("CUSTOMER"));
+        assertFalse(RoleNames.matchesAdmin("CUSTOMER"));
     }
 }

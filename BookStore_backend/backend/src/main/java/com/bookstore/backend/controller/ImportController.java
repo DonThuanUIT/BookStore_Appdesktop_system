@@ -38,7 +38,7 @@ public class ImportController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ImportResponse>> getAll(
             @RequestParam(defaultValue = "0")
             @Min(value = 0, message = "page must be greater than or equal to 0")
@@ -53,7 +53,7 @@ public class ImportController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ImportResponse>> search(
             @RequestParam(required = false)
             @Size(max = 100, message = "keyword must not exceed 100 characters")
@@ -72,13 +72,13 @@ public class ImportController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> getById(@PathVariable @Positive(message = "id is invalid") Long id) {
         return ResponseEntity.ok(importService.getById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> create(
             @Valid @RequestBody ImportUpsertRequest request,
             Authentication authentication
@@ -88,7 +88,7 @@ public class ImportController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> update(
             @PathVariable @Positive(message = "id is invalid") Long id,
             @Valid @RequestBody ImportUpsertRequest request
@@ -97,7 +97,7 @@ public class ImportController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @Positive(message = "id is invalid") Long id) {
         importService.delete(id);
         return ResponseEntity.noContent().build();

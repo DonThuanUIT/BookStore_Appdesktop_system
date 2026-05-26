@@ -30,7 +30,7 @@ public record UserCreateRequest(
         String address,
 
         @NotBlank(message = "Role is required")
-        @Pattern(regexp = "^(ROLE_)?(ADMIN|STAFF|CUSTOMER)$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Role is invalid")
+        @Pattern(regexp = "^(ROLE_)?(ADMIN|CUSTOMER)$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Role is invalid")
         String roleName
 ) {
 }

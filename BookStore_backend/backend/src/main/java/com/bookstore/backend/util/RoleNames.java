@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * Hệ thống 2 vai trò: ADMIN (Vendor – người bán) và CUSTOMER (người mua).
+ */
 public final class RoleNames {
     public static final String ADMIN = "ROLE_ADMIN";
-    public static final String STAFF = "ROLE_STAFF";
     public static final String CUSTOMER = "ROLE_CUSTOMER";
 
-    private static final Set<String> VALID_ROLES = Set.of(ADMIN, STAFF, CUSTOMER);
+    private static final Set<String> VALID_ROLES = Set.of(ADMIN, CUSTOMER);
 
     private RoleNames() {
     }
@@ -37,5 +39,24 @@ public final class RoleNames {
                 .map(RoleNames::normalize)
                 .distinct()
                 .toList();
+    }
+
+    public static boolean matchesAdmin(String roleName) {
+        return matches(roleName, ADMIN);
+    }
+
+    public static boolean matchesCustomer(String roleName) {
+        return matches(roleName, CUSTOMER);
+    }
+
+    private static boolean matches(String roleName, String expected) {
+        if (roleName == null || roleName.isBlank()) {
+            return false;
+        }
+        String normalized = roleName.trim().toUpperCase(Locale.ROOT);
+        if (!normalized.startsWith("ROLE_")) {
+            normalized = "ROLE_" + normalized;
+        }
+        return expected.equals(normalized);
     }
 }

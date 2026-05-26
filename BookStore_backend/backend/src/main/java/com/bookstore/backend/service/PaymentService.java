@@ -5,6 +5,7 @@ import com.bookstore.backend.entity.Order;
 import com.bookstore.backend.entity.User;
 import com.bookstore.backend.exception.AppException;
 import com.bookstore.backend.repository.OrderRepository;
+import com.bookstore.backend.util.RoleNames;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -55,11 +56,10 @@ public class PaymentService {
         }
 
         boolean ownsOrder = order.getUser() != null && order.getUser().getId().equals(currentUser.getId());
-        boolean staffOrAdmin = currentUser.getRole() != null
-                && ("ADMIN".equalsIgnoreCase(currentUser.getRole().getName())
-                || "STAFF".equalsIgnoreCase(currentUser.getRole().getName()));
+        boolean isVendor = currentUser.getRole() != null
+                && RoleNames.matchesAdmin(currentUser.getRole().getName());
 
-        if (!ownsOrder && !staffOrAdmin) {
+        if (!ownsOrder && !isVendor) {
             throw new AppException(HttpStatus.FORBIDDEN, "You do not have permission to pay for this order.");
         }
     }

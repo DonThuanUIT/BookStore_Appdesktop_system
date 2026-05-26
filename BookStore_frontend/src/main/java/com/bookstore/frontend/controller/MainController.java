@@ -36,7 +36,7 @@ public class MainController implements Initializable {
 
         setupCartBindings();
 
-        applyCustomerNavVisibilityForRole();
+        applyRoleBasedNavVisibility();
 
         navigateAndUpdateState(PageType.HOME);
     }
@@ -105,9 +105,12 @@ public class MainController implements Initializable {
         }
     }
 
-    private void applyCustomerNavVisibilityForRole() {
-        boolean customer = UserSession.getInstance().isCustomer();
-        btnImport.setVisible(!customer); btnImport.setManaged(!customer);
-        btnInventory.setVisible(!customer); btnInventory.setManaged(!customer);
+    /** Chỉ Admin (Vendor) thấy quản lý kho và nhập hàng; Customer chỉ mua sắm. */
+    private void applyRoleBasedNavVisibility() {
+        boolean vendor = UserSession.getInstance().isAdmin();
+        btnImport.setVisible(vendor);
+        btnImport.setManaged(vendor);
+        btnInventory.setVisible(vendor);
+        btnInventory.setManaged(vendor);
     }
 }
