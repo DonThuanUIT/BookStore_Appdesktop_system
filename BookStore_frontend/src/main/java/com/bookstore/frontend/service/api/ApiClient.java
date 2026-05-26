@@ -90,6 +90,21 @@ public class ApiClient {
         }
     }
 
+    // Thêm phương thức này để hỗ trợ các request POST không body
+    public CompletableFuture<HttpResponse<String>> post(String endpoint) {
+        try {
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .POST(HttpRequest.BodyPublishers.noBody()); // Không có body
+
+            attachAuthToken(requestBuilder);
+
+            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
     public CompletableFuture<HttpResponse<String>> put(String endpoint, Object body) {
         try {
             String jsonBody = objectMapper.writeValueAsString(body);
@@ -232,5 +247,20 @@ public class ApiClient {
         body.put(footerBytes);
 
         return body.array();
+    }
+
+    public CompletableFuture<HttpResponse<String>> patch(String endpoint, String jsonBody) {
+        try {
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody));
+
+            attachAuthToken(requestBuilder);
+
+            return httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 }

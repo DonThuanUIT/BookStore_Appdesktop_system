@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 public class MainController implements Initializable {
 
     @FXML private StackPane contentArea;
-    @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart;
+    @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart, btnRevenue;
     @FXML private Label lblCartBadge;
 
     private AccountPopup accountPopup;
@@ -79,6 +79,7 @@ public class MainController implements Initializable {
     @FXML void onCartClick() { navigateAndUpdateState(PageType.CART); }
     @FXML void onInventoryClick() { navigateAndUpdateState(PageType.INVENTORY); }
     @FXML void onImportClick() { navigateAndUpdateState(PageType.IMPORT); }
+    @FXML void onRevenueClick() {navigateAndUpdateState(PageType.REVENUE_REPORT);}
 
     private void navigateAndUpdateState(PageType pageType) {
         NavigationService.getInstance().navigateTo(pageType);
@@ -91,6 +92,7 @@ public class MainController implements Initializable {
         btnCart.getStyleClass().remove("nav-button-active");
         btnInventory.getStyleClass().remove("nav-button-active");
         btnImport.getStyleClass().remove("nav-button-active");
+        btnRevenue.getStyleClass().remove("nav-button-active");
 
         if (pageType == null) return;
 
@@ -100,6 +102,7 @@ public class MainController implements Initializable {
             case CART -> btnCart.getStyleClass().add("nav-button-active");
             case INVENTORY -> btnInventory.getStyleClass().add("nav-button-active");
             case IMPORT -> btnImport.getStyleClass().add("nav-button-active");
+            case REVENUE_REPORT -> btnRevenue.getStyleClass().add("nav-button-active");
         }
     }
 
@@ -107,5 +110,6 @@ public class MainController implements Initializable {
         boolean customer = UserSession.getInstance().isCustomer();
         btnImport.setVisible(!customer); btnImport.setManaged(!customer);
         btnInventory.setVisible(!customer); btnInventory.setManaged(!customer);
+        btnRevenue.setVisible(!customer); btnRevenue.setManaged(!customer);
     }
 }
