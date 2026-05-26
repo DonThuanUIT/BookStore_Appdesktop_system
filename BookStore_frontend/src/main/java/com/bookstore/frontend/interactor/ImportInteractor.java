@@ -85,6 +85,9 @@ public class ImportInteractor {
     private ImportModel parseImportSummary(JsonNode node) {
         ImportModel importModel = new ImportModel();
         importModel.setId(node.get("id").asLong());
+        if (node.has("adminUsername") && !node.get("adminUsername").isNull()) {
+            importModel.setAdminUsername(node.get("adminUsername").asText());
+        }
         importModel.setTotalCost(node.get("totalCost").asDouble());
         importModel.setImportDate(formatImportDate(node));
         return importModel;

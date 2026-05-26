@@ -21,8 +21,21 @@ public class UserSession {
     public void init(String token, String username, List<String> roles) {
         this.token = token;
         this.username = username;
-        this.roles = roles != null ? List.copyOf(roles) : List.of();
+        if (roles == null) {
+            this.roles = List.of();
+            return;
+        }
+
+        // Backend no longer has STAFF role, only ADMIN and CUSTOMER
+        this.roles = roles.stream()
+                .map(r -> {
+                    if (r == null) return null;
+                    return r.trim();
+                })
+                .filter(r -> r != null && !r.isBlank())
+                .toList();
     }
+
 
     public String getToken() { return token; }
     public String getUsername() { return username; }
@@ -45,9 +58,7 @@ public class UserSession {
         if (role == null) return false;
         String n = role.trim();
         return "ADMIN".equalsIgnoreCase(n)
-                || "ROLE_ADMIN".equalsIgnoreCase(n)
-                || "STAFF".equalsIgnoreCase(n)
-                || "ROLE_STAFF".equalsIgnoreCase(n);
+                || "ROLE_ADMIN".equalsIgnoreCase(n);
     }
 
     private static boolean isCustomerRoleName(String role) {
@@ -55,6 +66,7 @@ public class UserSession {
         String n = role.trim();
         return "CUSTOMER".equalsIgnoreCase(n) || "ROLE_CUSTOMER".equalsIgnoreCase(n);
     }
+
 
     public void clean() {
         token = null;

@@ -189,6 +189,9 @@ public class ApiClient {
                 com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(data);
                 com.bookstore.frontend.model.ImportModel importModel = new com.bookstore.frontend.model.ImportModel();
                 importModel.setId(node.get("id").asLong());
+                if (node.has("adminUsername") && !node.get("adminUsername").isNull()) {
+                    importModel.setAdminUsername(node.get("adminUsername").asText());
+                }
                 importModel.setTotalCost(node.get("totalCost").asDouble());
 
                 String importDateStr = "N/A";

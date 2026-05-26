@@ -55,10 +55,10 @@ public class OrderHistoryController implements Navigatable {
                 } else {
                     OrderResponseDTO order = getTableView().getItems().get(getIndex());
                     String status = order.getStatus().toUpperCase();
-                    boolean isAdmin = UserSession.getInstance().isAdminOrStaff();
+                    boolean isAdmin = UserSession.getInstance().isAdmin();
 
                     if (isAdmin) {
-                        // Admin/Staff: Duyệt (PENDING->SHIPPING) hoặc Hoàn tất (SHIPPING->COMPLETED)
+                        // Admin: Duyệt (PENDING->SHIPPING) hoặc Hoàn tất (SHIPPING->COMPLETED)
                         if ("PENDING".equals(status) || "SHIPPING".equals(status)) {
                             btnAction.setText("PENDING".equals(status) ? "✓ Duyệt" : "✓ Hoàn tất");
                             btnAction.setStyle("-fx-background-color: " + ("PENDING".equals(status) ? "#27ae60" : "#2980b9") + "; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10; -fx-text-fill: white;");
@@ -78,7 +78,7 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void handleAction(OrderResponseDTO order) {
-        if (UserSession.getInstance().isAdminOrStaff()) {
+        if (UserSession.getInstance().isAdmin()) {
             String nextStatus = "PENDING".equalsIgnoreCase(order.getStatus()) ? "SHIPPING" : "COMPLETED";
             updateStatusAPI(order.getId(), nextStatus);
         } else {
@@ -101,7 +101,7 @@ public class OrderHistoryController implements Navigatable {
 
     private void determineAndLoadData() {
         // Chỉ clear khi load xong (để tránh màn hình trắng)
-        if (UserSession.getInstance().isAdminOrStaff()) {
+        if (UserSession.getInstance().isAdmin()) {
             loadOrderHistory("/orders?page=0&size=20&sortBy=orderDate&direction=desc");
         } else {
             loadOrderHistory("/orders/history?page=0&size=20");
