@@ -2,6 +2,7 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.request.CreateOrderRequest;
 import com.bookstore.backend.dto.request.OrderItemRequest;
+import com.bookstore.backend.dto.response.BookResponse;
 import com.bookstore.backend.dto.response.OrderResponse;
 import com.bookstore.backend.dto.response.UserProfileResponse;
 import com.bookstore.backend.entity.Book;
@@ -13,7 +14,7 @@ import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.OrderDetailRepository;
 import com.bookstore.backend.repository.OrderRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,18 +23,28 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 
 @Service
 public class OrderService {
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private BookRepository bookRepository;
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
+
+    private final OrderRepository orderRepository;
+    private final BookRepository bookRepository;
+    private final OrderDetailRepository orderDetailRepository;
+
+    private final SseNotificationService sseNotificationService;
+    private final BookService bookService;
+
+    public OrderService(OrderRepository orderRepository,
+                        BookRepository bookRepository,
+                        OrderDetailRepository orderDetailRepository,
+                        SseNotificationService sseNotificationService,
+                        @Lazy BookService bookService) {
+        this.orderRepository = orderRepository;
+        this.bookRepository = bookRepository;
+        this.orderDetailRepository = orderDetailRepository;
+        this.sseNotificationService = sseNotificationService;
+        this.bookService = bookService;
+    }
 
     public Page<OrderResponse> getAllOrders(int page, int size, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -57,7 +68,7 @@ public class OrderService {
                     .username(order.getUser().getUsername())
                     .fullName(order.getUser().getFullName())
                     .email(order.getUser().getEmail())
-                    .roles(java.util.List.of(roleName)) // Đưa 1 role vào List
+                    .roles(java.util.List.of(roleName))
                     .build();
         }
 
@@ -67,17 +78,19 @@ public class OrderService {
                 .discount(order.getDiscount() != null ? order.getDiscount().doubleValue() : 0.0)
                 .finalAmount(order.getFinalAmount() != null ? order.getFinalAmount().doubleValue() : 0.0)
                 .status(order.getStatus())
-                .paymentMethod(order.getPaymentMethod()) // <-- Trả ngược về Response
+                .paymentMethod(order.getPaymentMethod())
                 .orderDate(order.getOrderDate())
                 .user(userDto)
                 .build();
     }
+
     @Transactional
     public OrderResponse updateStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng với ID: " + id));
         String currentStatus = order.getStatus();
         String targetStatus = newStatus.toUpperCase();
+
         if ("COMPLETED".equalsIgnoreCase(currentStatus) || "CANCELED".equalsIgnoreCase(currentStatus)) {
             throw new AppException(HttpStatus.BAD_REQUEST,
                     "Không thể cập nhật đơn hàng đã hoàn thành (COMPLETED) hoặc đã hủy (CANCELED).");
@@ -101,6 +114,13 @@ public class OrderService {
                     if (book != null) {
                         book.setQuantity(book.getQuantity() + detail.getQuantity());
                         bookRepository.save(book);
+
+                        try {
+                            BookResponse updatedBook = bookService.getById(book.getId());
+                            sseNotificationService.sendNotification("UPDATE_BOOK", updatedBook);
+                        } catch (Exception e) {
+                            System.err.println("Lỗi gửi SSE khi hủy đơn: " + e.getMessage());
+                        }
                     }
                 }
             }
@@ -109,12 +129,13 @@ public class OrderService {
         order.setStatus(targetStatus);
         return convertToResponse(orderRepository.save(order));
     }
+
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, User user) {
         Order order = Order.builder()
                 .user(user)
                 .status("PENDING")
-                .paymentMethod(request.paymentMethod()) // <-- Map trường này sang Entity
+                .paymentMethod(request.paymentMethod())
                 .totalAmount(BigDecimal.ZERO)
                 .discount(BigDecimal.ZERO)
                 .finalAmount(BigDecimal.ZERO)
@@ -130,8 +151,17 @@ public class OrderService {
                 throw new AppException(HttpStatus.BAD_REQUEST,
                         "Sách '" + book.getTitle() + "' không đủ số lượng. Kho còn: " + book.getQuantity());
             }
+
             book.setQuantity(book.getQuantity() - item.quantity());
             bookRepository.save(book);
+
+            try {
+                BookResponse updatedBook = bookService.getById(book.getId());
+                sseNotificationService.sendNotification("UPDATE_BOOK", updatedBook);
+            } catch (Exception e) {
+                System.err.println("Lỗi gửi SSE khi tạo đơn: " + e.getMessage());
+            }
+
             OrderDetail detail = OrderDetail.builder()
                     .order(savedOrder)
                     .book(book)
@@ -150,17 +180,20 @@ public class OrderService {
 
         return convertToResponse(orderRepository.save(savedOrder));
     }
+
     public Page<OrderResponse> getOrderHistory (User user, int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Order> orderPage = orderRepository.findByUserId(user.getId(), pageable);
         return orderPage.map(this::convertToResponse);
     }
+
     public Page<OrderResponse> getSalesHistory(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Order> completedOrders = orderRepository.findByStatus("COMPLETED", pageable);
 
         return completedOrders.map(this::convertToResponse);
     }
+
     @Transactional
     public OrderResponse confirmReceived(Long orderId, User user) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"No orders with ID found: " +orderId ));

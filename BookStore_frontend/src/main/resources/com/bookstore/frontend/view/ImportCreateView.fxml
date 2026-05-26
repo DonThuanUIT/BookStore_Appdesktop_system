@@ -5,7 +5,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<HBox spacing="30.0" style="-fx-background-color: #1A1A1A; -fx-padding: 30;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ImportCreateController">
+<HBox spacing="30.0" style="-fx-background-color: #1A1A1A; -fx-padding: 30;"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ImportCreateController">
 
     <VBox prefWidth="380.0" maxWidth="380.0" spacing="25.0" HBox.hgrow="NEVER">
 
@@ -15,21 +16,23 @@
             </Label>
 
             <VBox spacing="8.0">
-                <Label text="CHỌN SÁCH ĐÃ CÓ" textFill="#AAAAAA" style="-fx-font-size: 12px; -fx-font-weight: bold;" />
+                <Label text="CHỌN SÁCH ĐÃ CÓ (nếu là sách cũ hãy chọn gợi ý, nếu bạn nhập sách mới hãy nhấn vào nút thêm mới nhé !)"
+                       textFill="#AAAAAA"
+                       wrapText="true"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-line-spacing: 4px;"/>
 
-                <ComboBox fx:id="cbBooks" editable="true" maxWidth="Infinity" promptText="Tìm kiếm tên sách..." style="-fx-background-color: #1A1A1A; -fx-control-inner-background: #1A1A1A; -fx-text-base-color: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-padding: 5; -fx-font-size: 14px;" />
-
+                <ComboBox fx:id="cbBooks" editable="true" maxWidth="Infinity" promptText="Tìm kiếm tên sách..." style="-fx-background-color: #1A1A1A; -fx-control-inner-background: #1A1A1A; -fx-text-base-color: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-padding: 5; -fx-font-size: 14px;"/>
                 <Button fx:id="btnAddNewBook" onAction="#handleAddNewBook" style="-fx-background-color: transparent; -fx-text-fill: #FFC107; -fx-cursor: hand; -fx-padding: 5 0 0 0; -fx-font-weight: bold;" text="+ Thêm sách mới" />
             </VBox>
 
             <HBox spacing="15.0">
                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                    <Label text="SỐ LƯỢNG" textFill="#AAAAAA" style="-fx-font-size: 12px; -fx-font-weight: bold;" />
-                    <TextField fx:id="txtQuantity" text="1" alignment="CENTER" style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-padding: 10;" />
+                    <Label text="SỐ LƯỢNG" textFill="#AAAAAA" style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtQuantity" text="1" alignment="CENTER" style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-padding: 10;"/>
                 </VBox>
                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                    <Label text="GIÁ NHẬP ($)" textFill="#AAAAAA" style="-fx-font-size: 12px; -fx-font-weight: bold;" />
-                    <TextField fx:id="txtImportPrice" text="0.00" alignment="CENTER" style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-padding: 10;" />
+                    <Label text="GIÁ NHẬP (VNĐ)" textFill="#AAAAAA" style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="txtImportPrice" text="0" alignment="CENTER" style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-border-color: #333333; -fx-border-radius: 5; -fx-padding: 10;"/>
                 </VBox>
             </HBox>
 
@@ -72,8 +75,8 @@
 
         <HBox alignment="CENTER_RIGHT" spacing="40.0" style="-fx-padding: 20 0 0 0; -fx-border-color: #333333; -fx-border-width: 1 0 0 0;">
             <VBox alignment="CENTER_RIGHT" spacing="5.0">
-                <Label text="TỔNG CHI PHÍ DỰ KIẾN" textFill="#AAAAAA" style="-fx-font-size: 13px; -fx-font-weight: bold;" />
-                <Label fx:id="lblTotalCartCost" text="\$0.00" textFill="#FFC107">
+                <Label text="TỔNG CHI PHÍ DỰ KIẾN" textFill="#AAAAAA" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                <Label fx:id="lblTotalCartCost" text="0 đ" textFill="#FFC107">
                     <font><Font name="System Bold" size="36.0" /></font>
                 </Label>
             </VBox>
