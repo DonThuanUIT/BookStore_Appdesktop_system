@@ -77,8 +77,15 @@ public class MainController implements Initializable {
     @FXML void onHomeClick() { navigateAndUpdateState(PageType.HOME); }
     @FXML void onShopNavClick() { navigateAndUpdateState(PageType.SHOP); }
     @FXML void onCartClick() { navigateAndUpdateState(PageType.CART); }
-    @FXML void onInventoryClick() { navigateAndUpdateState(PageType.INVENTORY); }
-    @FXML void onImportClick() { navigateAndUpdateState(PageType.IMPORT); }
+    @FXML void onInventoryClick() {
+        if (!ensureVendorAccess()) return;
+        navigateAndUpdateState(PageType.INVENTORY);
+    }
+
+    @FXML void onImportClick() {
+        if (!ensureVendorAccess()) return;
+        navigateAndUpdateState(PageType.IMPORT);
+    }
 
     private void navigateAndUpdateState(PageType pageType) {
         NavigationService.getInstance().navigateTo(pageType);
@@ -104,11 +111,23 @@ public class MainController implements Initializable {
     }
 
     /** Chỉ Admin (Vendor) thấy quản lý kho và nhập hàng; Customer chỉ mua sắm. */
-    private void applyRoleBasedNavVisibility() {
+    public void applyRoleBasedNavVisibility() {
         boolean vendor = UserSession.getInstance().isAdmin();
         btnImport.setVisible(vendor);
         btnImport.setManaged(vendor);
         btnInventory.setVisible(vendor);
         btnInventory.setManaged(vendor);
+    }
+
+    private boolean ensureVendorAccess() {
+        applyRoleBasedNavVisibility();
+        if (!UserSession.getInstance().isAdmin()) {
+            new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.WARNING,
+                    "Chỉ tài khoản Admin (Người bán) mới truy cập được tính năng này."
+            ).show();
+            return false;
+        }
+        return true;
     }
 }

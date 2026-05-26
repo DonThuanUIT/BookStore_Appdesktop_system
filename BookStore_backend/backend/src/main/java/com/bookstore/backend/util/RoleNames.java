@@ -25,6 +25,9 @@ public final class RoleNames {
         if (!normalized.startsWith("ROLE_")) {
             normalized = "ROLE_" + normalized;
         }
+        if ("ROLE_STAFF".equals(normalized)) {
+            return ADMIN;
+        }
         if (!VALID_ROLES.contains(normalized)) {
             throw new IllegalArgumentException("Role is invalid: " + roleName);
         }

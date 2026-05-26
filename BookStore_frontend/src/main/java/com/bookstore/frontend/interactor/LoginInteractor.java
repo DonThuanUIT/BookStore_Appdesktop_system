@@ -80,6 +80,7 @@ public class LoginInteractor {
 
     private void navigateToHome(String username) {
         try {
+            NavigationService.getInstance().clearCache();
             MainApplication.showView("MainLayout.fxml", "Neth BookPoint");
             NavigationService.getInstance().navigateTo(PageType.HOME, username);
         } catch (Exception e) { e.printStackTrace(); }

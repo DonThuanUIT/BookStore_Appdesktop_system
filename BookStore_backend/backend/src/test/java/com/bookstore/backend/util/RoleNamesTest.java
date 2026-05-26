@@ -23,8 +23,13 @@ class RoleNamesTest {
     }
 
     @Test
+    void shouldMapLegacyStaffToAdmin() {
+        assertEquals("ROLE_ADMIN", RoleNames.normalize("STAFF"));
+        assertEquals("ROLE_ADMIN", RoleNames.normalize("ROLE_STAFF"));
+    }
+
+    @Test
     void shouldRejectUnsupportedRole() {
-        assertThrows(IllegalArgumentException.class, () -> RoleNames.normalize("STAFF"));
         assertThrows(IllegalArgumentException.class, () -> RoleNames.normalize("SUPER_ADMIN"));
     }
 
