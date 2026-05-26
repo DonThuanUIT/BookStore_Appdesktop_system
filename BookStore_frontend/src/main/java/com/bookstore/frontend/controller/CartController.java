@@ -136,7 +136,7 @@ public class CartController extends BaseController {
             title.getStyleClass().add("payment-method-title");
             title.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
 
-            Label author = new Label("Tác giả: " + item.getBook().getAuthorName());
+            Label author = new Label("Tác giả: " + item.getBook().getFormattedAuthors());
             author.setStyle("-fx-text-fill: #888888; -fx-font-size: 11;");
 
             Label qtyAndPrice = new Label(

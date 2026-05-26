@@ -2,6 +2,7 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.request.CreateOrderRequest;
 import com.bookstore.backend.dto.request.OrderItemRequest;
+import com.bookstore.backend.dto.response.BookResponse;
 import com.bookstore.backend.dto.response.OrderResponse;
 import com.bookstore.backend.dto.response.UserProfileResponse;
 import com.bookstore.backend.entity.Book;
@@ -13,7 +14,7 @@ import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.OrderDetailRepository;
 import com.bookstore.backend.repository.OrderRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,18 +23,28 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 
 @Service
 public class OrderService {
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private BookRepository bookRepository;
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
+
+    private final OrderRepository orderRepository;
+    private final BookRepository bookRepository;
+    private final OrderDetailRepository orderDetailRepository;
+
+    private final SseNotificationService sseNotificationService;
+    private final BookService bookService;
+
+    public OrderService(OrderRepository orderRepository,
+                        BookRepository bookRepository,
+                        OrderDetailRepository orderDetailRepository,
+                        SseNotificationService sseNotificationService,
+                        @Lazy BookService bookService) {
+        this.orderRepository = orderRepository;
+        this.bookRepository = bookRepository;
+        this.orderDetailRepository = orderDetailRepository;
+        this.sseNotificationService = sseNotificationService;
+        this.bookService = bookService;
+    }
 
     public Page<OrderResponse> getAllOrders(int page, int size, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -57,7 +68,7 @@ public class OrderService {
                     .username(order.getUser().getUsername())
                     .fullName(order.getUser().getFullName())
                     .email(order.getUser().getEmail())
-                    .roles(java.util.List.of(roleName)) // Đưa 1 role vào List
+                    .roles(java.util.List.of(roleName))
                     .build();
         }
 
@@ -67,63 +78,64 @@ public class OrderService {
                 .discount(order.getDiscount() != null ? order.getDiscount().doubleValue() : 0.0)
                 .finalAmount(order.getFinalAmount() != null ? order.getFinalAmount().doubleValue() : 0.0)
                 .status(order.getStatus())
-                .paymentMethod(order.getPaymentMethod()) // <-- Trả ngược về Response
+                .paymentMethod(order.getPaymentMethod())
                 .orderDate(order.getOrderDate())
                 .user(userDto)
                 .build();
     }
+
     @Transactional
     public OrderResponse updateStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng ID: " + id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng với ID: " + id));
+        String currentStatus = order.getStatus();
+        String targetStatus = newStatus.toUpperCase();
 
-        String current = order.getStatus().toUpperCase();
-        String target = newStatus.toUpperCase();
-
-        // Luồng: PENDING -> SHIPPING (Duyệt) hoặc SHIPPING -> COMPLETED (Hoàn tất)
-        boolean isValid = ("PENDING".equals(current) && "SHIPPING".equals(target)) ||
-                ("SHIPPING".equals(current) && "COMPLETED".equals(target));
-
-        if (!isValid) {
-            throw new AppException(HttpStatus.BAD_REQUEST, "Luồng trạng thái không hợp lệ: " + current + " -> " + target);
+        if ("COMPLETED".equalsIgnoreCase(currentStatus) || "CANCELED".equalsIgnoreCase(currentStatus)) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Không thể cập nhật đơn hàng đã hoàn thành (COMPLETED) hoặc đã hủy (CANCELED).");
+        }
+        if (!"SHIPPING".equalsIgnoreCase(targetStatus) &&
+                !"CANCELED".equalsIgnoreCase(targetStatus) &&
+                !"COMPLETED".equalsIgnoreCase(targetStatus)) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Trạng thái mới không hợp lệ. Chỉ chấp nhận: SHIPPING, CANCELED hoặc COMPLETED.");
         }
 
-        order.setStatus(target);
-        return convertToResponse(orderRepository.save(order));
-    }
-
-    // --- Dành cho CUSTOMER: Chỉ được hủy khi PENDING ---
-    @Transactional
-    public OrderResponse cancelOrder(Long orderId, User user) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng."));
-
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new AppException(HttpStatus.FORBIDDEN, "Bạn không có quyền hủy đơn này.");
+        if ("SHIPPING".equalsIgnoreCase(currentStatus) && "CANCELED".equalsIgnoreCase(targetStatus)) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Đơn hàng đang trong quá trình giao (SHIPPING), không thể thực hiện hủy đơn.");
         }
 
-        if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
-            throw new AppException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy đơn khi đang ở trạng thái PENDING.");
-        }
+        if ("CANCELED".equalsIgnoreCase(targetStatus)) {
+            if (order.getOrderDetails() != null) {
+                for (OrderDetail detail : order.getOrderDetails()) {
+                    Book book = detail.getBook();
+                    if (book != null) {
+                        book.setQuantity(book.getQuantity() + detail.getQuantity());
+                        bookRepository.save(book);
 
-        // Hoàn kho
-        if (order.getOrderDetails() != null) {
-            for (OrderDetail detail : order.getOrderDetails()) {
-                Book book = detail.getBook();
-                book.setQuantity(book.getQuantity() + detail.getQuantity());
-                bookRepository.save(book);
+                        try {
+                            BookResponse updatedBook = bookService.getById(book.getId());
+                            sseNotificationService.sendNotification("UPDATE_BOOK", updatedBook);
+                        } catch (Exception e) {
+                            System.err.println("Lỗi gửi SSE khi hủy đơn: " + e.getMessage());
+                        }
+                    }
+                }
             }
         }
 
-        order.setStatus("CANCELED");
+        order.setStatus(targetStatus);
         return convertToResponse(orderRepository.save(order));
     }
+
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, User user) {
         Order order = Order.builder()
                 .user(user)
                 .status("PENDING")
-                .paymentMethod(request.paymentMethod()) // <-- Map trường này sang Entity
+                .paymentMethod(request.paymentMethod())
                 .totalAmount(BigDecimal.ZERO)
                 .discount(BigDecimal.ZERO)
                 .finalAmount(BigDecimal.ZERO)
@@ -139,8 +151,17 @@ public class OrderService {
                 throw new AppException(HttpStatus.BAD_REQUEST,
                         "Sách '" + book.getTitle() + "' không đủ số lượng. Kho còn: " + book.getQuantity());
             }
+
             book.setQuantity(book.getQuantity() - item.quantity());
             bookRepository.save(book);
+
+            try {
+                BookResponse updatedBook = bookService.getById(book.getId());
+                sseNotificationService.sendNotification("UPDATE_BOOK", updatedBook);
+            } catch (Exception e) {
+                System.err.println("Lỗi gửi SSE khi tạo đơn: " + e.getMessage());
+            }
+
             OrderDetail detail = OrderDetail.builder()
                     .order(savedOrder)
                     .book(book)
@@ -159,17 +180,20 @@ public class OrderService {
 
         return convertToResponse(orderRepository.save(savedOrder));
     }
+
     public Page<OrderResponse> getOrderHistory (User user, int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Order> orderPage = orderRepository.findByUserId(user.getId(), pageable);
         return orderPage.map(this::convertToResponse);
     }
+
     public Page<OrderResponse> getSalesHistory(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Order> completedOrders = orderRepository.findByStatus("COMPLETED", pageable);
 
         return completedOrders.map(this::convertToResponse);
     }
+
     @Transactional
     public OrderResponse confirmReceived(Long orderId, User user) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"No orders with ID found: " +orderId ));

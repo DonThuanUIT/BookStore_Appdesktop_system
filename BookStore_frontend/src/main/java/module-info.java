@@ -6,8 +6,6 @@ module com.bookstore.frontend {
 
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
-    // 1. Thêm module này để xử lý kiểu dữ liệu thời gian
-    requires com.fasterxml.jackson.datatype.jsr310;
 
     // Mở quyền nạp giao diện FXML cho Controller
     opens com.bookstore.frontend.controller to javafx.fxml;
@@ -16,8 +14,6 @@ module com.bookstore.frontend {
     opens com.bookstore.frontend.model to javafx.base, com.fasterxml.jackson.databind;
     opens com.bookstore.frontend.model.dto to javafx.base, com.fasterxml.jackson.databind;
     opens com.bookstore.frontend.model.dto.Request to javafx.base, com.fasterxml.jackson.databind;
-    // 2. Đảm bảo gói Response cũng được mở cho Jackson
-    opens com.bookstore.frontend.model.dto.Response to com.fasterxml.jackson.databind, javafx.base;
 
     // Xuất bản các gói
     exports com.bookstore.frontend;
@@ -27,4 +23,5 @@ module com.bookstore.frontend {
     exports com.bookstore.frontend.model.dto;
     exports com.bookstore.frontend.interactor;
     exports com.bookstore.frontend.model.dto.Response;
+    opens com.bookstore.frontend.model.dto.Response to com.fasterxml.jackson.databind, javafx.base;
 }

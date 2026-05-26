@@ -14,7 +14,6 @@ public class ImportDetailSidePanelController {
 
     @FXML private VBox sidePanelRoot;
     @FXML private Label lblImportId;
-    @FXML private Label lblStaff;
     @FXML private Label lblDate;
     @FXML private Label lblTotalCost;
 
@@ -28,19 +27,17 @@ public class ImportDetailSidePanelController {
 
     @FXML
     public void initialize() {
-        // Ánh xạ dữ liệu cột
         colTitle.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("importPrice"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("lineTotal"));
 
-        // Format cột tiền tệ
         colPrice.setCellFactory(tc -> new javafx.scene.control.TableCell<>() {
             @Override
             protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
                 if (empty || price == null) setText(null);
-                else setText(String.format("$%.2f", price));
+                else setText(String.format("%,.0f đ", price));
             }
         });
 
@@ -50,24 +47,23 @@ public class ImportDetailSidePanelController {
                 super.updateItem(total, empty);
                 if (empty || total == null) setText(null);
                 else {
-                    setText(String.format("$%.2f", total));
+                    setText(String.format("%,.0f đ", total));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
         });
     }
 
-    // Nhận dữ liệu từ API và trượt Panel ra
     public void setImportDataAndShow(ImportModel data) {
         lblImportId.setText("#IMP-" + data.getId());
-        lblStaff.setText(data.getStaffUsername());
         lblDate.setText(data.getImportDate());
-        lblTotalCost.setText(String.format("$%.2f", data.getTotalCost()));
+
+        lblTotalCost.setText(String.format("%,.0f đ", data.getTotalCost()));
 
         tvDetails.setItems(data.getDetails());
 
         if (!isShowing) {
-            slidePanel(0); // Trượt vào vị trí X = 0 (Hiển thị)
+            slidePanel(0);
             isShowing = true;
         }
     }
@@ -75,7 +71,7 @@ public class ImportDetailSidePanelController {
     @FXML
     public void handleClose() {
         if (isShowing) {
-            slidePanel(sidePanelRoot.getPrefWidth()); // Trượt ra ngoài màn hình
+            slidePanel(sidePanelRoot.getPrefWidth());
             isShowing = false;
         }
     }

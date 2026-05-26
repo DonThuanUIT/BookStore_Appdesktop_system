@@ -5,18 +5,20 @@ import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.HomeModel;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
+import com.bookstore.frontend.service.QuoteService;
+import com.bookstore.frontend.service.api.BookApiService;
+import com.bookstore.frontend.util.BookMapper;
 import com.bookstore.frontend.util.CartStore;
 import com.bookstore.frontend.utils.AlertUtils;
-import javafx.event.ActionEvent;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
+import javafx.util.Duration;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,13 +26,16 @@ import java.util.stream.Collectors;
 public class HomeController extends BaseController {
 
     @FXML private Label lblWelcome;
+    @FXML private Label lblQuote;
     @FXML private FlowPane booksContainer;
     @FXML private BookDetailSidePanelController bookDetailSidePanelController;
     @FXML private TextField txtSearch;
-    @FXML private MenuButton btnSearchType;
 
     private final HomeModel model;
     private final HomeInteractor interactor;
+    private final BookApiService bookApiService;
+
+    private final PauseTransition searchDebounce = new PauseTransition(Duration.millis(400));
 
     private List<BookModel> originalBooksList = new ArrayList<>();
     private static final String DEFAULT_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
@@ -38,72 +43,60 @@ public class HomeController extends BaseController {
     public HomeController() {
         this.model = new HomeModel();
         this.interactor = new HomeInteractor(this.model);
+        this.bookApiService = new BookApiService();
     }
 
     @FXML
     public void initialize() {
         if (lblWelcome != null) lblWelcome.textProperty().bind(model.welcomeMessageProperty());
+
+        if (lblQuote != null) {
+            lblQuote.setText(QuoteService.getInstance().getRandomQuote());
+        }
+
         loadBooks();
 
         txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            executeHomeFilterWithType(btnSearchType.getText());
+            searchDebounce.setOnFinished(event -> executeHomeSearch());
+            searchDebounce.playFromStart();
         });
     }
 
     @Override
     public void onNavigate(Object data) {
-        String username = (data instanceof String) ? (String) data : "Neth Reader";
+        String username = (data instanceof String) ? (String) data : "Rít Đờ";
         interactor.loadDashboardData(username);
     }
 
     private void loadBooks() {
         interactor.getLatestBooks().thenAccept(books -> {
             this.originalBooksList = books;
-            javafx.application.Platform.runLater(() -> {
+            Platform.runLater(() -> {
                 renderBooks(this.originalBooksList);
             });
         });
     }
 
-    private void executeHomeFilter() {
-        executeHomeFilterWithType(btnSearchType.getText());
-    }
+    private void executeHomeSearch() {
+        String keyword = txtSearch.getText() != null ? txtSearch.getText().trim() : "";
 
-    private void executeHomeFilterWithType(String searchType) {
-        String rawQuery = txtSearch.getText() != null ? txtSearch.getText().trim().toLowerCase() : "";
-
-        if (rawQuery.isEmpty()) {
+        if (keyword.isEmpty()) {
             renderBooks(originalBooksList);
             return;
         }
 
-        // CẢI TIẾN: Chuẩn hóa Unicode loại bỏ hoàn toàn sự lệch pha tổ hợp dấu tiếng Việt
-        String query = Normalizer.normalize(rawQuery, Normalizer.Form.NFC);
-        String activeType = searchType != null ? searchType.trim() : "Title";
+        bookApiService.searchBooks(keyword).thenAccept(dtoList -> {
+            List<BookModel> backendBooks = dtoList.stream()
+                    .map(BookMapper::toModel)
+                    .collect(Collectors.toList());
 
-        List<BookModel> filteredBooks = originalBooksList.stream()
-                .filter(book -> {
-                    if (activeType.equalsIgnoreCase("Author")) {
-                        if (book.getAuthorName() == null) return false;
-                        String author = Normalizer.normalize(book.getAuthorName().toLowerCase(), Normalizer.Form.NFC);
-                        return author.contains(query);
-                    }
-                    else if (activeType.equalsIgnoreCase("Category")) {
-                        if (book.getCategoryNames() == null) return false;
-                        return book.getCategoryNames().stream().anyMatch(catName -> {
-                            String category = Normalizer.normalize(catName.toLowerCase(), Normalizer.Form.NFC);
-                            return category.contains(query);
-                        });
-                    }
-                    else {
-                        if (book.getTitle() == null) return false;
-                        String title = Normalizer.normalize(book.getTitle().toLowerCase(), Normalizer.Form.NFC);
-                        return title.contains(query);
-                    }
-                })
-                .collect(Collectors.toList());
-
-        renderBooks(filteredBooks);
+            Platform.runLater(() -> {
+                renderBooks(backendBooks);
+            });
+        }).exceptionally(ex -> {
+            System.err.println("Lỗi khi thực hiện tìm kiếm tổng lực tại Trang chủ: " + ex.getMessage());
+            return null;
+        });
     }
 
     private void renderBooks(List<BookModel> books) {
@@ -125,7 +118,8 @@ public class HomeController extends BaseController {
                         : DEFAULT_COVER_URL;
 
                 BookCardController cardController = loader.getController();
-                cardController.setBookData(book.getTitle(), book.getAuthorName(), formattedPrice, imagePath);
+
+                cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), formattedPrice, imagePath);
 
                 cardController.setCallbacks(
                         () -> bookDetailSidePanelController.setBookDetailDataAndShow(book),
@@ -146,15 +140,8 @@ public class HomeController extends BaseController {
     }
 
     @FXML
-    public void handleTypeSelect(ActionEvent event) {
-        MenuItem item = (MenuItem) event.getSource();
-        String selectedType = item.getText();
-        btnSearchType.setText(selectedType);
-        executeHomeFilterWithType(selectedType);
-    }
-
-    @FXML
     private void handleHomeSearch() {
-        executeHomeFilter();
+        searchDebounce.stop();
+        executeHomeSearch();
     }
 }

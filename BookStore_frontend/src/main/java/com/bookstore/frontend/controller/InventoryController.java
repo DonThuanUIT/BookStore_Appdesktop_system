@@ -1,8 +1,10 @@
 package com.bookstore.frontend.controller;
 
+import com.bookstore.frontend.controller.strategy.EditBookStrategy;
 import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.InventoryModel;
+import com.bookstore.frontend.service.api.ApiClient;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,12 +39,14 @@ public class InventoryController extends BaseController {
         this.interactor = new InventoryInteractor(this.model);
 
         setupTableColumns();
+
+        setupRealTimeSync();
     }
 
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colAuthor.setCellValueFactory(new PropertyValueFactory<>("authorName"));
+        colAuthor.setCellValueFactory(new PropertyValueFactory<>("formattedAuthors"));
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
@@ -105,7 +109,6 @@ public class InventoryController extends BaseController {
             VBox page = loader.load();
 
             Stage dialogStage = new Stage();
-
             dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
 
@@ -114,11 +117,10 @@ public class InventoryController extends BaseController {
             dialogStage.setScene(scene);
 
             BookFormController controller = loader.getController();
-            // Truyền true = chế độ EDIT
-            controller.setBook(selectedBook, true);
+
+            controller.setBook(selectedBook, new EditBookStrategy(this.interactor));
 
             dialogStage.showAndWait();
-
 
             if (controller.isSaveClicked()) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật sách thành công!");
@@ -126,7 +128,7 @@ public class InventoryController extends BaseController {
                 interactor.loadInventoryData(0, 15);
             }
         } catch (Exception e) {
-            System.err.println("Error opening book editing form:" + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -149,7 +151,6 @@ public class InventoryController extends BaseController {
 
     @FXML
     public void handleFilterLowStock() {
-        System.out.println("Filtering books that are out of stock...");
         // TODO: Gọi API lấy sách quantity < 10
     }
 
@@ -158,5 +159,36 @@ public class InventoryController extends BaseController {
         if (interactor != null) {
             interactor.loadInventoryData(0, 15);
         }
+    }
+
+    private void setupRealTimeSync() {
+        ApiClient.getInstance().onBookUpdated(updatedBook -> {
+            Platform.runLater(() -> {
+                boolean found = false;
+                for (int i = 0; i < model.getBooks().size(); i++) {
+                    if (model.getBooks().get(i).getId().equals(updatedBook.getId())) {
+                        model.getBooks().set(i, updatedBook);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    model.getBooks().add(0, updatedBook);
+                    model.totalTitlesProperty().set(model.totalTitlesProperty().get() + 1);
+                }
+
+                tvInventory.refresh();
+            });
+        });
+
+        ApiClient.getInstance().onBookDeleted(bookId -> {
+            Platform.runLater(() -> {
+                boolean removed = model.getBooks().removeIf(b -> b.getId().equals(bookId));
+                if (removed) {
+                    model.totalTitlesProperty().set(model.totalTitlesProperty().get() - 1);
+                }
+            });
+        });
     }
 }
