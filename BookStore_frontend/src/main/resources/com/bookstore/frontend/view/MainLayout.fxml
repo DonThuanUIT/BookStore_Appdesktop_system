@@ -18,23 +18,25 @@
         <top>
             <HBox alignment="CENTER_LEFT" prefHeight="75.0" spacing="0.0" styleClass="nav-bar" BorderPane.alignment="CENTER">
                 <children>
-                    <Label styleClass="login-title" text="Tiệm Sách" style="-fx-font-size: 24px;">
+                    <Label styleClass="login-title" text="Neth Bookpoint" style="-fx-font-size: 24px;">
                         <padding><Insets left="10.0" /></padding>
                     </Label>
                     <Region HBox.hgrow="ALWAYS" />
                     <HBox alignment="CENTER" spacing="15.0">
                         <children>
-                            <Button fx:id="btnHome" onAction="#onHomeClick" styleClass="nav-button" text="Trang chủ" />
-                            <Button fx:id="btnShop" onAction="#onShopNavClick" styleClass="nav-button" text="Vẹo lựa" />
-                            <Button fx:id="btnCart" onAction="#onCartClick" styleClass="nav-button" text="Giỏ hàng" />
-                            <Button fx:id="btnInventory" onAction="#onInventoryClick" styleClass="nav-button" text="Kho sách" />
+                            <Button fx:id="btnHome" onAction="#onHomeClick" styleClass="nav-button" text="Home" />
+                            <Button fx:id="btnShop" onAction="#onShopNavClick" styleClass="nav-button" text="Shop" />
+                            <Button fx:id="btnCart" onAction="#onCartClick" styleClass="nav-button" text="Cart" />
+                            <Button fx:id="btnInventory" onAction="#onInventoryClick" styleClass="nav-button" text="Inventory" />
 
-                            <Button fx:id="btnImport" onAction="#onImportClick" styleClass="nav-button" text="Nhập sách" />
+                            <Button fx:id="btnImport" onAction="#onImportClick" styleClass="nav-button" text="Import" />
+                            <Button fx:id="btnRevenue" onAction="#onRevenueClick" styleClass="nav-button" text="Revenue"/>
                         </children>
                     </HBox>
                     <Region HBox.hgrow="ALWAYS" />
                     <HBox alignment="CENTER_RIGHT" spacing="20.0">
                         <children>
+                            <!-- Trong file FXML của bạn -->
                             <Button fx:id="btnAccount" mnemonicParsing="false" onAction="#onAccountClick" styleClass="btn-icon" text="👤" />                            <StackPane>
                                 <children>
                                     <Button fx:id="btnNavMiniCart" mnemonicParsing="false" onAction="#onNavMiniCartClick"

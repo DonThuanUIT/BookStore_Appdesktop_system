@@ -6,7 +6,7 @@ import javafx.collections.ObservableList;
 
 public class ImportModel {
     private final LongProperty id = new SimpleLongProperty();
-    private final StringProperty staffUsername = new SimpleStringProperty();
+    private final StringProperty adminUsername = new SimpleStringProperty();
     private final StringProperty importDate = new SimpleStringProperty();
     private final DoubleProperty totalCost = new SimpleDoubleProperty();
 
@@ -17,9 +17,9 @@ public class ImportModel {
     public void setId(long value) { id.set(value); }
     public LongProperty idProperty() { return id; }
 
-    public String getStaffUsername() { return staffUsername.get(); }
-    public void setStaffUsername(String value) { staffUsername.set(value); }
-    public StringProperty staffUsernameProperty() { return staffUsername; }
+    public String getAdminUsername() { return adminUsername.get(); }
+    public void setAdminUsername(String value) { adminUsername.set(value); }
+    public StringProperty adminUsernameProperty() { return adminUsername; }
 
     public String getImportDate() { return importDate.get(); }
     public void setImportDate(String value) { importDate.set(value); }

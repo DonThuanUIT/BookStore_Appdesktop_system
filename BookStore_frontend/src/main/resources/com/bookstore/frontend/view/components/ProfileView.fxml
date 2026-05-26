@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.ProfileController" style="-fx-background-color: transparent;">
+    <VBox alignment="CENTER" maxWidth="500" spacing="15" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);">
+        <Label text="THÔNG TIN CÁ NHÂN" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+
+        <VBox spacing="5">
+            <Label text="Tên đăng nhập" style="-fx-text-fill: #666;"/>
+            <TextField fx:id="txtUsername" promptText="Username" style="-fx-background-radius: 8; -fx-padding: 8;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Họ và tên" style="-fx-text-fill: #666;"/>
+            <TextField fx:id="txtFullName" promptText="Nhập họ tên" style="-fx-background-radius: 8; -fx-padding: 8;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Email" style="-fx-text-fill: #666;"/>
+            <TextField fx:id="txtEmail" promptText="Nhập email" style="-fx-background-radius: 8; -fx-padding: 8;"/>
+        </VBox>
+
+        <Button text="Cập nhật thông tin" onAction="#handleUpdate" style="-fx-background-color: #f5a623; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;"/>
+    </VBox>
+</StackPane>

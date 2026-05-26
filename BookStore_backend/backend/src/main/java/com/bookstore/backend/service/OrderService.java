@@ -131,6 +131,41 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponse cancelOrder(Long orderId, User user) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng với ID: " + orderId));
+
+        if (order.getUser() == null || !order.getUser().getId().equals(user.getId())) {
+            throw new AppException(HttpStatus.FORBIDDEN, "Bạn không có quyền hủy đơn hàng này!");
+        }
+
+        if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
+            throw new AppException(HttpStatus.BAD_REQUEST,
+                    "Không thể hủy đơn hàng đang ở trạng thái: " + order.getStatus() + ". Chỉ có thể hủy đơn PENDING.");
+        }
+
+        if (order.getOrderDetails() != null) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                Book book = detail.getBook();
+                if (book != null) {
+                    book.setQuantity(book.getQuantity() + detail.getQuantity());
+                    bookRepository.save(book);
+
+                    try {
+                        BookResponse updatedBook = bookService.getById(book.getId());
+                        sseNotificationService.sendNotification("UPDATE_BOOK", updatedBook);
+                    } catch (Exception e) {
+                        System.err.println("Lỗi gửi SSE khi khách hủy đơn: " + e.getMessage());
+                    }
+                }
+            }
+        }
+
+        order.setStatus("CANCELED");
+        return convertToResponse(orderRepository.save(order));
+    }
+
+    @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, User user) {
         Order order = Order.builder()
                 .user(user)
