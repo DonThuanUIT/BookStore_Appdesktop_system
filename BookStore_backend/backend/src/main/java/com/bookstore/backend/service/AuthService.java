@@ -2,6 +2,8 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.request.RegistrationRequest;
 import com.bookstore.backend.dto.request.UserProfileUpdateRequest;
+import com.bookstore.backend.dto.request.RegistrationOtpRequest;
+import com.bookstore.backend.dto.request.RegistrationVerifyRequest;
 import com.bookstore.backend.dto.response.JwtTokenResponse;
 import com.bookstore.backend.dto.response.UserProfileResponse;
 import com.bookstore.backend.entity.AppUser;
@@ -29,41 +31,86 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    private final OtpService otpService;
+    private final EmailService emailService;
+
     public AuthService(
             AppUserRepository appUserRepository,
             RoleRepository roleRepository,
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
-    ) {
+            JwtService jwtService,
+            OtpService otpService,
+            EmailService emailService) {
         this.appUserRepository = appUserRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.otpService = otpService;
+        this.emailService = emailService;
     }
 
-    @Transactional
-    public void register(RegistrationRequest request) {
+
+    public void requestRegistrationOtp(RegistrationOtpRequest request) {
         String username = request.username().trim();
-        if (appUserRepository.existsByUsername(username)) {
-            throw new AppException(HttpStatus.CONFLICT, "Username already exists!");
+        String email = request.email().trim().toLowerCase();
+
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Tên tài khoản '" + username + "' đã tồn tại trong hệ thống.");
         }
 
-        Role customerRole = roleRepository.findByName(RoleNames.CUSTOMER)
-                .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "role CUSTOMER not found!"));
 
-        AppUser user = new AppUser(
-                username,
-                passwordEncoder.encode(request.password()),
-                customerRole
-        );
-        appUserRepository.save(user);
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Địa chỉ Email '" + email + "' đã được sử dụng bởi một tài khoản khác.");
+        }
+
+        String otpCode = otpService.generateAndSaveOtp(email, true);
+
+        emailService.sendOtpEmail(email, otpCode, "Đăng ký tài khoản Khách hàng mới");
     }
+
+
+    @Transactional
+    public UserProfileResponse verifyAndRegister(RegistrationVerifyRequest request) {
+        String username = request.username().trim();
+        String email = request.email().trim().toLowerCase();
+
+        boolean isOtpValid = otpService.validateOtp(email, request.otpCode(), true);
+        if (!isOtpValid) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Mã xác thực OTP không chính xác hoặc đã hết hạn hiệu lực.");
+        }
+
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Tên tài khoản này đã phát sinh trong quá trình xác thực.");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Địa chỉ Email này đã phát sinh trong quá trình xác thực.");
+        }
+
+        Role customerRole = roleRepository.findByName("CUSTOMER")
+                .orElseGet(() -> roleRepository.findByName("ROLE_CUSTOMER")
+                        .orElseThrow(() -> new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Không tìm thấy cấu hình quyền CUSTOMER trong hệ thống.")));
+
+        User newUser = User.builder()
+                .username(username)
+                .email(email)
+                .password(passwordEncoder.encode(request.password()))
+                .role(customerRole)
+                .isDeleted(false)
+                .build();
+
+        User savedUser = userRepository.save(newUser);
+
+        return toProfileResponse(savedUser);
+    }
+
+
 
     public JwtTokenResponse login(String username, String password) {
         AppUser user = appUserRepository.findByUsername(username.trim())
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
         }
@@ -72,45 +119,26 @@ public class AuthService {
     }
 
     public UserProfileResponse getCurrentUserProfile(String username) {
-        User user = findActiveUserByUsername(username);
-        return toProfileResponse(user);
+        return toProfileResponse(findActiveUserByUsername(username));
     }
 
     @Transactional
     public UserProfileResponse updateCurrentUserProfile(String username, UserProfileUpdateRequest request) {
         User user = findActiveUserByUsername(username);
-
-        if (hasText(request.email())) {
-            String email = request.email().trim();
-            if (userRepository.existsByEmailAndIdNot(email, user.getId())) {
-                throw new AppException(HttpStatus.CONFLICT, "Email already exists");
-            }
-            user.setEmail(email);
-        }
-        if (request.fullName() != null) {
-            user.setFullName(trimToNull(request.fullName()));
-        }
-        if (request.phone() != null) {
-            user.setPhone(trimToNull(request.phone()));
-        }
-        if (request.address() != null) {
-            user.setAddress(trimToNull(request.address()));
-        }
-
+        user.setFullName(trimToNull(request.fullName()));
+        user.setPhone(trimToNull(request.phone()));
+        user.setAddress(trimToNull(request.address()));
         return toProfileResponse(userRepository.save(user));
     }
 
     @Transactional
     public void changeCurrentUserPassword(String username, String currentPassword, String newPassword) {
-        AppUser user = appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "User not found: " + username));
-
+        User user = findActiveUserByUsername(username);
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new BadCredentialsException("Invalid current password");
         }
-
         user.setPassword(passwordEncoder.encode(newPassword));
-        appUserRepository.save(user);
+        userRepository.save(user);
     }
 
     private User findActiveUserByUsername(String username) {
@@ -133,13 +161,11 @@ public class AuthService {
     }
 
     private String trimToNull(String value) {
-        if (!hasText(value)) {
-            return null;
-        }
+        if (!hasText(value)) return null;
         return value.trim();
     }
 
     private boolean hasText(String value) {
-        return value != null && !value.trim().isEmpty();
+        return value != null && !value.isBlank();
     }
 }

@@ -20,6 +20,16 @@ spring:
         order_inserts: true
         order_updates: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -35,6 +45,7 @@ app:
     secret: ${JWT_SECRET:bookstore-secret-key-for-jwt-signing-2026-safe}
     issuer: bookstore-backend
     expiration-minutes: 60
+
 cloudinary:
   cloud-name: diyllh0nb
   api-key: 616741512236885

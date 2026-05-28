@@ -25,37 +25,37 @@
                <children>
 
                   <VBox alignment="CENTER" spacing="5.0">
-                     <Label styleClass="login-title" text="Welcome Back" />
-                     <Label styleClass="login-subtitle" text="Sign in to access your premium collection." />
+                     <Label styleClass="login-title" text="Chào mừng trở lại" style="-fx-font-size: 32px;" />
+                     <Label styleClass="login-subtitle" text="Đăng nhập để khám phá kho sách của chúng tôi." />
                   </VBox>
 
-                  <TextField fx:id="txtUsername" promptText="Username or Email" styleClass="custom-text-field" />
+                  <TextField fx:id="txtUsername" promptText="Tên đăng nhập hoặc Email" styleClass="custom-text-field" />
 
                   <StackPane>
-                     <PasswordField fx:id="txtPassword" promptText="Password" styleClass="custom-text-field" />
+                     <PasswordField fx:id="txtPassword" promptText="Mật khẩu" styleClass="custom-text-field" />
                      <TextField fx:id="txtPasswordVisible" managed="false" visible="false"
-                                promptText="Password" styleClass="custom-text-field" />
-                     <Button fx:id="btnTogglePassword" onAction="#togglePassword" text="👁"
+                                promptText="Mật khẩu" styleClass="custom-text-field" />
+                     <Button fx:id="btnTogglePassword" onAction="#togglePassword" text="📕"
                              StackPane.alignment="CENTER_RIGHT" styleClass="btn-icon" />
                   </StackPane>
 
                   <HBox alignment="CENTER_LEFT">
                      <children>
-                        <CheckBox mnemonicParsing="false" styleClass="custom-checkbox" text="Remember Me" />
+                        <CheckBox mnemonicParsing="false" styleClass="custom-checkbox" text="Ghi nhớ đăng nhập" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Hyperlink onAction="#handleNavigateToForgotPassword" styleClass="text-link" text="Forgot Password?" />
+                        <Hyperlink onAction="#handleNavigateToForgotPassword" styleClass="text-link" text="Quên mật khẩu?" />
                      </children>
                   </HBox>
 
                   <StackPane>
                      <children>
                         <Button fx:id="btnLogin" onAction="#handleLogin" maxWidth="Infinity"
-                                mnemonicParsing="false" styleClass="login-button" text="Sign In" />
+                                mnemonicParsing="false" styleClass="login-button" text="Đăng nhập" />
 
                         <VBox fx:id="loadingContainer" alignment="CENTER" spacing="5.0" visible="false" managed="false">
                            <children>
                               <ProgressIndicator prefHeight="40.0" prefWidth="40.0" />
-                              <Label text="Authenticating..." style="-fx-text-fill: -fx-accent-gold; -fx-font-size: 12px;" />
+                              <Label text="Đang xác thực..." style="-fx-text-fill: -fx-accent-gold; -fx-font-size: 12px;" />
                            </children>
                         </VBox>
                      </children>
@@ -64,8 +64,8 @@
 
                   <HBox alignment="CENTER" spacing="5.0">
                      <children>
-                        <Label styleClass="login-subtitle" text="New to Neth Bookpoint?" />
-                        <Hyperlink onAction="#handleNavigateToRegister" styleClass="text-link" text="Register Now" />
+                        <Label styleClass="login-subtitle" text="Bạn chưa có tài khoản?" />
+                        <Hyperlink onAction="#handleNavigateToRegister" styleClass="text-link" text="Đăng ký ngay" />
                      </children>
                   </HBox>
                </children>
