@@ -6,7 +6,8 @@
 
 <VBox spacing="15" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bookstore.frontend.controller.RevenueReportController"
-      style="-fx-background-color: transparent;" stylesheets="@../css/theme.css">
+      style="-fx-background-color: transparent;" stylesheets="@../css/theme.css"
+      alignment="TOP_CENTER">
 
     <HBox spacing="20" alignment="CENTER" style="-fx-padding: 20 0 20 0;">
         <HBox spacing="10" alignment="CENTER">
@@ -17,11 +18,11 @@
         <HBox spacing="15" alignment="CENTER">
             <VBox styleClass="kpi-card" alignment="CENTER" prefWidth="160">
                 <Label text="DOANH THU" style="-fx-text-fill: #b3b3b3; -fx-font-size: 11px;" />
-                <Label fx:id="lblTotalRevenue" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #FFCC00;" />
+                <Label fx:id="lblTotalRevenue" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #00bcd4;" />
             </VBox>
             <VBox styleClass="kpi-card" alignment="CENTER" prefWidth="160">
                 <Label text="LỢI NHUẬN" style="-fx-text-fill: #b3b3b3; -fx-font-size: 11px;" />
-                <Label fx:id="lblTotalProfit" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #00bcd4;" />
+                <Label fx:id="lblTotalProfit" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #FFCC00;" />
             </VBox>
         </HBox>
     </HBox>

@@ -100,6 +100,7 @@ public class RevenueReportController {
         lblTotalProfit.setStyle(tProf < 0 ? "-fx-text-fill: #ff5555;" : "-fx-text-fill: #00bcd4;");
 
         revenueChart.getData().addAll(revenueSeries, profitSeries);
+        Platform.runLater(() -> revenueChart.requestLayout());
     }
 
     private void setLoading(boolean isLoading) {
