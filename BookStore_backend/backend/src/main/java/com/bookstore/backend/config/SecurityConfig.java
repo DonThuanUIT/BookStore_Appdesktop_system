@@ -43,7 +43,7 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/api/auth/register",
+            "/api/auth/register/**",
             "/api/auth/login",
             "/api/auth/jwt/validate"
     };
