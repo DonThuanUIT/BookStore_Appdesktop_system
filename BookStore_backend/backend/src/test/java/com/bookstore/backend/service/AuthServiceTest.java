@@ -51,6 +51,12 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private OtpService otpService;
+
+    @Mock
+    private EmailService emailService;
+
     private AuthService authService;
 
     @BeforeEach
@@ -68,7 +74,8 @@ class AuthServiceTest {
         jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(jwtProperties.issuer()));
 
         JwtService jwtService = new JwtService(jwtEncoder, jwtDecoder, jwtProperties);
-        authService = new AuthService(appUserRepository, roleRepository, userRepository, passwordEncoder, jwtService);
+
+        authService = new AuthService(appUserRepository, roleRepository, userRepository, passwordEncoder, jwtService, otpService, emailService);
     }
 
     @Test

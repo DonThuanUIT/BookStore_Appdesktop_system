@@ -22,6 +22,8 @@ import com.bookstore.backend.dto.response.UserProfileResponse;
 import com.bookstore.backend.exception.AppException;
 import com.bookstore.backend.service.AuthService;
 import org.springframework.http.HttpStatus;
+import com.bookstore.backend.dto.request.RegistrationOtpRequest;
+import com.bookstore.backend.dto.request.RegistrationVerifyRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,14 +36,21 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegistrationRequest request) {
-        authService.register(request);
-        return ResponseEntity.ok("Dang ky tai khoan thanh cong!");
+
+    @PostMapping("/register/request-otp")
+    public ResponseEntity<String> requestRegistrationOtp(@Valid @RequestBody RegistrationOtpRequest request) {
+        authService.requestRegistrationOtp(request);
+        return ResponseEntity.ok("Mã OTP đã được gửi thành công qua Email của bạn.");
+    }
+
+    @PostMapping("/register/verify")
+    public ResponseEntity<UserProfileResponse> verifyAndRegister(@Valid @RequestBody RegistrationVerifyRequest request) {
+        UserProfileResponse registeredUser = authService.verifyAndRegister(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtTokenResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request.username(), request.password()));
     }
 
