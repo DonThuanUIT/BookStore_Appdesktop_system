@@ -5,6 +5,7 @@ import com.bookstore.frontend.components.MiniCartPopup;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
 import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.util.OrderStatusStore;
 import com.bookstore.frontend.util.UserSession;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -21,6 +22,7 @@ public class MainController implements Initializable {
     @FXML private StackPane contentArea;
     @FXML private Button btnHome, btnShop, btnCart, btnInventory, btnImport, btnAccount, btnNavMiniCart, btnRevenue;
     @FXML private Label lblCartBadge;
+    @FXML private Label lblAccountBadge;
 
     private AccountPopup accountPopup;
     private MiniCartPopup miniCartPopup;
@@ -33,6 +35,7 @@ public class MainController implements Initializable {
         miniCartPopup = new MiniCartPopup();
 
         setupCartBindings();
+        setupAccountBadgeBindings(); // Thêm dòng này
 
         applyRoleBasedNavVisibility();
 
@@ -51,6 +54,24 @@ public class MainController implements Initializable {
         );
         lblCartBadge.visibleProperty().bind(CartStore.getInstance().getModel().totalQuantityProperty().greaterThan(0));
         lblCartBadge.managedProperty().bind(lblCartBadge.visibleProperty());
+    }
+
+    // Trong MainController.java
+
+    private void setupAccountBadgeBindings() {
+        // Thay vì CartStore, chúng ta sẽ bind vào một Service quản lý đơn chờ duyệt
+        // Giả sử bạn có PendingOrderStore.getInstance().getModel().pendingCountProperty()
+        lblAccountBadge.textProperty().bind(
+                Bindings.createStringBinding(
+                        () -> {
+                            int n = OrderStatusStore.getInstance().getPendingCount();
+                            return n > 0 ? String.valueOf(n) : "";
+                        },
+                        OrderStatusStore.getInstance().pendingCountProperty()
+                )
+        );
+        lblAccountBadge.visibleProperty().bind(OrderStatusStore.getInstance().pendingCountProperty().greaterThan(0));
+        lblAccountBadge.managedProperty().bind(lblAccountBadge.visibleProperty());
     }
 
     @FXML

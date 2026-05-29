@@ -3,6 +3,7 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.interactor.CartInteractor;
 import com.bookstore.frontend.model.CartModel;
 import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.util.OrderStatusStore;
 import com.bookstore.frontend.utils.AlertUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -15,14 +16,26 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
+import com.bookstore.frontend.service.api.BookApiService;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CartController extends BaseController {
     @FXML private VBox cartItemsContainer;
     @FXML private Label lblTotalPrice;
+    @FXML private ImageView imgRandomBook;
 
     private final CartModel model;
     private final CartInteractor interactor;
     private static final String DEFAULT_COVER_URL = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
+
+    private final BookApiService bookApiService = new BookApiService();
+    private Timeline randomImageTimeline;
+    private final List<String> bookImageUrls = new ArrayList<>();
+
 
     public CartController() {
         this.model = CartStore.getInstance().getModel();
@@ -43,6 +56,13 @@ public class CartController extends BaseController {
             model.totalPriceProperty().addListener((obs, oldVal, newVal) ->
                     lblTotalPrice.setText(String.format("%.2fđ", newVal.doubleValue())));
         }
+
+        // Random book cover sidebar (BE)
+        if (imgRandomBook != null) {
+            imgRandomBook.setImage(new Image(DEFAULT_COVER_URL, true));
+            startRandomSidebar();
+        }
+
         renderCart();
     }
 
@@ -72,6 +92,8 @@ public class CartController extends BaseController {
                             // 2. Thông báo thành công
                             AlertUtils.show(Alert.AlertType.INFORMATION, "Thành công",
                                     "Đơn hàng của bạn đã được đặt thành công!");
+                            // TĂNG SỐ ĐƠN CHỜ DUYỆT
+                            OrderStatusStore.getInstance().incrementPendingOrder();
                             model.clearCart();
                             renderCart();
                         });
@@ -100,7 +122,81 @@ public class CartController extends BaseController {
         }
     }
 
+    private void startRandomSidebar() {
+        // prevent multiple timelines
+        if (randomImageTimeline != null) {
+            randomImageTimeline.stop();
+            randomImageTimeline = null;
+        }
+        bookImageUrls.clear();
+
+        bookApiService.fetchBooks(0, 50)
+                .thenAccept(pageData -> {
+                    try {
+                        System.out.println("[CartController] fetchBooks(0,50) status ok, pageData=" + (pageData != null));
+                        if (pageData == null || pageData.getContent() == null) {
+                            Platform.runLater(() -> {
+                                bookImageUrls.clear();
+                                updateRandomImage();
+                            });
+                            return;
+                        }
+
+                        List<String> urls = pageData.getContent().stream()
+                                .map(b -> b.getImageUrl())
+                                .filter(u -> u != null && !u.isBlank())
+                                .toList();
+
+                        System.out.println("[CartController] imageUrl count=" + urls.size());
+                        if (!urls.isEmpty()) {
+                            System.out.println("[CartController] sample urls: " + urls.subList(0, Math.min(5, urls.size())));
+                        }
+
+                        Platform.runLater(() -> {
+                            bookImageUrls.clear();
+                            bookImageUrls.addAll(urls);
+                            updateRandomImage();
+
+                            randomImageTimeline = new Timeline(
+                                    new KeyFrame(Duration.seconds(5), e -> updateRandomImage())
+                            );
+                            randomImageTimeline.setCycleCount(Timeline.INDEFINITE);
+                            randomImageTimeline.play();
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Platform.runLater(() -> updateRandomImage());
+                    }
+                })
+                .exceptionally(ex -> {
+                    System.err.println("[CartController] fetchBooks failed: " + ex);
+                    ex.printStackTrace();
+                    Platform.runLater(() -> updateRandomImage());
+                    return null;
+                });
+    }
+
+    private void updateRandomImage() {
+        if (imgRandomBook == null) return;
+
+        String url;
+        if (bookImageUrls.isEmpty()) {
+            url = DEFAULT_COVER_URL;
+        } else {
+            int idx = (int) (Math.random() * bookImageUrls.size());
+            url = bookImageUrls.get(idx);
+            if (url == null || url.isBlank()) url = DEFAULT_COVER_URL;
+        }
+
+        try {
+            imgRandomBook.setImage(new Image(url, true));
+        } catch (Exception e) {
+            imgRandomBook.setImage(new Image(DEFAULT_COVER_URL, true));
+        }
+    }
+
     private void renderCart() {
+
         cartItemsContainer.getChildren().clear();
         model.refreshAggregates();
 

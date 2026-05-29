@@ -33,19 +33,19 @@ public class AccountPopup extends Popup {
         lblName.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
         lblEmail.setStyle("-fx-text-fill: #9aa5b5; -fx-font-size: 11px;");
 
-        Button btnProfile = createMenuButton("Profile Settings");
+        Button btnProfile = createMenuButton("Thông tin tài khoản");
         btnProfile.setOnAction(e -> {
             NavigationService.getInstance().navigateTo(PageType.PROFILE);
             this.hide();
         });
 
-        Button btnHistory = createMenuButton("Purchase History");
+        Button btnHistory = createMenuButton("Lịch sử đơn hàng");
         btnHistory.setOnAction(e -> {
             NavigationService.getInstance().navigateTo(PageType.ORDER_HISTORY);
             this.hide();
         });
 
-        Button btnLogout = new Button("Log Out");
+        Button btnLogout = new Button("Đăng xuất");
         btnLogout.setMaxWidth(Double.MAX_VALUE);
         btnLogout.setStyle("-fx-text-fill: #ff5555; -fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 10 0 0 0;");
 

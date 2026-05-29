@@ -3,6 +3,7 @@ package com.bookstore.frontend.controller;
 import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.model.dto.Response.OrderResponseDTO;
 import com.bookstore.frontend.navigation.Navigatable;
+import com.bookstore.frontend.util.OrderStatusStore;
 import com.bookstore.frontend.util.UserSession;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -86,18 +87,20 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void updateStatusAPI(Long id, String status) {
-        // Sử dụng Object để tạo JSON an toàn
         try {
             String jsonBody = "{\"status\":\"" + status + "\"}";
 
-
+            // Gửi request
             ApiClient.getInstance().patchRaw("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
-
                 Platform.runLater(() -> {
                     if (response.statusCode() == 200) {
+                        // Kiểm tra nếu đơn hàng vừa chuyển sang trạng thái xử lý/giao hàng
+                        // thì giảm số lượng đơn chờ ở icon User
+                        if ("SHIPPING".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
+                            OrderStatusStore.getInstance().decrementPendingOrder();
+                        }
                         determineAndLoadData();
                     } else {
-                        // CỰC KỲ QUAN TRỌNG: Xem server trả về lỗi gì ở đây
                         System.err.println("Lỗi Backend: " + response.body());
                         new Alert(Alert.AlertType.ERROR, "Lỗi cập nhật: " + response.body()).show();
                     }

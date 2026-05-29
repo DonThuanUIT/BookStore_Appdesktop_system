@@ -8,158 +8,75 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
 
-<VBox prefHeight="730.0" prefWidth="1000.0"
-      styleClass="bg-white" stylesheets="@../css/theme.css"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.bookstore.frontend.controller.CartController">
+<!-- Thay VBox cha thành StackPane để ảnh nền hiển thị toàn màn hình -->
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.bookstore.frontend.controller.CartController"
+           style="-fx-background-image: url('/image/libraryBackground.jpg'); -fx-background-size: cover; -fx-background-position: center;">
 
-    <children>
+    <!-- Lớp phủ mờ nhẹ để chữ dễ đọc hơn trên nền ảnh kệ sách -->
+    <VBox style="-fx-background-color: rgba(0,0,0,0.4);" />
 
-        <HBox alignment="CENTER" prefWidth="960.0" spacing="40.0"
-              style="-fx-padding: 18 10 8 10; -fx-border-color: transparent transparent #e5e5e5 transparent; -fx-border-width: 0 0 1 0;">
-            <children>
-                <Label text="Neth Bookpoint" style="-fx-text-fill: -fx-accent-gold;">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                </Label>
+    <VBox prefHeight="730.0" prefWidth="1000.0" spacing="10.0" style="-fx-padding: 20;">
+        <children>
+            <!-- Header -->
+            <HBox alignment="CENTER_LEFT" prefWidth="960.0" spacing="40.0" style="-fx-padding: 10;">
+                <children>
+                    <Label text="Neth Bookpoint" style="-fx-text-fill: white; -fx-font-weight: bold;" styleClass="header-title">
+                        <font> <Font size="24.0" /> </font>
+                    </Label>
+                </children>
+            </HBox>
 
-                <HBox alignment="CENTER" spacing="25.0">
+            <!-- Nội dung chính trong suốt -->
+            <HBox prefHeight="650.0" prefWidth="1000.0" spacing="20" VBox.vgrow="ALWAYS">
+                <children>
+                    <!-- Sidebar trong suốt -->
+                    <VBox prefWidth="300.0" alignment="CENTER"
+                          style="-fx-background-color: rgba(255, 255, 255, 0.1); -fx-background-radius: 18; -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 18;">
+                        <padding> <Insets bottom="20" left="20" right="20" top="20" /> </padding>
+                        <children>
+                            <ImageView fx:id="imgRandomBook"
+                                       fitWidth="240.0"
+                                       fitHeight="340.0"
+                                       preserveRatio="true"
+                                       smooth="true"
+                                       cache="true">
+                            </ImageView>
+                        </children>
+                    </VBox>
 
+                    <!-- Cart Details trong suốt -->
+                    <VBox alignment="TOP_CENTER" spacing="24.0" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: rgba(255, 255, 255, 0.85); -fx-background-radius: 18; -fx-padding: 30;">
+                        <children>
+                            <Label text="Your Cart Details" style="-fx-text-fill: #333;">
+                                <font> <Font name="System Bold" size="28.0" /> </font>
+                            </Label>
 
-                </HBox>
-            </children>
-        </HBox>
+                            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                                <content>
+                                    <VBox fx:id="cartItemsContainer" spacing="18.0" alignment="TOP_CENTER" style="-fx-background-color: transparent;" />
+                                </content>
+                            </ScrollPane>
 
-        <HBox prefHeight="650.0" prefWidth="1000.0" style="-fx-background-color: white;" VBox.vgrow="ALWAYS">
-            <children>
-
-                <VBox prefWidth="300.0"
-                      style="-fx-background-color: #0d1b2a; -fx-background-radius: 0 18 18 0;">
-                    <padding>
-                        <Insets top="40.0" right="25.0" bottom="40.0" left="25.0" />
-                    </padding>
-                    <children>
-                        <VBox alignment="TOP_LEFT" spacing="18.0" VBox.vgrow="ALWAYS">
-                            <children>
-                                <Label text="Your Reading Journey Starts Here"
-                                       wrapText="true"
-                                       style="-fx-text-fill: white;">
-                                    <font>
-                                        <Font name="System Bold" size="26.0" />
-                                    </font>
-                                </Label>
-
-                                <Label text="Add your favorite books to cart and enjoy exclusive bookstore offers."
-                                       wrapText="true"
-                                       style="-fx-text-fill: #c7ced6;">
-                                    <font>
-                                        <Font size="14.0" />
-                                    </font>
-                                </Label>
-
-                                <VBox spacing="12.0" style="-fx-padding: 20 0 0 0;">
-                                    <children>
-                                        <Label text="• Free bookmark for orders over 300.000đ"
-                                               wrapText="true"
-                                               style="-fx-text-fill: #f0d27a;">
-                                            <font>
-                                                <Font size="13.0" />
-                                            </font>
-                                        </Label>
-                                        <Label text="• 10% off selected classic titles"
-                                               wrapText="true"
-                                               style="-fx-text-fill: #f0d27a;">
-                                            <font>
-                                                <Font size="13.0" />
-                                            </font>
-                                        </Label>
-                                        <Label text="• Fast delivery for in-stock books"
-                                               wrapText="true"
-                                               style="-fx-text-fill: #f0d27a;">
-                                            <font>
-                                                <Font size="13.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                </VBox>
-
-                                <Region VBox.vgrow="ALWAYS" />
-
-                                <Label text="Special Offer: KCC Book Fair"
-                                       style="-fx-text-fill: #9fb3c8;">
-                                    <font>
-                                        <Font size="13.0" />
-                                    </font>
-                                </Label>
-                            </children>
-                        </VBox>
-                    </children>
-                </VBox>
-
-                <VBox alignment="TOP_CENTER" spacing="24.0" HBox.hgrow="ALWAYS">
-                    <padding>
-                        <Insets bottom="30.0" left="35.0" right="35.0" top="30.0" />
-                    </padding>
-                    <children>
-
-                        <VBox alignment="CENTER" spacing="8.0">
-                            <children>
-                                <Label text="Your Cart Details" style="-fx-text-fill: -fx-accent-gold;">
-                                    <font>
-                                        <Font name="System Bold" size="28.0" />
-                                    </font>
-                                </Label>
-
-                                <Label text="Review your selected books before checkout."
-                                       style="-fx-text-fill: #666666;">
-                                    <font>
-                                        <Font size="14.0" />
-                                    </font>
-                                </Label>
-                            </children>
-                        </VBox>
-
-                        <ScrollPane fitToWidth="true"
-                                    style="-fx-background-color: transparent; -fx-background: white;"
-                                    VBox.vgrow="ALWAYS">
-                            <content>
-                                <VBox fx:id="cartItemsContainer"
-                                      spacing="18.0"
-                                      alignment="TOP_CENTER"
-                                      style="-fx-padding: 10 5 10 5;" />
-                            </content>
-                        </ScrollPane>
-
-                        <VBox alignment="CENTER" spacing="16.0"
-                              style="-fx-background-color: #faf7ef; -fx-background-radius: 14; -fx-padding: 20 25 20 25;">
-                            <children>
-                                <HBox alignment="CENTER" spacing="10.0">
-                                    <children>
-                                        <Label text="Total Price:" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: yellow;" />
-                                        <Label fx:id="lblTotalPrice" text="0đ"
-                                               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -fx-primary-black;" />
-                                    </children>
-                                </HBox>
-
-                                <Button fx:id="btnCheckout" onAction="#handleCheckout"
-                                        mnemonicParsing="false"
-                                        prefHeight="50.0" prefWidth="260.0"
-                                        styleClass="btn-primary"
-                                        text="Proceed to Checkout">
-                                    <font>
-                                        <Font name="System Bold" size="16.0" />
-                                    </font>
-                                </Button>
-                            </children>
-                        </VBox>
-
-                    </children>
-                </VBox>
-
-            </children>
-        </HBox>
-
-    </children>
-</VBox>
+                            <VBox alignment="CENTER" spacing="16.0" style="-fx-background-color: rgba(0,0,0,0.05); -fx-background-radius: 14; -fx-padding: 20;">
+                                <children>
+                                    <HBox alignment="CENTER" spacing="10.0">
+                                        <children>
+                                            <Label text="Total Price:" style="-fx-font-size: 22px; -fx-font-weight: bold;" />
+                                            <Label fx:id="lblTotalPrice" text="0đ" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #d35400;" />
+                                        </children>
+                                    </HBox>
+                                    <Button fx:id="btnCheckout" onAction="#handleCheckout" prefHeight="50.0" prefWidth="260.0" styleClass="btn-primary" text="Proceed to Checkout" />
+                                </children>
+                            </VBox>
+                        </children>
+                    </VBox>
+                </children>
+            </HBox>
+        </children>
+    </VBox>
+</StackPane>

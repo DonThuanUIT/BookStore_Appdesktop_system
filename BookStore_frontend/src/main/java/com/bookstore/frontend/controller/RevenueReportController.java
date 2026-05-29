@@ -10,6 +10,7 @@ import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,32 +74,35 @@ public class RevenueReportController {
 
         loadingIndicator.setVisible(true);
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Lưu báo cáo doanh thu");
-        fileChooser.setInitialFileName("revenue-report-" + year + ".xlsx");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel .xlsx", "*.xlsx"));
-
-        File targetFile = fileChooser.showSaveDialog(barChart.getScene().getWindow());
-        if (targetFile == null) {
-            loadingIndicator.setVisible(false);
-            return;
-        }
-
+        // Sửa đoạn code ở dòng 77-83 trong RevenueReportController.java
         RevenueApiService.getInstance().exportRevenueToExcel(year)
                 .thenAccept(bytes -> Platform.runLater(() -> {
-                    try {
-                        java.nio.file.Files.write(targetFile.toPath(), bytes);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        new Alert(Alert.AlertType.ERROR, "Không thể lưu file Excel: " + e.getMessage()).showAndWait();
-                    } finally {
-                        loadingIndicator.setVisible(false);
+                    loadingIndicator.setVisible(false);
+
+                    // Vì 'bytes' ở đây chính là dữ liệu file, ta không cần kiểm tra statusCode nữa
+                    // (Nếu có lỗi từ Server, nó đã ném ra Exception rồi)
+
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle("Lưu báo cáo doanh thu");
+                    fileChooser.setInitialFileName("revenue-report-" + year + ".xlsx");
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel", "*.xlsx"));
+
+                    File targetFile = fileChooser.showSaveDialog(barChart.getScene().getWindow());
+
+                    if (targetFile != null) {
+                        try {
+                            java.nio.file.Files.write(targetFile.toPath(), bytes);
+                            new Alert(Alert.AlertType.INFORMATION, "Xuất file thành công!").show();
+                        } catch (Exception e) {
+                            new Alert(Alert.AlertType.ERROR, "Không thể lưu file: " + e.getMessage()).show();
+                        }
                     }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
                         loadingIndicator.setVisible(false);
-                        new Alert(Alert.AlertType.ERROR, "Xuất Excel thất bại: " + ex.getMessage()).showAndWait();
+                        // In ra lỗi chi tiết nếu server trả về lỗi 400/500
+                        new Alert(Alert.AlertType.ERROR, "Xuất Excel thất bại: " + ex.getMessage()).show();
                     });
                     return null;
                 });

@@ -1,16 +1,11 @@
-# TODO - Export Excel cho Revenue
+# Task: Random sidebar images in CartView
 
-- [x] Backend: Add endpoint `GET /api/revenue/export?year=` trong `RevenueController`
-- [x] Backend: Implement tạo file Excel bằng Apache POI trong `RevenueExportService`
+## Steps
+- [x] Inspect CartView.fxml and CartController.java
+- [x] Check BE books endpoint supports paging and returns imageUrl
+- [x] Add `ImageView fx:id="imgRandomBook"` to left sidebar in `CartView.fxml`
+- [x] Implement random loader + 10s cycling using `BookApiService.fetchBooks(0,50)` in `CartController.java`
+- [x] Ensure fallback to DEFAULT_COVER_URL when no imageUrl available
+- [ ] Validate by running frontend and opening CartView
 
-
-
-- [x] Backend: Thêm dependency `poi-ooxml` vào `BookStore_backend/backend/pom.xml`
-
-- [x] Frontend: Thêm nút `XUẤT EXCEL` vào `RevenueReportView.fxml`
-- [x] Frontend: Thêm handler `handleExportExcel()` trong `RevenueReportController`
-- [x] Frontend: Thêm method `exportRevenueToExcel(int year)` trong `RevenueApiService`
-- [x] Frontend: Dùng `FileChooser` để lưu file `.xlsx` tải từ backend
-
-- [ ] Chạy build/test: kiểm tra file Excel tạo ra đúng dữ liệu
 

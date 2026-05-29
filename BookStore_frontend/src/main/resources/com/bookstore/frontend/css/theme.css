@@ -562,3 +562,13 @@
     -fx-text-fill: -fx-text-muted;
     -fx-font-weight: bold;
 }
+
+/* Màu cho series đầu tiên (Doanh thu) */
+.chart-bar.series0 {
+    -fx-bar-fill: #FF6600; /* Màu Cam */
+}
+
+/* Màu cho series thứ hai (Chi phí) */
+.chart-bar.series1 {
+    -fx-bar-fill: #FFCC00; /* Màu Vàng */
+}
