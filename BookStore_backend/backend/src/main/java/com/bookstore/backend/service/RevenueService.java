@@ -2,9 +2,11 @@ package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.response.RevenueSummaryResponse;
 import com.bookstore.backend.dto.response.RevenueYearResponse;
+import com.bookstore.backend.dto.response.TopProductResponse;
 import com.bookstore.backend.exception.AppException;
 import com.bookstore.backend.repository.ImportRepository;
 import com.bookstore.backend.repository.OrderRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,9 @@ public class RevenueService {
             importCount += summary.importCount();
         }
 
+        LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(year + 1, 1, 1, 0, 0);
+        List<TopProductResponse> topProducts = orderRepository.findTopProducts(start, end, PageRequest.of(0, 5));
         return new RevenueYearResponse(
                 year,
                 revenue,
@@ -63,7 +68,8 @@ public class RevenueService {
                 revenue.subtract(importCost),
                 orderCount,
                 importCount,
-                months
+                months,
+                topProducts
         );
     }
 
@@ -80,6 +86,8 @@ public class RevenueService {
         Long orderCount = defaultLong(orderRepository.countCompletedOrdersByOrderDateBetween(startDate, endDate));
         BigDecimal importCost = defaultBigDecimal(importRepository.sumTotalCostByImportDateBetween(startDate, endDate));
         Long importCount = defaultLong(importRepository.countImportsByImportDateBetween(startDate, endDate));
+        List<TopProductResponse> topProducts = orderRepository.findTopProducts(
+                startDate, endDate, PageRequest.of(0, 5)); // Lấy top 5
 
         return new RevenueSummaryResponse(
                 year,
@@ -88,7 +96,8 @@ public class RevenueService {
                 importCost,
                 revenue.subtract(importCost),
                 orderCount,
-                importCount
+                importCount,
+                topProducts // Gán vào DTO
         );
     }
 

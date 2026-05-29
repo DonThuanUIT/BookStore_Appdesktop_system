@@ -1,43 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="15" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.bookstore.frontend.controller.RevenueReportController"
-      style="-fx-background-color: transparent;" stylesheets="@../css/theme.css"
-      alignment="TOP_CENTER">
+<VBox spacing="15" style="-fx-padding: 20; -fx-background-image: url('/image/libraryBackground.jpg'); -fx-background-size: cover;"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bookstore.frontend.controller.RevenueReportController">
 
-    <HBox spacing="20" alignment="CENTER" style="-fx-padding: 20 0 20 0;">
-        <HBox spacing="10" alignment="CENTER">
-            <ComboBox fx:id="yearPicker" styleClass="custom-combo-box" />
-            <Button fx:id="btnLoad" text="Xem báo cáo" onAction="#handleLoadReport" styleClass="btn-primary-modern" />
-        </HBox>
+    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: rgba(0,0,0,0.5); -fx-padding: 15; -fx-background-radius: 10;">
+        <Label text="Nhập năm:" style="-fx-text-fill: white;"/>
+        <TextField fx:id="yearInput" prefWidth="80" promptText="2026"/>
 
-        <HBox spacing="15" alignment="CENTER">
-            <VBox styleClass="kpi-card" alignment="CENTER" prefWidth="160">
-                <Label text="DOANH THU" style="-fx-text-fill: #b3b3b3; -fx-font-size: 11px;" />
-                <Label fx:id="lblTotalRevenue" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #00bcd4;" />
-            </VBox>
-            <VBox styleClass="kpi-card" alignment="CENTER" prefWidth="160">
-                <Label text="LỢI NHUẬN" style="-fx-text-fill: #b3b3b3; -fx-font-size: 11px;" />
-                <Label fx:id="lblTotalProfit" text="0 VND" styleClass="kpi-value" style="-fx-text-fill: #FFCC00;" />
-            </VBox>
-        </HBox>
+        <ComboBox fx:id="chartTypePicker" prefWidth="130" />
+
+        <Button text="XEM BÁO CÁO" onAction="#handleLoadReport" style="-fx-background-color: #FFCC00; -fx-font-weight: bold;"/>
+        <ProgressIndicator fx:id="loadingIndicator" prefWidth="25" prefHeight="25" visible="false"/>
     </HBox>
 
-    <StackPane VBox.vgrow="ALWAYS" style="-fx-padding: 0 15 15 15;">
-        <BarChart fx:id="revenueChart" categoryGap="20" barGap="5" legendVisible="true">
-            <xAxis>
-                <CategoryAxis side="BOTTOM" fx:id="xAxis" />
-            </xAxis>
-            <yAxis>
-                <NumberAxis fx:id="yAxis" side="LEFT" />
-            </yAxis>
-        </BarChart>
-        <Label fx:id="lblEmpty" text="Chưa có dữ liệu cho năm này"
-               style="-fx-text-fill: -text-muted; -fx-font-size: 16px;" visible="false" />
-        <ProgressIndicator fx:id="loadingIndicator" maxHeight="50" maxWidth="50" visible="false" />
-    </StackPane>
+    <HBox spacing="20" alignment="CENTER">
+        <VBox style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);" prefWidth="200">
+            <Label text="Tổng Doanh Thu" style="-fx-text-fill: #FFCC00;"/>
+            <Label fx:id="lblTotalRevenue" text="0 VNĐ" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+        </VBox>
+        <VBox style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);" prefWidth="200">
+            <Label text="Tổng Lợi Nhuận" style="-fx-text-fill: #00FF00;"/>
+            <Label fx:id="lblTotalProfit" text="0 VNĐ" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+        </VBox>
+        <VBox style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);" prefWidth="200">
+            <Label text="Tổng Đơn Hàng" style="-fx-text-fill: #FFFFFF;"/>
+            <Label fx:id="lblTotalOrders" text="0" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+        </VBox>
+    </HBox>
+
+    <HBox spacing="20" VBox.vgrow="ALWAYS">
+        <StackPane HBox.hgrow="ALWAYS" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);">
+            <BarChart fx:id="barChart" animated="false"><xAxis><CategoryAxis label="Thời gian" /></xAxis><yAxis><NumberAxis label="VNĐ" /></yAxis></BarChart>
+            <LineChart fx:id="lineChart" animated="false" visible="false"><xAxis><CategoryAxis label="Thời gian" /></xAxis><yAxis><NumberAxis label="VNĐ" /></yAxis></LineChart>
+        </StackPane>
+        <TableView fx:id="tblTopProducts" prefWidth="350" style="-fx-background-color: rgba(255,255,255,0.1);">
+            <columns>
+                <TableColumn fx:id="colBookName" text="Tên Sách" prefWidth="240" />
+                <TableColumn fx:id="colQuantity" text="SL" prefWidth="90" />
+            </columns>
+        </TableView>
+    </HBox>
 </VBox>
