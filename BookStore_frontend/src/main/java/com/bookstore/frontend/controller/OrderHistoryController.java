@@ -86,14 +86,24 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void updateStatusAPI(Long id, String status) {
-        String jsonBody = "{\"status\": \"" + status + "\"}";
-        ApiClient.getInstance().patch("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
-            if (response.statusCode() == 200) {
-                Platform.runLater(this::determineAndLoadData);
-            } else {
-                Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Cập nhật thất bại!").show());
-            }
-        });
+        // Sử dụng Object để tạo JSON an toàn
+        try {
+            String jsonBody = "{\"status\":\"" + status + "\"}";
+
+
+            ApiClient.getInstance().patchRaw("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
+
+                Platform.runLater(() -> {
+                    if (response.statusCode() == 200) {
+                        determineAndLoadData();
+                    } else {
+                        // CỰC KỲ QUAN TRỌNG: Xem server trả về lỗi gì ở đây
+                        System.err.println("Lỗi Backend: " + response.body());
+                        new Alert(Alert.AlertType.ERROR, "Lỗi cập nhật: " + response.body()).show();
+                    }
+                });
+            });
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void determineAndLoadData() {

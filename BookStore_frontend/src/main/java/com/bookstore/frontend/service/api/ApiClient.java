@@ -113,6 +113,19 @@ public class ApiClient {
         }
     }
 
+    // PATCH raw JSON string (tránh double-serialize)
+    public CompletableFuture<HttpResponse<String>> patchRaw(String endpoint, String jsonBody) {
+        try {
+            return sendRequest(HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody)));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+
     public CompletableFuture<HttpResponse<String>> uploadFile(String endpoint, File file) {
         try {
             String boundary = "----JavaFxFormBoundary" + System.currentTimeMillis();
