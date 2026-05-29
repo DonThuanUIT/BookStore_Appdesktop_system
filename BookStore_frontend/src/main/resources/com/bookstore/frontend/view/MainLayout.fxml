@@ -35,7 +35,13 @@
                     <Region HBox.hgrow="ALWAYS" />
                     <HBox alignment="CENTER_RIGHT" spacing="20.0">
                         <children>
-                            <Button fx:id="btnAccount" mnemonicParsing="false" onAction="#onAccountClick" styleClass="btn-icon" text="👤" />
+                            <StackPane>
+                                <Button fx:id="btnAccount" mnemonicParsing="false" onAction="#onAccountClick" styleClass="btn-icon" text="👤" />
+                                <Label fx:id="lblAccountBadge"
+                                       style="-fx-background-color: -fx-error-red; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 2 6; -fx-font-size: 10px; -fx-font-weight: bold;"
+                                       StackPane.alignment="TOP_RIGHT"
+                                       mouseTransparent="true" />
+                            </StackPane>
                             <StackPane>
                                 <children>
                                     <Button fx:id="btnNavMiniCart" mnemonicParsing="false" onAction="#onNavMiniCartClick"

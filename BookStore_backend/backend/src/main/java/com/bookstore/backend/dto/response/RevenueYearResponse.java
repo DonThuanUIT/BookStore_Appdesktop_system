@@ -10,6 +10,7 @@ public record RevenueYearResponse(
         BigDecimal profit,
         Long orderCount,
         Long importCount,
-        List<RevenueSummaryResponse> months
+        List<RevenueSummaryResponse> months,
+        List<TopProductResponse> topProducts // THÊM DÒNG NÀY
 ) {
 }

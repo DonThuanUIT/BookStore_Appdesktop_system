@@ -1,109 +1,150 @@
 package com.bookstore.frontend.controller;
 
-import com.bookstore.frontend.model.dto.Response.RevenueYearResponse;
-import com.bookstore.frontend.model.dto.Response.RevenueSummaryResponse;
+import com.bookstore.frontend.model.dto.Response.*;
 import com.bookstore.frontend.service.api.RevenueApiService;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class RevenueReportController {
-
-    @FXML private BarChart<String, Number> revenueChart;
-    @FXML private NumberAxis yAxis;
-    @FXML private CategoryAxis xAxis; // Đã khớp với fx:id="xAxis" trong FXML
-    @FXML private ComboBox<Integer> yearPicker;
+    @FXML private BarChart<String, Number> barChart;
+    @FXML private LineChart<String, Number> lineChart;
+    @FXML private TextField yearInput;
+    @FXML private ComboBox<String> chartTypePicker;
+    @FXML private TableView<TopProductResponse> tblTopProducts;
+    @FXML private TableColumn<TopProductResponse, String> colBookName, colQuantity;
+    @FXML private Label lblTotalRevenue, lblTotalProfit, lblTotalOrders;
     @FXML private ProgressIndicator loadingIndicator;
-    @FXML private Button btnLoad;
-    @FXML private Label lblTotalRevenue;
-    @FXML private Label lblTotalProfit;
-    @FXML private Label lblEmpty;
 
     @FXML
     public void initialize() {
-        // 1. Khởi tạo năm cho ComboBox
-        int currentYear = LocalDate.now().getYear();
-        for (int i = currentYear; i >= 2020; i--) {
-            yearPicker.getItems().add(i);
-        }
-        yearPicker.setValue(currentYear);
+        yearInput.setText(String.valueOf(LocalDate.now().getYear()));
+        chartTypePicker.getItems().addAll("Biểu đồ cột", "Biểu đồ đường");
+        chartTypePicker.setValue("Biểu đồ cột");
 
-        // 2. Cấu hình trục
-        yAxis.setForceZeroInRange(true);
-        xAxis.setAnimated(false); // Quan trọng để tránh nhảy nhãn
-        xAxis.setTickLabelGap(10);
+        // Khi người dùng chọn lại loại biểu đồ, chỉ cần thay đổi hiển thị
+        chartTypePicker.setOnAction(e -> updateChartVisibility());
 
-        revenueChart.setAnimated(true);
+        colBookName.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().bookTitle()));
+        colQuantity.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(String.valueOf(data.getValue().soldQuantity())));
+    }
 
-        // 3. Load dữ liệu lần đầu
-        handleLoadReport();
+    private void updateChartVisibility() {
+        boolean isBar = "Biểu đồ cột".equals(chartTypePicker.getValue());
+        barChart.setVisible(isBar);
+        lineChart.setVisible(!isBar);
+        // Ép layout lại để JavaFX vẽ lại đúng kích thước khi đổi chart
+        barChart.requestLayout();
+        lineChart.requestLayout();
     }
 
     @FXML
-    private void handleLoadReport() {
-        Integer year = yearPicker.getValue();
-        if (year == null) return;
+    public void handleLoadReport() {
+        if (!yearInput.getText().matches("\\d{4}")) return;
+        int year = Integer.parseInt(yearInput.getText());
+        loadingIndicator.setVisible(true);
 
-        setLoading(true);
-
+        // Mặc định gọi theo tháng
         RevenueApiService.getInstance().getRevenueByYear(year)
                 .thenAccept(data -> Platform.runLater(() -> {
-                    setLoading(false);
-                    updateChart(data);
+                    if (data != null && data.months() != null) {
+                        List<DataPoint> points = data.months().stream()
+                                .map(m -> new DataPoint("T" + m.month(), m.revenue(), m.importCost()))
+                                .collect(Collectors.toList());
+                        updateUI(data, points);
+                    }
+                    loadingIndicator.setVisible(false);
+                }));
+    }
+
+    @FXML
+    public void handleExportExcel() {
+        if (!yearInput.getText().matches("\\d{4}")) return;
+        int year = Integer.parseInt(yearInput.getText());
+
+        loadingIndicator.setVisible(true);
+
+        // Sửa đoạn code ở dòng 77-83 trong RevenueReportController.java
+        RevenueApiService.getInstance().exportRevenueToExcel(year)
+                .thenAccept(bytes -> Platform.runLater(() -> {
+                    loadingIndicator.setVisible(false);
+
+                    // Vì 'bytes' ở đây chính là dữ liệu file, ta không cần kiểm tra statusCode nữa
+                    // (Nếu có lỗi từ Server, nó đã ném ra Exception rồi)
+
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle("Lưu báo cáo doanh thu");
+                    fileChooser.setInitialFileName("revenue-report-" + year + ".xlsx");
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel", "*.xlsx"));
+
+                    File targetFile = fileChooser.showSaveDialog(barChart.getScene().getWindow());
+
+                    if (targetFile != null) {
+                        try {
+                            java.nio.file.Files.write(targetFile.toPath(), bytes);
+                            new Alert(Alert.AlertType.INFORMATION, "Xuất file thành công!").show();
+                        } catch (Exception e) {
+                            new Alert(Alert.AlertType.ERROR, "Không thể lưu file: " + e.getMessage()).show();
+                        }
+                    }
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> {
-                        setLoading(false);
-                        System.err.println("Load thất bại: " + ex.getMessage());
+                        loadingIndicator.setVisible(false);
+                        // In ra lỗi chi tiết nếu server trả về lỗi 400/500
+                        new Alert(Alert.AlertType.ERROR, "Xuất Excel thất bại: " + ex.getMessage()).show();
                     });
                     return null;
                 });
     }
 
-    private void updateChart(RevenueYearResponse data) {
-        boolean hasData = data != null && data.months() != null && !data.months().isEmpty();
 
-        lblEmpty.setVisible(!hasData);
-        revenueChart.setVisible(hasData);
+    private void updateUI(RevenueYearResponse data, List<DataPoint> points) {
+        lblTotalRevenue.setText(String.format("%,.0f VNĐ", data.revenue()));
+        lblTotalProfit.setText(String.format("%,.0f VNĐ", data.profit()));
+        lblTotalOrders.setText(String.valueOf(data.orderCount()));
 
-        if (!hasData) return;
+        tblTopProducts.setItems(data.topProducts() != null ? FXCollections.observableArrayList(data.topProducts()) : FXCollections.observableArrayList());
 
-        revenueChart.getData().clear();
-        XYChart.Series<String, Number> revenueSeries = new XYChart.Series<>();
-        revenueSeries.setName("Doanh thu");
+        // VẼ CẢ 2 BIỂU ĐỒ CÙNG LÚC ĐỂ DỮ LIỆU LUÔN SẴN SÀNG
+        renderCharts(points);
+    }
 
-        XYChart.Series<String, Number> profitSeries = new XYChart.Series<>();
-        profitSeries.setName("Lợi nhuận");
+    private void renderCharts(List<DataPoint> points) {
+        barChart.getData().clear();
+        lineChart.getData().clear();
 
-        double tRev = 0, tProf = 0;
+        // Series cho cột
+        XYChart.Series<String, Number> barRev = new XYChart.Series<>(); barRev.setName("Doanh thu");
+        XYChart.Series<String, Number> barCost = new XYChart.Series<>(); barCost.setName("Chi phí");
 
-        // Vòng lặp cố định 12 tháng để trục X luôn đủ T1-T12
-        for (int i = 1; i <= 12; i++) {
-            final int month = i;
-            RevenueSummaryResponse mData = data.months().stream()
-                    .filter(x -> x.month() == month).findFirst().orElse(null);
+        // Series cho đường
+        XYChart.Series<String, Number> lineRev = new XYChart.Series<>(); lineRev.setName("Doanh thu");
+        XYChart.Series<String, Number> lineCost = new XYChart.Series<>(); lineCost.setName("Chi phí");
 
-            double rev = (mData != null) ? mData.revenue().doubleValue() : 0.0;
-            double prof = (mData != null) ? mData.profit().doubleValue() : 0.0;
+        for (DataPoint p : points) {
+            barRev.getData().add(new XYChart.Data<>(p.label(), p.rev()));
+            barCost.getData().add(new XYChart.Data<>(p.label(), p.cost()));
 
-            tRev += rev;
-            tProf += prof;
-
-            revenueSeries.getData().add(new XYChart.Data<>("T" + i, rev));
-            profitSeries.getData().add(new XYChart.Data<>("T" + i, prof));
+            lineRev.getData().add(new XYChart.Data<>(p.label(), p.rev()));
+            lineCost.getData().add(new XYChart.Data<>(p.label(), p.cost()));
         }
 
-        lblTotalRevenue.setText(String.format("%,.0f VND", tRev));
-        lblTotalProfit.setText(String.format("%,.0f VND", tProf));
-        lblTotalProfit.setStyle(tProf < 0 ? "-fx-text-fill: #ff5555;" : "-fx-text-fill: #00bcd4;");
+        barChart.getData().addAll(barRev, barCost);
+        lineChart.getData().addAll(lineRev, lineCost);
 
-        revenueChart.getData().addAll(revenueSeries, profitSeries);
+        updateChartVisibility();
     }
 
-    private void setLoading(boolean isLoading) {
-        if (loadingIndicator != null) loadingIndicator.setVisible(isLoading);
-        if (btnLoad != null) btnLoad.setDisable(isLoading);
-    }
+    private record DataPoint(String label, java.math.BigDecimal rev, java.math.BigDecimal cost) {}
 }

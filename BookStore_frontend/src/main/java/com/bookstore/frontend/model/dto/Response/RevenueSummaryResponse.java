@@ -1,6 +1,7 @@
 package com.bookstore.frontend.model.dto.Response;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public record RevenueSummaryResponse(
         Integer year,
@@ -9,5 +10,6 @@ public record RevenueSummaryResponse(
         BigDecimal importCost,
         BigDecimal profit,
         Long orderCount,
-        Long importCount
+        Long importCount,
+        List<TopProductResponse>topProducts
 ) {}

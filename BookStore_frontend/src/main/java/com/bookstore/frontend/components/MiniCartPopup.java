@@ -85,7 +85,7 @@ public class MiniCartPopup extends Popup {
         HBox.setHgrow(textCol, Priority.ALWAYS);
         textCol.getChildren().addAll(
                 new Label(item.getBook().getTitle()) {{ setStyle("-fx-text-fill: white; -fx-font-weight: bold;"); }},
-                new Label(String.format("SL %d  ·  $%.2f", item.getQuantity(), item.getBook().getPrice())) {{ setStyle("-fx-text-fill: #c7ced6;"); }}
+                new Label(String.format("SL %d  ·  %.2f", item.getQuantity(), item.getBook().getPrice())) {{ setStyle("-fx-text-fill: #c7ced6;"); }}
         );
 
         Button btnRemove = new Button("Hủy");

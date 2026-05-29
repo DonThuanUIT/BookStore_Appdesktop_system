@@ -79,13 +79,6 @@ public class OrderController {
     ) {
         return ResponseEntity.ok(orderService.getSalesHistory(page, size));
     }
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable @Positive(message = "id is invalid") Long id,
-            @Valid @RequestBody UpdateOrderStatusRequest request
-    ) {
-        return ResponseEntity.ok(orderService.updateStatus(id, request.status()));
-    }
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -131,5 +124,22 @@ public class OrderController {
         User currentUser = userService.findByUsername(username);
 
         return ResponseEntity.ok(orderService.confirmReceived(id, currentUser));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<OrderResponse> updateStatus(
+            @PathVariable @Positive Long id,
+            @Valid @RequestBody UpdateOrderStatusRequest request) {
+        return ResponseEntity.ok(orderService.updateStatus(id, request.status()));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<OrderResponse> cancelOrder(
+            @PathVariable @Positive Long id,
+            @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt) {
+        User currentUser = userService.findByUsername(jwt.getSubject());
+        return ResponseEntity.ok(orderService.cancelOrder(id, currentUser));
     }
 }

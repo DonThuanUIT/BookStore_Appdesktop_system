@@ -536,3 +536,39 @@
 .chart-content {
     -fx-padding: 20px;
 }
+
+/* Tối ưu hóa Tooltip khi di chuột vào cột biểu đồ */
+.chart-bar .chart-line-symbol {
+    -fx-background-color: #FFCC00, white;
+}
+
+/* Thêm vào để các card KPI nổi bật hơn khi nhấn vào */
+.kpi-card {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 12;
+    -fx-padding: 15;
+}
+
+/* Thêm hiệu ứng hover nhẹ cho KPI card */
+.kpi-card:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: #FFCC00;
+}
+
+/* Căn chỉnh lại Font cho biểu đồ để không bị tràn */
+.chart-axis-label {
+    -fx-text-fill: -fx-text-muted;
+    -fx-font-weight: bold;
+}
+
+/* Màu cho series đầu tiên (Doanh thu) */
+.chart-bar.series0 {
+    -fx-bar-fill: #FF6600; /* Màu Cam */
+}
+
+/* Màu cho series thứ hai (Chi phí) */
+.chart-bar.series1 {
+    -fx-bar-fill: #FFCC00; /* Màu Vàng */
+}
