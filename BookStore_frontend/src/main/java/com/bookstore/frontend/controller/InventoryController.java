@@ -22,6 +22,9 @@ public class InventoryController extends BaseController {
     @FXML private Label lblLowStock;
     @FXML private Label lblPaginationInfo;
 
+    // Đã thêm khai báo nút bấm để xử lý đổi màu khi lọc
+    @FXML private Button btnFilterLowStock;
+
     @FXML private TableView<BookModel> tvInventory;
     @FXML private TableColumn<BookModel, Long> colId;
     @FXML private TableColumn<BookModel, String> colTitle;
@@ -33,13 +36,14 @@ public class InventoryController extends BaseController {
     private InventoryModel model;
     private InventoryInteractor interactor;
 
+    private boolean isLowStockFilterActive = false;
+
     @FXML
     public void initialize() {
         this.model = new InventoryModel();
         this.interactor = new InventoryInteractor(this.model);
 
         setupTableColumns();
-
         setupRealTimeSync();
     }
 
@@ -58,7 +62,7 @@ public class InventoryController extends BaseController {
                     setText(null);
                     setStyle("");
                 } else {
-                    setText(item + " UNITS");
+                    setText(item + " CUỐN");
                     if (item < 10) {
                         setStyle("-fx-text-fill: #ff5555; -fx-background-color: rgba(255,85,85,0.1); -fx-background-radius: 10; -fx-padding: 2 10; -fx-alignment: center;");
                     } else {
@@ -68,7 +72,6 @@ public class InventoryController extends BaseController {
             }
         });
 
-        // EDIT VÀ DELETE (ACTIONS)
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("✎");
             private final Button btnDelete = new Button("🗑");
@@ -96,7 +99,6 @@ public class InventoryController extends BaseController {
             }
         });
 
-        // Bind Data
         tvInventory.setItems(model.getBooks());
         lblTotalTitles.textProperty().bind(model.totalTitlesProperty().asString());
         lblLowStock.textProperty().bind(model.lowStockCountProperty().asString());
@@ -151,12 +153,29 @@ public class InventoryController extends BaseController {
 
     @FXML
     public void handleFilterLowStock() {
-        // TODO: Gọi API lấy sách quantity < 10
+        isLowStockFilterActive = !isLowStockFilterActive; // Đảo trạng thái
+
+        if (isLowStockFilterActive) {
+            btnFilterLowStock.setStyle("-fx-background-color: -fx-accent-gold; -fx-text-fill: -fx-primary-black; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-weight: bold;");
+            btnFilterLowStock.setText("✓ Đang lọc sắp hết hàng");
+
+            interactor.filterLowStockBooks();
+        } else {
+            btnFilterLowStock.setStyle("-fx-background-color: transparent; -fx-border-color: -fx-accent-gold; -fx-text-fill: -fx-accent-gold; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8;");
+            btnFilterLowStock.setText("≡ Lọc sắp hết hàng");
+
+            interactor.loadInventoryData(0, 15);
+        }
     }
 
     @Override
     public void onNavigate(Object data) {
         if (interactor != null) {
+            isLowStockFilterActive = false;
+            if (btnFilterLowStock != null) {
+                btnFilterLowStock.setStyle("-fx-background-color: transparent; -fx-border-color: -fx-accent-gold; -fx-text-fill: -fx-accent-gold; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8;");
+                btnFilterLowStock.setText("≡ Lọc sắp hết hàng");
+            }
             interactor.loadInventoryData(0, 15);
         }
     }
