@@ -22,6 +22,8 @@ public class InventoryController extends BaseController {
     @FXML private Label lblLowStock;
     @FXML private Label lblPaginationInfo;
 
+    @FXML private Button btnFilterLowStock;
+
     @FXML private TableView<BookModel> tvInventory;
     @FXML private TableColumn<BookModel, Long> colId;
     @FXML private TableColumn<BookModel, String> colTitle;
@@ -33,13 +35,14 @@ public class InventoryController extends BaseController {
     private InventoryModel model;
     private InventoryInteractor interactor;
 
+    private boolean isLowStockFilterActive = false;
+
     @FXML
     public void initialize() {
         this.model = new InventoryModel();
         this.interactor = new InventoryInteractor(this.model);
 
         setupTableColumns();
-
         setupRealTimeSync();
     }
 
@@ -50,45 +53,49 @@ public class InventoryController extends BaseController {
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
 
+        String centerHeader = "-fx-alignment: center; -fx-text-fill: #AAAAAA; -fx-font-weight: bold;";
+        String leftHeader = "-fx-alignment: center-left; -fx-text-fill: #AAAAAA; -fx-font-weight: bold; -fx-padding: 0 0 0 10;";
+
+        Label idHeader = new Label("MÃ"); idHeader.setStyle(centerHeader); idHeader.setMaxWidth(Double.MAX_VALUE); colId.setGraphic(idHeader); colId.setText("");
+        Label titleHeader = new Label("TÊN SÁCH"); titleHeader.setStyle(leftHeader); titleHeader.setMaxWidth(Double.MAX_VALUE); colTitle.setGraphic(titleHeader); colTitle.setText("");
+        Label authorHeader = new Label("TÁC GIẢ"); authorHeader.setStyle(leftHeader); authorHeader.setMaxWidth(Double.MAX_VALUE); colAuthor.setGraphic(authorHeader); colAuthor.setText("");
+        Label qtyHeader = new Label("TỒN KHO"); qtyHeader.setStyle(centerHeader); qtyHeader.setMaxWidth(Double.MAX_VALUE); colQty.setGraphic(qtyHeader); colQty.setText("");
+        Label priceHeader = new Label("GIÁ BÁN"); priceHeader.setStyle(centerHeader); priceHeader.setMaxWidth(Double.MAX_VALUE); colPrice.setGraphic(priceHeader); colPrice.setText("");
+        Label actionHeader = new Label("THAO TÁC"); actionHeader.setStyle(centerHeader); actionHeader.setMaxWidth(Double.MAX_VALUE); colActions.setGraphic(actionHeader); colActions.setText("");
+
         colQty.setCellFactory(column -> new TableCell<>() {
+            private final Label badge = new Label();
+            private final HBox container = new HBox(badge);
+            { container.setAlignment(javafx.geometry.Pos.CENTER); }
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
+                    setGraphic(null);
                 } else {
-                    setText(item + " UNITS");
+                    badge.setText(item + " CUỐN");
                     if (item < 10) {
-                        setStyle("-fx-text-fill: #ff5555; -fx-background-color: rgba(255,85,85,0.1); -fx-background-radius: 10; -fx-padding: 2 10; -fx-alignment: center;");
+                        badge.setStyle("-fx-text-fill: #ff5555; -fx-background-color: rgba(255,85,85,0.15); -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold;");
                     } else {
-                        setStyle("-fx-text-fill: #AAAAAA; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 10; -fx-padding: 2 10; -fx-alignment: center;");
+                        badge.setStyle("-fx-text-fill: #AAAAAA; -fx-background-color: rgba(255,255,255,0.08); -fx-background-radius: 12; -fx-padding: 4 12;");
                     }
+                    setGraphic(container);
                 }
             }
         });
 
-        // EDIT VÀ DELETE (ACTIONS)
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("✎");
             private final Button btnDelete = new Button("🗑");
-            private final HBox pane = new HBox(10, btnEdit, btnDelete);
-
+            private final HBox pane = new HBox(15, btnEdit, btnDelete);
             {
+                pane.setAlignment(javafx.geometry.Pos.CENTER);
                 btnEdit.setStyle("-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-font-size: 16px;");
                 btnDelete.setStyle("-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-font-size: 16px;");
 
-                btnEdit.setOnAction(event -> {
-                    BookModel book = getTableView().getItems().get(getIndex());
-                    onEditBook(book);
-                });
-
-                btnDelete.setOnAction(event -> {
-                    BookModel book = getTableView().getItems().get(getIndex());
-                    onDeleteBook(book);
-                });
+                btnEdit.setOnAction(event -> { BookModel book = getTableView().getItems().get(getIndex()); onEditBook(book); });
+                btnDelete.setOnAction(event -> { BookModel book = getTableView().getItems().get(getIndex()); onDeleteBook(book); });
             }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -96,7 +103,6 @@ public class InventoryController extends BaseController {
             }
         });
 
-        // Bind Data
         tvInventory.setItems(model.getBooks());
         lblTotalTitles.textProperty().bind(model.totalTitlesProperty().asString());
         lblLowStock.textProperty().bind(model.lowStockCountProperty().asString());
@@ -151,12 +157,29 @@ public class InventoryController extends BaseController {
 
     @FXML
     public void handleFilterLowStock() {
-        // TODO: Gọi API lấy sách quantity < 10
+        isLowStockFilterActive = !isLowStockFilterActive; // Đảo trạng thái
+
+        if (isLowStockFilterActive) {
+            btnFilterLowStock.setStyle("-fx-background-color: -fx-accent-gold; -fx-text-fill: -fx-primary-black; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-weight: bold;");
+            btnFilterLowStock.setText("✓ Đang lọc sắp hết hàng");
+
+            interactor.filterLowStockBooks();
+        } else {
+            btnFilterLowStock.setStyle("-fx-background-color: transparent; -fx-border-color: -fx-accent-gold; -fx-text-fill: -fx-accent-gold; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8;");
+            btnFilterLowStock.setText("≡ Lọc sắp hết hàng");
+
+            interactor.loadInventoryData(0, 15);
+        }
     }
 
     @Override
     public void onNavigate(Object data) {
         if (interactor != null) {
+            isLowStockFilterActive = false;
+            if (btnFilterLowStock != null) {
+                btnFilterLowStock.setStyle("-fx-background-color: transparent; -fx-border-color: -fx-accent-gold; -fx-text-fill: -fx-accent-gold; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8;");
+                btnFilterLowStock.setText("≡ Lọc sắp hết hàng");
+            }
             interactor.loadInventoryData(0, 15);
         }
     }

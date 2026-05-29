@@ -51,7 +51,7 @@ public class InventoryInteractor {
                         model.getBooks().setAll(bookList);
                         model.totalTitlesProperty().set((int) root.get("totalElements").asLong());
                         model.lowStockCountProperty().set(finalLowStock);
-                        model.paginationInfoProperty().set(String.format("Showing %d to %d of %d entries",
+                        model.paginationInfoProperty().set(String.format("Hiển thị %d đến %d của %d kết quả",
                                 page * size + 1, (page * size) + bookList.size(), root.get("totalElements").asLong()));
                     });
                 } catch (Exception e) {
@@ -59,6 +59,43 @@ public class InventoryInteractor {
                     e.printStackTrace();
                 }
             }
+        });
+    }
+
+    public void filterLowStockBooks() {
+        String endpoint = "/books?page=0&size=100";
+
+        ApiClient.getInstance().get(endpoint).thenAccept(response -> {
+            if (response.statusCode() == 200) {
+                try {
+                    JsonNode root = ApiClient.getInstance().getMapper().readTree(response.body());
+                    JsonNode content = root.get("content");
+
+                    List<BookResponseDto> dtoList = ApiClient.getInstance().getMapper()
+                            .readValue(content.traverse(), new TypeReference<List<BookResponseDto>>() {});
+
+                    List<BookModel> lowStockBooks = new ArrayList<>();
+
+                    for (BookResponseDto dto : dtoList) {
+                        BookModel book = BookMapper.toModel(dto);
+                        if (book.getQuantity() != null && book.getQuantity() < 10) {
+                            lowStockBooks.add(book);
+                        }
+                    }
+
+                    javafx.application.Platform.runLater(() -> {
+                        model.getBooks().setAll(lowStockBooks);
+                        model.paginationInfoProperty().set(String.format("Tìm thấy %d sách sắp hết hàng", lowStockBooks.size()));
+                    });
+                } catch (Exception e) {
+                    System.err.println("Lỗi phân tích dữ liệu lọc: " + e.getMessage());
+                }
+            } else {
+                System.err.println("Lỗi API khi lọc: Máy chủ trả về mã HTTP " + response.statusCode());
+            }
+        }).exceptionally(ex -> {
+            System.err.println("Lỗi mạng khi bấm lọc: " + ex.getMessage());
+            return null;
         });
     }
 

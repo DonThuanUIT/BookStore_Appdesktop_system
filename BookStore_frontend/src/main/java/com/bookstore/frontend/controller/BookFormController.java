@@ -22,7 +22,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class BookFormController {
 
-    // --- Khai báo các thành phần UI từ FXML ---
     @FXML private Label lblFormTitle;
     @FXML private ImageView imgCover;
     @FXML private TextField txtTitle;
@@ -36,14 +35,12 @@ public class BookFormController {
     @FXML private TextArea txtDescription;
     @FXML private Button btnSave;
 
-    // --- Quản lý dữ liệu nội bộ ---
     private BookModel currentBook;
     private File selectedImageFile;
 
 
     private boolean saveClicked = false;
 
-    // Bộ não điều khiển luồng hành vi (Design Pattern: Strategy)
     private BookFormStrategy formStrategy;
 
     private final MasterDataApiService masterDataApi = new MasterDataApiService();
@@ -57,7 +54,6 @@ public class BookFormController {
         btnSave.setDisable(true);
         cbPublisher.setPromptText("Đang tải dữ liệu...");
 
-        // Tải danh sách nhà xuất bản từ server
         masterDataApi.getAllPublishers().thenAccept(list -> Platform.runLater(() -> {
             list.forEach(p -> masterPublishers.put(p.getName(), p.getId()));
             cbPublisher.getItems().addAll(masterPublishers.keySet());
@@ -65,7 +61,6 @@ public class BookFormController {
             btnSave.setDisable(false);
         }));
 
-        // Cấu hình tìm kiếm bất đồng bộ cho Tác giả
         tagInputAuthor.setSearchAsyncCallback(keyword ->
                 masterDataApi.searchAuthors(keyword).thenApply(dtoList -> {
                     List<String> names = new ArrayList<>();
@@ -77,7 +72,6 @@ public class BookFormController {
                 })
         );
 
-        // Cấu hình tìm kiếm bất đồng bộ cho Thể loại
         tagInputCategory.setSearchAsyncCallback(keyword ->
                 masterDataApi.searchCategories(keyword).thenApply(dtoList -> {
                     List<String> names = new ArrayList<>();
@@ -94,19 +88,16 @@ public class BookFormController {
         this.currentBook = book;
         this.formStrategy = strategy;
 
-        // 1. Đổ dữ liệu chung lên các ô nhập liệu
         if (book.getTitle() != null) txtTitle.setText(book.getTitle());
         if (book.getDescription() != null) txtDescription.setText(book.getDescription());
         if (book.getPublisherName() != null) cbPublisher.setValue(book.getPublisherName());
 
-        // Hiển thị ảnh bìa nếu có
         if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
             try {
                 imgCover.setImage(new Image(book.getImageUrl(), true));
             } catch (Exception ignored) {}
         }
 
-        // Đổ danh sách tag Tác giả hiện tại
         List<String> aNames = book.getAuthorNames();
         List<Long> aIds = book.getAuthorIds();
         if (aNames != null && aIds != null && aNames.size() == aIds.size()) {
@@ -114,7 +105,6 @@ public class BookFormController {
         }
         tagInputAuthor.setTags(aNames);
 
-        // Đổ danh sách tag Thể loại hiện tại
         List<String> cNames = book.getCategoryNames();
         List<Long> cIds = book.getCategoryIds();
         if (cNames != null && cIds != null && cNames.size() == cIds.size()) {
@@ -122,7 +112,6 @@ public class BookFormController {
         }
         tagInputCategory.setTags(cNames);
 
-        // 2. [DELEGATE] Ủy quyền cho Strategy tự cấu hình UI đặc thù (Khóa/Mở, Tiêu đề)
         if (this.formStrategy != null) {
             this.formStrategy.setupUI(this, book);
         }
@@ -149,11 +138,9 @@ public class BookFormController {
         btnSave.setDisable(true);
         btnSave.setText("Đang xử lý...");
 
-        // Đồng bộ dữ liệu text cơ bản vào Model
         currentBook.setTitle(txtTitle.getText().trim());
         currentBook.setDescription(txtDescription.getText().trim());
 
-        // Parse số liệu an toàn
         try {
             currentBook.setPrice(Double.parseDouble(txtPrice.getText().trim()));
             currentBook.setQuantity(Integer.parseInt(txtQuantity.getText().trim()));
@@ -176,7 +163,6 @@ public class BookFormController {
         currentBook.setAuthorNames(selectedAuthors);
         currentBook.setCategoryNames(selectedCategories);
 
-        // Xử lý kiểm tra/tạo mới Tác giả và Thể loại bất đồng bộ trên Server
         CompletableFuture<List<Long>> authorIdsFuture = resolveAuthorIds(selectedAuthors);
         CompletableFuture<List<Long>> categoryIdsFuture = resolveCategoryIds(selectedCategories);
 
@@ -188,7 +174,6 @@ public class BookFormController {
             currentBook.setCategoryIds(cIds);
             return currentBook;
         }).thenCompose(book -> {
-            // 3. [DELEGATE] Giao toàn bộ trách nhiệm xử lý lưu dữ liệu cho Strategy quyết định
             return formStrategy != null
                     ? formStrategy.handleSave(book, selectedImageFile)
                     : CompletableFuture.completedFuture(false);
