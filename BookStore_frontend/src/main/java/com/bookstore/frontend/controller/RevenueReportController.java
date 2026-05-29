@@ -8,9 +8,12 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 public class RevenueReportController {
     @FXML private BarChart<String, Number> barChart;
@@ -62,6 +65,45 @@ public class RevenueReportController {
                     loadingIndicator.setVisible(false);
                 }));
     }
+
+    @FXML
+    public void handleExportExcel() {
+        if (!yearInput.getText().matches("\\d{4}")) return;
+        int year = Integer.parseInt(yearInput.getText());
+
+        loadingIndicator.setVisible(true);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Lưu báo cáo doanh thu");
+        fileChooser.setInitialFileName("revenue-report-" + year + ".xlsx");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel .xlsx", "*.xlsx"));
+
+        File targetFile = fileChooser.showSaveDialog(barChart.getScene().getWindow());
+        if (targetFile == null) {
+            loadingIndicator.setVisible(false);
+            return;
+        }
+
+        RevenueApiService.getInstance().exportRevenueToExcel(year)
+                .thenAccept(bytes -> Platform.runLater(() -> {
+                    try {
+                        java.nio.file.Files.write(targetFile.toPath(), bytes);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        new Alert(Alert.AlertType.ERROR, "Không thể lưu file Excel: " + e.getMessage()).showAndWait();
+                    } finally {
+                        loadingIndicator.setVisible(false);
+                    }
+                }))
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> {
+                        loadingIndicator.setVisible(false);
+                        new Alert(Alert.AlertType.ERROR, "Xuất Excel thất bại: " + ex.getMessage()).showAndWait();
+                    });
+                    return null;
+                });
+    }
+
 
     private void updateUI(RevenueYearResponse data, List<DataPoint> points) {
         lblTotalRevenue.setText(String.format("%,.0f VNĐ", data.revenue()));

@@ -14,7 +14,9 @@
         <ComboBox fx:id="chartTypePicker" prefWidth="130" />
 
         <Button text="XEM BÁO CÁO" onAction="#handleLoadReport" style="-fx-background-color: #FFCC00; -fx-font-weight: bold;"/>
+        <Button text="XUẤT EXCEL" onAction="#handleExportExcel" style="-fx-background-color: #4CAF50; -fx-font-weight: bold;"/>
         <ProgressIndicator fx:id="loadingIndicator" prefWidth="25" prefHeight="25" visible="false"/>
+
     </HBox>
 
     <HBox spacing="20" alignment="CENTER">

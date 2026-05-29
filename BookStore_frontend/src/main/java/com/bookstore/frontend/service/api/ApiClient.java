@@ -74,6 +74,21 @@ public class ApiClient {
                 .GET());
     }
 
+
+    public CompletableFuture<HttpResponse<byte[]>> getBytes(String endpoint) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .GET();
+        attachAuthToken(builder);
+
+        return httpClient.sendAsync(
+                builder.build(),
+                HttpResponse.BodyHandlers.ofByteArray()
+        );
+    }
+
+
+
     public CompletableFuture<HttpResponse<String>> post(String endpoint, Object body) {
         try {
             return sendRequest(HttpRequest.newBuilder()
@@ -148,7 +163,11 @@ public class ApiClient {
     private void attachAuthToken(HttpRequest.Builder requestBuilder) {
         String token = UserSession.getInstance().getToken();
         if (token != null && !token.isEmpty()) {
+            // Debug: xác nhận app đã gắn token cho request byte[]
+            System.out.println("[ApiClient] attachAuthToken: tokenLength=" + token.length());
             requestBuilder.header("Authorization", "Bearer " + token);
+        } else {
+            System.out.println("[ApiClient] attachAuthToken: token is null/empty");
         }
     }
 

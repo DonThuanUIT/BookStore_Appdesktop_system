@@ -11,6 +11,7 @@ public class RevenueApiService {
     private final ApiClient apiClient;
     private final ObjectMapper mapper;
 
+
     private RevenueApiService() {
         this.apiClient = ApiClient.getInstance();
         this.mapper = apiClient.getMapper();
@@ -53,4 +54,22 @@ public class RevenueApiService {
                     }
                 });
     }
+
+    public CompletableFuture<byte[]> exportRevenueToExcel(int year) {
+        return apiClient.getBytes("/revenue/export?year=" + year)
+                .thenApply(res -> {
+                    if (res.statusCode() == 200) {
+                        return res.body();
+                    }
+                    // Giúp debug: backend trả về gì khi lỗi (thường là JSON/HTML lỗi security)
+                    String errorBody;
+                    try {
+                        errorBody = new String(res.body(), java.nio.charset.StandardCharsets.UTF_8);
+                    } catch (Exception e) {
+                        errorBody = "<unable to decode error body>";
+                    }
+                    throw new RuntimeException("Server trả về lỗi: " + res.statusCode() + "; body=" + errorBody);
+                });
+    }
+
 }

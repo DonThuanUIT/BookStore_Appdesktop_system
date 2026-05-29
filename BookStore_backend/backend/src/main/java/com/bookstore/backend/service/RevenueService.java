@@ -22,14 +22,24 @@ public class RevenueService {
 
     private final OrderRepository orderRepository;
     private final ImportRepository importRepository;
+    private final RevenueExportService revenueExportService;
 
-    public RevenueService(OrderRepository orderRepository, ImportRepository importRepository) {
+    public RevenueService(OrderRepository orderRepository, ImportRepository importRepository, RevenueExportService revenueExportService) {
         this.orderRepository = orderRepository;
         this.importRepository = importRepository;
+        this.revenueExportService = revenueExportService;
     }
 
     @Transactional(readOnly = true)
+    public byte[] exportRevenueToExcel(int year) {
+        RevenueYearResponse data = getYearlyRevenue(year);
+        return revenueExportService.exportRevenueToExcel(data);
+    }
+
+
+    @Transactional(readOnly = true)
     public RevenueSummaryResponse getMonthlyRevenue(int year, int month) {
+
         if (month < 1 || month > 12) {
             throw new AppException(HttpStatus.BAD_REQUEST, "Month must be between 1 and 12");
         }

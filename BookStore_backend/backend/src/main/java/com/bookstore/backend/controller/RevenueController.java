@@ -39,4 +39,23 @@ public class RevenueController {
     ) {
         return ResponseEntity.ok(revenueService.getRevenue(year, month));
     }
+
+    @GetMapping("/export")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> exportRevenueExcel(
+            @RequestParam
+            @Min(value = 2000, message = "year must be at least 2000")
+            @Max(value = 2100, message = "year must not exceed 2100")
+            int year
+    ) {
+        byte[] bytes = revenueService.exportRevenueToExcel(year);
+        String filename = "revenue-report-" + year + ".xlsx";
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bytes);
+    }
+
 }
+
