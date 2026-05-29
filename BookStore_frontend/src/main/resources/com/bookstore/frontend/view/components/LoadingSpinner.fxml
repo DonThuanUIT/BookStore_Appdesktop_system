@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.bookstore.frontend.controller.LoadingController"
+           style="-fx-background-color: rgba(0, 0, 0, 0.5);"
+           mouseTransparent="true">
+
+    <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: #252525; -fx-background-radius: 12; -fx-padding: 40; -fx-border-color: rgba(255, 193, 7, 0.3); -fx-border-width: 2; -fx-border-radius: 12;">
+        <ProgressIndicator fx:id="progressIndicator" prefWidth="60.0" prefHeight="60.0" style="-fx-accent: #FFC107;" />
+        
+        <Label fx:id="lblLoadingText" text="Đang tải dữ liệu..." 
+               style="-fx-text-fill: #AAAAAA; -fx-font-size: 14px;">
+            <padding>
+                <Insets top="10.0"/>
+            </padding>
+        </Label>
+    </VBox>
+
+</StackPane>
