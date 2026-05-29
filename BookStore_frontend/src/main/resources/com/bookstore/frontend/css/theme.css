@@ -131,20 +131,43 @@
 }
 
 /* COMBOBOX */
-.custom-combo-box {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent transparent -text-muted transparent;
-    -fx-border-width: 0 0 1.5 0;
-    -fx-padding: 5;
+.custom-combo-box .combo-box-popup .list-view {
+    -fx-background-color: #1a1a2e; /* Nền xanh đen tối (hoặc dùng -fx-secondary-black) */
+    -fx-border-color: -fx-accent-gold; /* Viền vàng sang trọng */
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 15, 0, 0, 5); /* Bóng đổ cho khung */
 }
-.custom-combo-box .list-cell {
-    -fx-text-fill: #FFCC00;
+
+.custom-combo-box .combo-box-popup .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white; /* Chữ màu trắng */
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+}
+
+.custom-combo-box .combo-box-popup .list-cell:hover {
+    -fx-background-color: rgba(255, 204, 0, 0.15); /* Nền vàng nhạt khi lướt qua */
+    -fx-text-fill: -fx-accent-gold; /* Chữ chuyển màu vàng */
+    -fx-cursor: hand;
+}
+
+.custom-combo-box .combo-box-popup .list-cell:selected {
+    -fx-background-color: -fx-accent-gold; /* Nền vàng đặc */
+    -fx-text-fill: #110000; /* Chữ chuyển thành màu đen cho dễ đọc */
     -fx-font-weight: bold;
+}
+
+.custom-combo-box .combo-box-popup .scroll-bar {
     -fx-background-color: transparent;
 }
-.custom-combo-box .arrow-button, .custom-combo-box .arrow {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
+.custom-combo-box .combo-box-popup .scroll-bar .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 5px;
+}
+.custom-combo-box .combo-box-popup .scroll-bar .thumb:hover {
+    -fx-background-color: -fx-accent-gold;
 }
 
 /* NAVIGATION BAR */

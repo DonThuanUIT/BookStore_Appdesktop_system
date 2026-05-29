@@ -44,16 +44,13 @@
     <VBox VBox.vgrow="ALWAYS" styleClass="sidebar-panel" style="-fx-background-radius: 12; -fx-border-color: rgba(255,255,255,0.1); -fx-padding: 10;">
         <TableView fx:id="tvInventory" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-base: transparent; -fx-control-inner-background: transparent; -fx-table-cell-border-color: transparent; -fx-table-header-border-color: transparent; -fx-padding: 5;">
             <columns>
-                <TableColumn fx:id="colId" text="MÃ" prefWidth="100.0" style="-fx-text-fill: #AAAAAA;"/>
-                <TableColumn fx:id="colTitle" text="TÊN SÁCH" prefWidth="350.0" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
-                <TableColumn fx:id="colAuthor" text="TÁC GIẢ" prefWidth="250.0" style="-fx-text-fill: #AAAAAA;"/>
-                <TableColumn fx:id="colQty" text="TỒN KHO" prefWidth="150.0"/>
-                <TableColumn fx:id="colPrice" text="GIÁ BÁN" prefWidth="120.0" style="-fx-text-fill: -fx-accent-gold; -fx-font-weight: bold;"/>
-                <TableColumn fx:id="colActions" text="THAO TÁC" prefWidth="120.0"/>
+                <TableColumn fx:id="colId" text="MÃ" prefWidth="100.0" resizable="false" style="-fx-alignment: CENTER; -fx-text-fill: #AAAAAA;"/>
+                <TableColumn fx:id="colTitle" text="TÊN SÁCH" prefWidth="420.0" resizable="false" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <TableColumn fx:id="colAuthor" text="TÁC GIẢ" prefWidth="360.0" resizable="false" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10; -fx-text-fill: #AAAAAA;"/>
+                <TableColumn fx:id="colQty" text="TỒN KHO" prefWidth="150.0" resizable="false" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="colPrice" text="GIÁ BÁN" prefWidth="200.0" resizable="false" style="-fx-alignment: CENTER; -fx-text-fill: -fx-accent-gold; -fx-font-weight: bold;"/>
+                <TableColumn fx:id="colActions" text="THAO TÁC" prefWidth="120.0" resizable="false" style="-fx-alignment: CENTER;"/>
             </columns>
-            <columnResizePolicy>
-                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-            </columnResizePolicy>
         </TableView>
 
         <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 20 5 20; -fx-border-color: rgba(255,255,255,0.1) transparent transparent transparent; -fx-border-width: 1 0 0 0;">
