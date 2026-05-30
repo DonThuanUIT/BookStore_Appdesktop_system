@@ -21,10 +21,13 @@ public class ShopInteractor {
     }
 
     public CompletableFuture<PageDto<BookModel>> getBooksPage(int page, int size) {
+        // Backend limit: size max 100
+        if (size > 100) size = 100;
         String endpoint = String.format("/books?page=%d&size=%d&sortBy=id&direction=desc", page, size);
 
         return ApiClient.getInstance().get(endpoint)
                 .thenApply(res -> {
+                    System.out.println("[ShopInteractor.getBooksPage] HTTP Status: " + res.statusCode());
                     if (res.statusCode() == 200) {
                         try {
                             JsonNode root = ApiClient.getInstance().getMapper().readTree(res.body());
@@ -34,6 +37,8 @@ public class ShopInteractor {
                             List<BookResponseDto> dtoList = ApiClient.getInstance().getMapper()
                                     .readerForListOf(BookResponseDto.class)
                                     .readValue(contentNode);
+
+                            System.out.println("[ShopInteractor.getBooksPage] Đã load " + dtoList.size() + " sách từ API");
 
                             // Dùng BookMapper để map tự động
                             List<BookModel> books = dtoList.stream()
@@ -46,6 +51,9 @@ public class ShopInteractor {
                             System.err.println("Lỗi Parse JSON sách Shop: " + e.getMessage());
                             e.printStackTrace();
                         }
+                    } else {
+                        System.err.println("[ShopInteractor.getBooksPage] API Error - Status: " + res.statusCode());
+                        System.err.println("[ShopInteractor.getBooksPage] Response Body: " + res.body());
                     }
                     return new PageDto<>(Collections.emptyList(), true);
                 });

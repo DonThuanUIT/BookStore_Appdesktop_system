@@ -53,15 +53,17 @@
             </columns>
         </TableView>
 
-        <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 20 5 20; -fx-border-color: rgba(255,255,255,0.1) transparent transparent transparent; -fx-border-width: 1 0 0 0;">
-            <Label fx:id="lblPaginationInfo" text="Hiển thị 0 kết quả" style="-fx-text-fill: #AAAAAA; -fx-font-size: 12px;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <HBox spacing="8.0">
-                <Button text="Trước" styleClass="btn-page"/>
-                <Button text="1" styleClass="btn-page, btn-page-active"/>
-                <Button text="Tiếp" styleClass="btn-page"/>
-            </HBox>
-        </HBox>
+        <BorderPane style="-fx-padding: 15 0; -fx-border-color: rgba(255,255,255,0.1) transparent transparent transparent; -fx-border-width: 1 0 0 0;">
+            <left>
+                <Label fx:id="lblPaginationInfo" text="Hiển thị 0 kết quả" textFill="#AAAAAA" style="-fx-font-size: 12px;" BorderPane.alignment="CENTER_LEFT" />
+            </left>
+            <right>
+                <HBox spacing="10.0" alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+                    <Button fx:id="btnPrev" onAction="#handlePrevPage" text="◀ Prev" styleClass="btn-page" />
+                    <Button fx:id="btnNext" onAction="#handleNextPage" text="Next ▶" styleClass="btn-page" />
+                </HBox>
+            </right>
+        </BorderPane>
     </VBox>
 
 </VBox>
