@@ -407,22 +407,54 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void loadOrderHistory(String endpoint) {
+        System.out.println("[OrderHistory] Calling endpoint: " + endpoint);
         ApiClient.getInstance().get(endpoint).thenAccept(response -> {
+            System.out.println("[OrderHistory] Response status: " + response.statusCode());
             if (response.statusCode() == 200) {
                 try {
                     ObjectMapper mapper = ApiClient.getInstance().getMapper();
                     JsonNode root = mapper.readTree(response.body());
-                    List<OrderResponseDTO> orders = mapper.convertValue(root.get("content"), new TypeReference<List<OrderResponseDTO>>() {});
-                    
+                    List<OrderResponseDTO> orders = mapper.convertValue(
+                        root.get("content"),
+                        new TypeReference<List<OrderResponseDTO>>() {}
+                    );
+
                     int totalElements = root.has("totalElements") ? root.get("totalElements").asInt() : orders.size();
                     totalPages = root.has("totalPages") ? root.get("totalPages").asInt() : 1;
 
                     Platform.runLater(() -> {
                         orderTable.setItems(FXCollections.observableArrayList(orders));
                         updatePaginationControls(totalElements);
+                        if (orders.isEmpty()) {
+                            orderTable.setPlaceholder(new Label("Không có đơn hàng nào."));
+                        }
                     });
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) {
+                    System.err.println("[OrderHistory] Parse error: " + e.getMessage());
+                    e.printStackTrace();
+                    Platform.runLater(() -> orderTable.setPlaceholder(new Label("Lỗi phân tích dữ liệu.")));
+                }
+            } else {
+                System.err.println("[OrderHistory] Error response " + response.statusCode() + ": " + response.body());
+                Platform.runLater(() -> {
+                    if (response.statusCode() == 401 || response.statusCode() == 403) {
+                        orderTable.setPlaceholder(new Label("Không có quyền truy cập. Vui lòng đăng nhập lại."));
+                    } else {
+                        orderTable.setPlaceholder(new Label("Không thể tải dữ liệu (lỗi " + response.statusCode() + ")."));
+                    }
+                    orderTable.setItems(FXCollections.observableArrayList());
+                    updatePaginationControls(0);
+                });
             }
+        }).exceptionally(ex -> {
+            System.err.println("[OrderHistory] Request failed: " + ex.getMessage());
+            ex.printStackTrace();
+            Platform.runLater(() -> {
+                orderTable.setPlaceholder(new Label("Không thể kết nối máy chủ. Vui lòng kiểm tra backend."));
+                orderTable.setItems(FXCollections.observableArrayList());
+                updatePaginationControls(0);
+            });
+            return null;
         });
     }
 

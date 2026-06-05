@@ -27,4 +27,9 @@ public class OrderStatusStore {
             pendingCount.set(pendingCount.get() - 1);
         }
     }
+
+    // Gọi hàm này khi logout để reset tất cả trạng thái
+    public void reset() {
+        pendingCount.set(0);
+    }
 }
