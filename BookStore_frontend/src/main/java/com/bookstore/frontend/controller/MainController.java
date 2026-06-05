@@ -79,6 +79,7 @@ public class MainController implements Initializable {
         if (accountPopup.isShowing()) {
             accountPopup.hide();
         } else {
+            accountPopup.refresh();
             var bounds = btnAccount.localToScreen(btnAccount.getBoundsInLocal());
             accountPopup.show(btnAccount.getScene().getWindow(), bounds.getMinX(), bounds.getMaxY() + 5);
         }

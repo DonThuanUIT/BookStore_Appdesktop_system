@@ -78,10 +78,11 @@ public class AccountPopup extends Popup {
         UserSession session = UserSession.getInstance();
         if (session.getUsername() != null) {
             lblName.setText(session.getUsername());
-            lblEmail.setText("User Account");
+            String roleText = session.getRoles().isEmpty() ? "CUSTOMER" : String.join(", ", session.getRoles());
+            lblEmail.setText("Quyền: " + roleText.replace("ROLE_", ""));
         } else {
-            lblName.setText("Guest");
-            lblEmail.setText("Not Logged In");
+            lblName.setText("Khách");
+            lblEmail.setText("Chưa đăng nhập");
         }
     }
 

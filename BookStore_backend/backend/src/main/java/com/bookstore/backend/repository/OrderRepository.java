@@ -26,8 +26,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               AND (:startDate IS NULL OR o.orderDate >= :startDate)
               AND (:endDate IS NULL OR o.orderDate <= :endDate)
               AND (:search IS NULL
-                   OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                   OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
+                   OR LOWER(u.username) LIKE :search
+                   OR LOWER(u.fullName) LIKE :search
                   )
             """)
     Page<Order> filterOrders(
