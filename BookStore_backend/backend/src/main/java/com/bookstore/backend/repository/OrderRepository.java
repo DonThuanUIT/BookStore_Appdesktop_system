@@ -25,9 +25,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               AND (:status IS NULL OR o.status = :status)
               AND (:startDate IS NULL OR o.orderDate >= :startDate)
               AND (:endDate IS NULL OR o.orderDate <= :endDate)
-              AND (:search IS NULL
-                   OR LOWER(u.username) LIKE :search
-                   OR LOWER(u.fullName) LIKE :search
+              AND (CAST(:search AS string) IS NULL
+                   OR LOWER(u.username) LIKE CAST(:search AS string)
+                   OR LOWER(u.fullName) LIKE CAST(:search AS string)
                   )
             """)
     Page<Order> filterOrders(
