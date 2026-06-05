@@ -55,7 +55,7 @@ public class OrderService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
         String statusParam = (status == null || status.isBlank()) ? null : status.trim().toUpperCase();
-        String searchParam = (search == null || search.isBlank()) ? null : "%" + search.trim().toLowerCase() + "%";
+        String searchParam = (search == null || search.isBlank()) ? "" : "%" + search.trim().toLowerCase() + "%";
 
         Page<Order> orderPage = orderRepository.filterOrders(
                 null, statusParam, startDate, endDate, searchParam, pageable
@@ -222,7 +222,7 @@ public class OrderService {
                                                String status, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         String statusParam = (status == null || status.isBlank()) ? null : status.trim().toUpperCase();
-        String searchParam = (search == null || search.isBlank()) ? null : "%" + search.trim().toLowerCase() + "%";
+        String searchParam = (search == null || search.isBlank()) ? "" : "%" + search.trim().toLowerCase() + "%";
 
         Page<Order> orderPage = orderRepository.filterOrders(
                 user.getId(), statusParam, startDate, endDate, searchParam, pageable
