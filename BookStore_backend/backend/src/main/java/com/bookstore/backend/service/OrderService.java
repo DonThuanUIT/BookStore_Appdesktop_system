@@ -3,6 +3,7 @@ package com.bookstore.backend.service;
 import com.bookstore.backend.dto.request.CreateOrderRequest;
 import com.bookstore.backend.dto.request.OrderItemRequest;
 import com.bookstore.backend.dto.response.BookResponse;
+import com.bookstore.backend.dto.response.OrderDetailResponse;
 import com.bookstore.backend.dto.response.OrderResponse;
 import com.bookstore.backend.dto.response.UserProfileResponse;
 import com.bookstore.backend.entity.Book;
@@ -46,14 +47,33 @@ public class OrderService {
         this.bookService = bookService;
     }
 
-    public Page<OrderResponse> getAllOrders(int page, int size, String sortBy, String direction) {
+    public Page<OrderResponse> getAllOrders(int page, int size, String sortBy, String direction,
+                                            String status, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate, String search) {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Order> orderPage = orderRepository.findAll(pageable);
+        String statusParam = (status == null || status.isBlank()) ? null : status.trim();
+        String searchParam = (search == null || search.isBlank()) ? null : search.trim();
+
+        Page<Order> orderPage = orderRepository.filterOrders(
+                null, statusParam, startDate, endDate, searchParam, pageable
+        );
         return orderPage.map(this::convertToResponse);
+    }
+
+    private OrderDetailResponse convertDetailToResponse(OrderDetail detail) {
+        Double price = detail.getPrice() != null ? detail.getPrice().doubleValue() : 0.0;
+        Double lineTotal = price * detail.getQuantity();
+        return new OrderDetailResponse(
+                detail.getId(),
+                detail.getBook() != null ? detail.getBook().getId() : null,
+                detail.getBook() != null ? detail.getBook().getTitle() : "N/A",
+                detail.getQuantity(),
+                price,
+                lineTotal
+        );
     }
 
     OrderResponse convertToResponse(Order order) {
@@ -72,6 +92,18 @@ public class OrderService {
                     .build();
         }
 
+        java.util.List<OrderDetailResponse> detailResponses = java.util.Collections.emptyList();
+        try {
+            java.util.List<OrderDetail> details = orderDetailRepository.findByOrderId(order.getId());
+            if (details != null) {
+                detailResponses = details.stream()
+                        .map(this::convertDetailToResponse)
+                        .toList();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return OrderResponse.builder()
                 .id(order.getId())
                 .totalAmount(order.getTotalAmount() != null ? order.getTotalAmount().doubleValue() : 0.0)
@@ -81,6 +113,7 @@ public class OrderService {
                 .paymentMethod(order.getPaymentMethod())
                 .orderDate(order.getOrderDate())
                 .user(userDto)
+                .details(detailResponses)
                 .build();
     }
 
@@ -183,9 +216,15 @@ public class OrderService {
         return convertToResponse(orderRepository.save(savedOrder));
     }
 
-    public Page<OrderResponse> getOrderHistory (User user, int page, int size){
+    public Page<OrderResponse> getOrderHistory(User user, int page, int size,
+                                               String status, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Order> orderPage = orderRepository.findByUserId(user.getId(), pageable);
+        String statusParam = (status == null || status.isBlank()) ? null : status.trim();
+        String searchParam = (search == null || search.isBlank()) ? null : search.trim();
+
+        Page<Order> orderPage = orderRepository.filterOrders(
+                user.getId(), statusParam, startDate, endDate, searchParam, pageable
+        );
         return orderPage.map(this::convertToResponse);
     }
 

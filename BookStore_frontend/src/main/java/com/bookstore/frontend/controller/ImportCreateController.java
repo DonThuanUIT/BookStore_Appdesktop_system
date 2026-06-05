@@ -137,7 +137,7 @@ public class ImportCreateController {
         colPrice.setCellValueFactory(new PropertyValueFactory<>("importPrice"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("lineTotal"));
 
-        // ĐÃ FIX: Chuyển $%.2f thành %,.0f đ cho Giá Nhập
+        // FIX: Chuyển $%.2f thành %,.0f đ cho Giá Nhập
         colPrice.setCellFactory(tc -> new TableCell<>() {
             @Override protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);

@@ -1,6 +1,7 @@
 package com.bookstore.frontend.model.dto.Response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OrderResponseDTO {
     public Long id;
@@ -10,6 +11,8 @@ public class OrderResponseDTO {
     public String status;
     public String paymentMethod;
     public LocalDateTime orderDate;
+    public UserProfileResponseDto user;
+    public List<OrderDetailResponseDTO> details;
 
     // Thêm các Getter tương ứng
     public Long getId() { return id; }
@@ -19,4 +22,6 @@ public class OrderResponseDTO {
     public String getStatus() { return status; }
     public String getPaymentMethod() { return paymentMethod; }
     public LocalDateTime getOrderDate() { return orderDate; }
+    public UserProfileResponseDto getUser() { return user; }
+    public List<OrderDetailResponseDTO> getDetails() { return details; }
 }
