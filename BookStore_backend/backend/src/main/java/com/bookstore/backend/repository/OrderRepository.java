@@ -19,16 +19,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""
-            SELECT o FROM Order o
+            SELECT DISTINCT o FROM Order o
             LEFT JOIN o.user u
             WHERE (:userId IS NULL OR u.id = :userId)
-              AND (:status IS NULL OR UPPER(o.status) = UPPER(:status))
+              AND (:status IS NULL OR o.status = :status)
               AND (:startDate IS NULL OR o.orderDate >= :startDate)
               AND (:endDate IS NULL OR o.orderDate <= :endDate)
-              AND (:search IS NULL OR 
-                   CAST(o.id AS string) LIKE CONCAT('%', :search, '%') OR
-                   LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                   LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
+              AND (:search IS NULL
+                   OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                   OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%'))
                   )
             """)
     Page<Order> filterOrders(
@@ -40,7 +39,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             Pageable pageable
     );
 
-    @Query("SELECT o FROM Order o WHERE UPPER(o.status) = UPPER(:status)")
+    @Query("SELECT o FROM Order o WHERE o.status = :status")
     Page<Order> findByStatus(@Param("status") String status, Pageable pageable);
 
     // Tính tổng doanh thu đơn hàng hoàn thành trong khoảng thời gian
@@ -49,7 +48,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             FROM Order o
             WHERE o.orderDate >= :startDate
               AND o.orderDate < :endDate
-              AND UPPER(o.status) = 'COMPLETED'
+              AND o.status = 'COMPLETED'
             """)
     java.math.BigDecimal sumCompletedRevenueByOrderDateBetween(@Param("startDate") LocalDateTime startDate,
                                                                @Param("endDate") LocalDateTime endDate);
@@ -60,7 +59,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             FROM Order o
             WHERE o.orderDate >= :startDate
               AND o.orderDate < :endDate
-              AND UPPER(o.status) = 'COMPLETED'
+              AND o.status = 'COMPLETED'
             """)
     Long countCompletedOrdersByOrderDateBetween(@Param("startDate") LocalDateTime startDate,
                                                 @Param("endDate") LocalDateTime endDate);
@@ -76,7 +75,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         JOIN od.book b
         JOIN od.order o
         WHERE o.orderDate >= :startDate AND o.orderDate < :endDate
-          AND UPPER(o.status) = 'COMPLETED'
+          AND o.status = 'COMPLETED'
         GROUP BY b.title
         ORDER BY SUM(od.quantity) DESC
         """)
@@ -94,7 +93,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         JOIN b.categories c
         JOIN od.order o
         WHERE o.orderDate >= :startDate AND o.orderDate < :endDate
-          AND UPPER(o.status) = 'COMPLETED'
+          AND o.status = 'COMPLETED'
         GROUP BY c.name
         """)
     List<Object[]> getRevenueByCategory(@Param("startDate") LocalDateTime startDate,
