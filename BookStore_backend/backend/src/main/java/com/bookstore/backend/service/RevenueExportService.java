@@ -132,8 +132,12 @@ public class RevenueExportService {
     }
 
     private String money(BigDecimal v) {
-        if (v == null) return "0";
-        return v.toPlainString();
+        if (v == null) return "0 đ";
+        // FIX: Format VND với dấu phân cách hàng nghìn (vd: 1.250.000 đ) để thống nhất với frontend
+        java.text.NumberFormat nf = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+        nf.setMaximumFractionDigits(0);
+        nf.setMinimumFractionDigits(0);
+        return nf.format(v) + " đ";
     }
 }
 

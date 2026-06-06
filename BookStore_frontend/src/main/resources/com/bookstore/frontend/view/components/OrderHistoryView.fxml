@@ -26,6 +26,7 @@
 
 
 
+        <!-- Table View -->
         <TableView fx:id="orderTable" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-base: #1A1A1A; -fx-control-inner-background: #252525; -fx-table-cell-border-color: #333333; -fx-text-fill: white;">
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -42,20 +43,22 @@
             </columns>
         </TableView>
 
+        <!-- Pagination Controls -->
         <BorderPane>
             <left>
                 <Label fx:id="lblPaginationInfo" text="Showing 0 entries" textFill="#AAAAAA" BorderPane.alignment="CENTER" />
             </left>
             <right>
                 <HBox spacing="10.0" alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
-                    <Button fx:id="btnPrevPage" onAction="#handlePrevPage" text="&lt; Trước" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
+                    <Button fx:id="btnPrevPage" onAction="#handlePrevPage" text="&#60; Trước" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
                     <Label fx:id="lblCurrentPage" text="1" style="-fx-background-color: #FFC107; -fx-text-fill: #1A1A1A; -fx-padding: 5 12; -fx-background-radius: 3; -fx-font-weight: bold; -fx-min-width: 32; -fx-alignment: center;" />
-                    <Button fx:id="btnNextPage" onAction="#handleNextPage" text="Sau &gt;" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
+                    <Button fx:id="btnNextPage" onAction="#handleNextPage" text="Sau >" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
                 </HBox>
             </right>
         </BorderPane>
     </VBox>
 
+    <!-- Side panel chi tiết đơn hàng -->
     <fx:include fx:id="orderDetailSidePanel" source="OrderDetailSidePanelView.fxml" StackPane.alignment="CENTER_RIGHT" />
 
 </StackPane>

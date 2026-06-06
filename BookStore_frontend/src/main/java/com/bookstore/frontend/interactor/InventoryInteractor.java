@@ -25,6 +25,7 @@ public class InventoryInteractor {
         String endpoint = String.format("/books?page=%d&size=%d", page, size);
 
         ApiClient.getInstance().get(endpoint).thenAccept(response -> {
+            System.out.println("[InventoryInteractor.loadInventoryData] HTTP Status: " + response.statusCode());
             if (response.statusCode() == 200) {
                 try {
                     JsonNode root = ApiClient.getInstance().getMapper().readTree(response.body());
@@ -32,6 +33,8 @@ public class InventoryInteractor {
 
                     List<BookResponseDto> dtoList = ApiClient.getInstance().getMapper()
                             .readValue(content.traverse(), new TypeReference<List<BookResponseDto>>() {});
+
+                    System.out.println("[InventoryInteractor.loadInventoryData] Đã load " + dtoList.size() + " sách từ API");
 
                     List<BookModel> bookList = new ArrayList<>();
                     int lowStock = 0;
@@ -58,6 +61,9 @@ public class InventoryInteractor {
                     System.err.println("Lỗi khi parse dữ liệu Inventory (DTO Mapper): " + e.getMessage());
                     e.printStackTrace();
                 }
+            } else {
+                System.err.println("[InventoryInteractor.loadInventoryData] API Error - Status: " + response.statusCode());
+                System.err.println("[InventoryInteractor.loadInventoryData] Response: " + response.body());
             }
         });
     }
@@ -248,5 +254,29 @@ public class InventoryInteractor {
             System.err.println("Lỗi khi xóa sách: " + e.getMessage());
             return CompletableFuture.completedFuture(false);
         }
+    }
+
+    // Thêm vào InventoryInteractor.java
+    public CompletableFuture<List<BookModel>> fetchAllBooks() {
+        // Backend limit: size max 100, phải paginate
+        return ApiClient.getInstance().get("/books?page=0&size=100").thenApply(res -> {
+            System.out.println("[InventoryInteractor.fetchAllBooks] HTTP Status: " + res.statusCode());
+            if (res.statusCode() == 200) {
+                try {
+                    JsonNode root = ApiClient.getInstance().getMapper().readTree(res.body());
+                    List<BookResponseDto> dtoList = ApiClient.getInstance().getMapper()
+                            .readerForListOf(BookResponseDto.class).readValue(root.get("content"));
+                    System.out.println("[InventoryInteractor.fetchAllBooks] Đã load " + dtoList.size() + " sách từ API");
+                    return dtoList.stream().map(BookMapper::toModel).toList();
+                } catch (Exception e) { 
+                    System.err.println("[InventoryInteractor.fetchAllBooks] Parse error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("[InventoryInteractor.fetchAllBooks] API Error - Status: " + res.statusCode());
+                System.err.println("[InventoryInteractor.fetchAllBooks] Response: " + res.body());
+            }
+            return new ArrayList<>();
+        });
     }
 }

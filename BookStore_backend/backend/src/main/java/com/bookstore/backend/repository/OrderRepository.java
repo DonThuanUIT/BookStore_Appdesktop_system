@@ -18,8 +18,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
     Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
-
-
     @Query("SELECT o FROM Order o WHERE o.status = :status")
     Page<Order> findByStatus(@Param("status") String status, Pageable pageable);
 
@@ -48,8 +46,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Lấy Top sản phẩm bán chạy nhất
     @Query("""
         SELECT new com.bookstore.backend.dto.response.TopProductResponse(
-            b.title, 
-            SUM(od.quantity), 
+            b.title,
+            SUM(od.quantity),
             SUM(od.price * od.quantity)
         )
         FROM OrderDetail od
