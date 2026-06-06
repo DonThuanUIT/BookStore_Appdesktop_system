@@ -5,6 +5,8 @@ import com.bookstore.frontend.interactor.InventoryInteractor;
 import com.bookstore.frontend.model.BookModel;
 import com.bookstore.frontend.model.InventoryModel;
 import com.bookstore.frontend.service.api.ApiClient;
+import com.bookstore.frontend.util.LoadingUtils;
+import com.bookstore.frontend.util.PaginationSynchronizer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,14 +17,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class InventoryController extends BaseController {
 
     @FXML private Label lblTotalTitles;
     @FXML private Label lblLowStock;
     @FXML private Label lblPaginationInfo;
-
     @FXML private Button btnFilterLowStock;
+    @FXML private Button btnPrev;
+    @FXML private Button btnNext;
 
     @FXML private TableView<BookModel> tvInventory;
     @FXML private TableColumn<BookModel, Long> colId;
@@ -34,8 +39,12 @@ public class InventoryController extends BaseController {
 
     private InventoryModel model;
     private InventoryInteractor interactor;
-
     private boolean isLowStockFilterActive = false;
+
+    // Biến phân trang
+    private List<BookModel> fullInventoryList = new ArrayList<>();
+    private int currentPage = 0;
+    private final int PAGE_SIZE = 10;
 
     @FXML
     public void initialize() {
@@ -43,7 +52,65 @@ public class InventoryController extends BaseController {
         this.interactor = new InventoryInteractor(this.model);
 
         setupTableColumns();
+        setupPaginationSync();  // Thêm đồng bộ hóa phân trang
         setupRealTimeSync();
+        loadAndRender();
+    }
+    
+    /**
+     * Thiết lập đồng bộ hóa phân trang với các page khác
+     */
+    private void setupPaginationSync() {
+        PaginationSynchronizer.getInstance().addListener((pageType, page, pageSize) -> {
+            if ("INVENTORY".equals(pageType)) {
+                currentPage = page;
+                renderPage(page);
+            }
+        });
+    }
+
+    private void loadAndRender() {
+        System.out.println("[InventoryController.loadAndRender] Bắt đầu fetch sách...");
+        interactor.fetchAllBooks().thenAccept(list -> {
+            System.out.println("[InventoryController.loadAndRender] Nhận được " + list.size() + " sách từ API");
+            this.fullInventoryList = list;
+            Platform.runLater(() -> {
+                System.out.println("[InventoryController.loadAndRender] Render page 0...");
+                renderPage(0);
+            });
+        }).exceptionally(ex -> {
+            System.err.println("[InventoryController.loadAndRender] Exception: " + ex.getMessage());
+            ex.printStackTrace();
+            return null;
+        });
+    }
+
+    private void renderPage(int page) {
+        this.currentPage = page;
+        List<BookModel> sourceList = isLowStockFilterActive
+                ? fullInventoryList.stream().filter(b -> b.getQuantity() < 10).toList()
+                : fullInventoryList;
+
+        int from = Math.min(page * PAGE_SIZE, sourceList.size());
+        int to = Math.min(from + PAGE_SIZE, sourceList.size());
+
+        model.getBooks().setAll(sourceList.subList(from, to));
+        int totalPages = (int) Math.ceil((double) sourceList.size() / PAGE_SIZE);
+        model.setPaginationInfo("Trang " + (page + 1) + "/" + Math.max(1, totalPages));
+        btnPrev.setDisable(page <= 0);
+        btnNext.setDisable(page >= totalPages - 1 || totalPages == 0);
+    }
+
+    @FXML private void handleNextPage() { 
+        renderPage(currentPage + 1);
+        PaginationSynchronizer.getInstance().setInventoryPage(currentPage + 1, PAGE_SIZE);
+    }
+    
+    @FXML private void handlePrevPage() { 
+        if(currentPage > 0) {
+            renderPage(currentPage - 1);
+            PaginationSynchronizer.getInstance().setInventoryPage(currentPage - 1, PAGE_SIZE);
+        }
     }
 
     private void setupTableColumns() {
@@ -70,15 +137,10 @@ public class InventoryController extends BaseController {
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                } else {
+                if (empty || item == null) { setGraphic(null); }
+                else {
                     badge.setText(item + " CUỐN");
-                    if (item < 10) {
-                        badge.setStyle("-fx-text-fill: #ff5555; -fx-background-color: rgba(255,85,85,0.15); -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold;");
-                    } else {
-                        badge.setStyle("-fx-text-fill: #AAAAAA; -fx-background-color: rgba(255,255,255,0.08); -fx-background-radius: 12; -fx-padding: 4 12;");
-                    }
+                    badge.setStyle(item < 10 ? "-fx-text-fill: #ff5555; -fx-background-color: rgba(255,85,85,0.15); -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold;" : "-fx-text-fill: #AAAAAA; -fx-background-color: rgba(255,255,255,0.08); -fx-background-radius: 12; -fx-padding: 4 12;");
                     setGraphic(container);
                 }
             }
@@ -92,9 +154,8 @@ public class InventoryController extends BaseController {
                 pane.setAlignment(javafx.geometry.Pos.CENTER);
                 btnEdit.setStyle("-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-font-size: 16px;");
                 btnDelete.setStyle("-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-cursor: hand; -fx-font-size: 16px;");
-
-                btnEdit.setOnAction(event -> { BookModel book = getTableView().getItems().get(getIndex()); onEditBook(book); });
-                btnDelete.setOnAction(event -> { BookModel book = getTableView().getItems().get(getIndex()); onDeleteBook(book); });
+                btnEdit.setOnAction(event -> onEditBook(getTableView().getItems().get(getIndex())));
+                btnDelete.setOnAction(event -> onDeleteBook(getTableView().getItems().get(getIndex())));
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
@@ -113,105 +174,34 @@ public class InventoryController extends BaseController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/BookFormView.fxml"));
             VBox page = loader.load();
-
             Stage dialogStage = new Stage();
             dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
-
-            Scene scene = new Scene(page);
-            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-            dialogStage.setScene(scene);
-
+            dialogStage.setScene(new Scene(page));
             BookFormController controller = loader.getController();
-
             controller.setBook(selectedBook, new EditBookStrategy(this.interactor));
-
             dialogStage.showAndWait();
-
-            if (controller.isSaveClicked()) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cập nhật sách thành công!");
-                alert.show();
-                interactor.loadInventoryData(0, 15);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            if (controller.isSaveClicked()) loadAndRender();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void onDeleteBook(BookModel book) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc chắn muốn xóa sách: " + book.getTitle() + "?", ButtonType.YES, ButtonType.NO);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Xóa sách: " + book.getTitle() + "?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait();
         if (alert.getResult() == ButtonType.YES) {
-            interactor.deleteBook(book.getId()).thenAccept(success -> {
-                Platform.runLater(() -> {
-                    if (success) {
-                        interactor.loadInventoryData(0, 15);
-                    } else {
-                        Alert err = new Alert(Alert.AlertType.ERROR, "Lỗi khi xóa sách!");
-                        err.show();
-                    }
-                });
-            });
+            interactor.deleteBook(book.getId()).thenAccept(success -> Platform.runLater(this::loadAndRender));
         }
     }
 
-    @FXML
-    public void handleFilterLowStock() {
-        isLowStockFilterActive = !isLowStockFilterActive; // Đảo trạng thái
-
-        if (isLowStockFilterActive) {
-            btnFilterLowStock.setStyle("-fx-background-color: -fx-accent-gold; -fx-text-fill: -fx-primary-black; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-weight: bold;");
-            btnFilterLowStock.setText("✓ Đang lọc sắp hết hàng");
-
-            interactor.filterLowStockBooks();
-        } else {
-            btnFilterLowStock.setStyle("-fx-background-color: transparent; -fx-border-color: -fx-accent-gold; -fx-text-fill: -fx-accent-gold; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8;");
-            btnFilterLowStock.setText("≡ Lọc sắp hết hàng");
-
-            interactor.loadInventoryData(0, 15);
-        }
+    @FXML public void handleFilterLowStock() {
+        isLowStockFilterActive = !isLowStockFilterActive;
+        renderPage(0);
     }
 
-    @Override
-    public void onNavigate(Object data) {
-        if (interactor != null) {
-            isLowStockFilterActive = false;
-            if (btnFilterLowStock != null) {
-                btnFilterLowStock.setStyle("-fx-background-color: transparent; -fx-border-color: -fx-accent-gold; -fx-text-fill: -fx-accent-gold; -fx-padding: 10 20; -fx-font-size: 14px; -fx-border-radius: 8;");
-                btnFilterLowStock.setText("≡ Lọc sắp hết hàng");
-            }
-            interactor.loadInventoryData(0, 15);
-        }
-    }
+    @Override public void onNavigate(Object data) { loadAndRender(); }
 
     private void setupRealTimeSync() {
-        ApiClient.getInstance().onBookUpdated(updatedBook -> {
-            Platform.runLater(() -> {
-                boolean found = false;
-                for (int i = 0; i < model.getBooks().size(); i++) {
-                    if (model.getBooks().get(i).getId().equals(updatedBook.getId())) {
-                        model.getBooks().set(i, updatedBook);
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    model.getBooks().add(0, updatedBook);
-                    model.totalTitlesProperty().set(model.totalTitlesProperty().get() + 1);
-                }
-
-                tvInventory.refresh();
-            });
-        });
-
-        ApiClient.getInstance().onBookDeleted(bookId -> {
-            Platform.runLater(() -> {
-                boolean removed = model.getBooks().removeIf(b -> b.getId().equals(bookId));
-                if (removed) {
-                    model.totalTitlesProperty().set(model.totalTitlesProperty().get() - 1);
-                }
-            });
-        });
+        ApiClient.getInstance().onBookUpdated(updatedBook -> Platform.runLater(this::loadAndRender));
+        ApiClient.getInstance().onBookDeleted(bookId -> Platform.runLater(this::loadAndRender));
     }
 }

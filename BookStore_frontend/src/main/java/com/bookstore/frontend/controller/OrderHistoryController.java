@@ -4,7 +4,11 @@ import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.model.dto.Response.OrderResponseDTO;
 import com.bookstore.frontend.model.dto.Response.OrderDetailResponseDTO;
 import com.bookstore.frontend.navigation.Navigatable;
-import com.bookstore.frontend.util.*;
+import com.bookstore.frontend.util.LoadingUtils;
+import com.bookstore.frontend.util.OrderStatusStore;
+import com.bookstore.frontend.util.PaginationSynchronizer;
+import com.bookstore.frontend.util.PaginationUtil;
+import com.bookstore.frontend.util.UserSession;
 import com.bookstore.frontend.utils.AlertUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,41 +20,51 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrderHistoryController implements Navigatable {
+    
     @FXML private TableView<OrderResponseDTO> orderTable;
     @FXML private TableColumn<OrderResponseDTO, Long> colId;
     @FXML private TableColumn<OrderResponseDTO, LocalDateTime> colDate;
     @FXML private TableColumn<OrderResponseDTO, Double> colTotal;
+    @FXML private TableColumn<OrderResponseDTO, Double> colDiscount;
     @FXML private TableColumn<OrderResponseDTO, String> colStatus;
     @FXML private TableColumn<OrderResponseDTO, String> colPayment;
-    @FXML private TableColumn<OrderResponseDTO, Double> colDiscount;
     @FXML private TableColumn<OrderResponseDTO, Void> colAction;
     @FXML private Label lblTitle;
-
-    // Các control filter mới
+    @FXML private Label lblPaginationInfo;
+    @FXML private Button btnPrevPage;
+    @FXML private Button btnNextPage;
+    @FXML private VBox paginationControls;
+    
+    // Filter controls
     @FXML private TextField txtSearch;
     @FXML private ComboBox<String> cbStatus;
     @FXML private DatePicker dpFrom;
     @FXML private DatePicker dpTo;
 
-    // Các control phân trang mới
-    @FXML private Label lblPaginationInfo;
-    @FXML private Button btnPrevPage;
+    // Pagination controls (new)
     @FXML private Label lblCurrentPage;
-    @FXML private Button btnNextPage;
 
     // Side panel chi tiết
     @FXML private VBox orderDetailSidePanel;
     @FXML private OrderDetailSidePanelController orderDetailSidePanelController;
 
+    // Phân trang
     private int currentPage = 0;
     private int totalPages = 0;
-    private final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 10;
+    private List<OrderResponseDTO> allOrders = new ArrayList<>();
+    private int totalOrders = 0;
+    
+    // Theo dõi loại người dùng để load dữ liệu đúng endpoint
+    private boolean isAdminView = false;
 
     @FXML
     public void initialize() {
@@ -59,7 +73,6 @@ public class OrderHistoryController implements Navigatable {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("finalAmount"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         colPayment.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
-        colDiscount.setCellValueFactory(new PropertyValueFactory<>("discount"));
 
         // Định dạng cột ID
         colId.setCellFactory(column -> new TableCell<>() {
@@ -153,7 +166,36 @@ public class OrderHistoryController implements Navigatable {
 
         setupActionColumn();
         setupFilters();
+        setupPaginationControls();
+        
+        // Đăng ký listener cho PaginationSynchronizer
+        registerPaginationSync();
+        
         determineAndLoadData();
+    }
+    
+    /**
+     * Đăng ký đồng bộ hóa phân trang
+     */
+    private void registerPaginationSync() {
+        PaginationSynchronizer.getInstance().addListener((pageType, page, pageSize) -> {
+            if ("ORDER_HISTORY".equals(pageType)) {
+                currentPage = page;
+                loadOrderHistoryForPage();
+            }
+        });
+    }
+    
+    /**
+     * Thiết lập các nút điều khiển phân trang
+     */
+    private void setupPaginationControls() {
+        if (btnPrevPage != null) {
+            btnPrevPage.setOnAction(e -> handlePrevPage());
+        }
+        if (btnNextPage != null) {
+            btnNextPage.setOnAction(e -> handleNextPage());
+        }
     }
 
     private void setupFilters() {
@@ -220,16 +262,24 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void updatePaginationControls(int totalElements) {
-        lblCurrentPage.setText(String.valueOf(currentPage + 1));
-        btnPrevPage.setDisable(currentPage <= 0);
-        btnNextPage.setDisable(currentPage >= totalPages - 1 || totalPages == 0);
+        if (lblCurrentPage != null) {
+            lblCurrentPage.setText(String.valueOf(currentPage + 1));
+        }
+        if (btnPrevPage != null) {
+            btnPrevPage.setDisable(currentPage <= 0);
+        }
+        if (btnNextPage != null) {
+            btnNextPage.setDisable(currentPage >= totalPages - 1 || totalPages == 0);
+        }
 
         int startEntry = currentPage * PAGE_SIZE + 1;
         int endEntry = Math.min(startEntry + PAGE_SIZE - 1, totalElements);
-        if (totalElements == 0) {
-            lblPaginationInfo.setText("Hiển thị 0 đơn hàng");
-        } else {
-            lblPaginationInfo.setText(String.format("Hiển thị từ đơn thứ %d đến %d (Tổng số: %d đơn hàng)", startEntry, endEntry, totalElements));
+        if (lblPaginationInfo != null) {
+            if (totalElements == 0) {
+                lblPaginationInfo.setText("Hiển thị 0 đơn hàng");
+            } else {
+                lblPaginationInfo.setText(String.format("Hiển thị từ đơn thứ %d đến %d (Tổng số: %d đơn hàng)", startEntry, endEntry, totalElements));
+            }
         }
     }
 
@@ -243,16 +293,24 @@ public class OrderHistoryController implements Navigatable {
                 pane.setAlignment(javafx.geometry.Pos.CENTER);
                 btnView.setStyle("-fx-background-color: transparent; -fx-text-fill: #FFC107; -fx-cursor: hand; -fx-font-size: 16px;");
                 btnView.setOnAction(event -> {
-                    OrderResponseDTO order = getTableView().getItems().get(getIndex());
-                    onViewDetails(order);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < getTableView().getItems().size()) {
+                        OrderResponseDTO order = getTableView().getItems().get(idx);
+                        onViewDetails(order);
+                    }
                 });
-                btnAction.setOnAction(event -> handleAction(getTableView().getItems().get(getIndex())));
+                btnAction.setOnAction(event -> {
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < getTableView().getItems().size()) {
+                        handleAction(getTableView().getItems().get(idx));
+                    }
+                });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
                 } else {
                     OrderResponseDTO order = getTableView().getItems().get(getIndex());
@@ -311,35 +369,47 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void updateStatusAPI(Long id, String status) {
-        String jsonBody = "{\"status\":\"" + status + "\"}";
-        ApiClient.getInstance().patchRaw("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
-            Platform.runLater(() -> {
-                if (response.statusCode() == 200) {
-                    if ("SHIPPING".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
-                        OrderStatusStore.getInstance().decrementPendingOrder();
+        try {
+            String jsonBody = "{\"status\":\"" + status + "\"}";
+            
+            LoadingUtils.show("Đang cập nhật...");
+            ApiClient.getInstance().patchRaw("/orders/" + id + "/status", jsonBody).thenAccept(response -> {
+                Platform.runLater(() -> {
+                    LoadingUtils.hide();
+                    if (response.statusCode() == 200) {
+                        // Giảm số lượng đơn chờ ở icon User nếu chuyển sang trạng thái xử lý
+                        if ("SHIPPING".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
+                            OrderStatusStore.getInstance().decrementPendingOrder();
+                        }
+                        // Tải lại dữ liệu trang hiện tại
+                        determineAndLoadData();
+                        
+                        // Cập nhật lại chi tiết nếu panel đang mở
+                        if (orderDetailSidePanel != null && orderDetailSidePanel.isVisible()) {
+                            try {
+                                ObjectMapper mapper = ApiClient.getInstance().getMapper();
+                                OrderResponseDTO updatedOrder = mapper.readValue(response.body(), OrderResponseDTO.class);
+                                orderDetailSidePanelController.setOrderDataAndShow(updatedOrder);
+                            } catch (Exception e) { e.printStackTrace(); }
+                        }
+                    } else {
+                        AlertUtils.show(Alert.AlertType.ERROR, "Lỗi", "Cập nhật thất bại: " + response.body());
                     }
-                    determineAndLoadData();
-                    
-                    // Cập nhật lại chi tiết nếu panel đang mở
-                    if (orderDetailSidePanel != null && orderDetailSidePanel.isVisible()) {
-                        try {
-                            ObjectMapper mapper = ApiClient.getInstance().getMapper();
-                            OrderResponseDTO updatedOrder = mapper.readValue(response.body(), OrderResponseDTO.class);
-                            orderDetailSidePanelController.setOrderDataAndShow(updatedOrder);
-                        } catch (Exception e) { e.printStackTrace(); }
-                    }
-                } else {
-                    AlertUtils.show(Alert.AlertType.ERROR, "Lỗi", "Cập nhật thất bại: " + response.body());
-                }
+                });
             });
-        });
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
     }
 
     private void cancelOrderAPI(Long id) {
         if (AlertUtils.confirm("Xác nhận hủy", "Bạn chắc chắn muốn hủy đơn hàng này?")) {
+            LoadingUtils.show("Đang hủy đơn...");
             ApiClient.getInstance().post("/orders/" + id + "/cancel").thenAccept(res -> {
                 Platform.runLater(() -> {
+                    LoadingUtils.hide();
                     if (res.statusCode() == 200) {
+                        // Tải lại dữ liệu
                         determineAndLoadData();
                         
                         // Cập nhật lại chi tiết nếu panel đang mở
@@ -359,6 +429,8 @@ public class OrderHistoryController implements Navigatable {
     }
 
     private void determineAndLoadData() {
+        isAdminView = UserSession.getInstance().isAdmin();
+        
         StringBuilder query = new StringBuilder();
         query.append("?page=").append(currentPage).append("&size=").append(PAGE_SIZE);
 
@@ -393,12 +465,19 @@ public class OrderHistoryController implements Navigatable {
             query.append("&endDate=").append(toDate);
         }
 
-        if (UserSession.getInstance().isAdmin()) {
+        if (isAdminView) {
             query.append("&sortBy=orderDate&direction=desc");
             loadOrderHistory("/orders" + query.toString());
         } else {
             loadOrderHistory("/orders/history" + query.toString());
         }
+    }
+    
+    /**
+     * Tải dữ liệu đơn hàng cho trang hiện tại (dùng cho PaginationSynchronizer callback)
+     */
+    private void loadOrderHistoryForPage() {
+        determineAndLoadData();
     }
 
     @Override
@@ -408,35 +487,35 @@ public class OrderHistoryController implements Navigatable {
 
     private void loadOrderHistory(String endpoint) {
         System.out.println("[OrderHistory] Calling endpoint: " + endpoint);
+        LoadingUtils.show("Đang tải đơn hàng...");
         ApiClient.getInstance().get(endpoint).thenAccept(response -> {
             System.out.println("[OrderHistory] Response status: " + response.statusCode());
-            if (response.statusCode() == 200) {
-                try {
-                    ObjectMapper mapper = ApiClient.getInstance().getMapper();
-                    JsonNode root = mapper.readTree(response.body());
-                    List<OrderResponseDTO> orders = mapper.convertValue(
-                        root.get("content"),
-                        new TypeReference<List<OrderResponseDTO>>() {}
-                    );
+            Platform.runLater(() -> {
+                LoadingUtils.hide();
+                if (response.statusCode() == 200) {
+                    try {
+                        ObjectMapper mapper = ApiClient.getInstance().getMapper();
+                        JsonNode root = mapper.readTree(response.body());
+                        List<OrderResponseDTO> orders = mapper.convertValue(
+                            root.get("content"),
+                            new TypeReference<List<OrderResponseDTO>>() {}
+                        );
 
-                    int totalElements = root.has("totalElements") ? root.get("totalElements").asInt() : orders.size();
-                    totalPages = root.has("totalPages") ? root.get("totalPages").asInt() : 1;
+                        totalPages = root.has("totalPages") ? root.get("totalPages").asInt() : 1;
+                        totalOrders = root.has("totalElements") ? root.get("totalElements").asInt() : orders.size();
 
-                    Platform.runLater(() -> {
                         orderTable.setItems(FXCollections.observableArrayList(orders));
-                        updatePaginationControls(totalElements);
+                        updatePaginationControls(totalOrders);
                         if (orders.isEmpty()) {
                             orderTable.setPlaceholder(new Label("Không có đơn hàng nào."));
                         }
-                    });
-                } catch (Exception e) {
-                    System.err.println("[OrderHistory] Parse error: " + e.getMessage());
-                    e.printStackTrace();
-                    Platform.runLater(() -> orderTable.setPlaceholder(new Label("Lỗi phân tích dữ liệu.")));
-                }
-            } else {
-                System.err.println("[OrderHistory] Error response " + response.statusCode() + ": " + response.body());
-                Platform.runLater(() -> {
+                    } catch (Exception e) {
+                        System.err.println("[OrderHistory] Parse error: " + e.getMessage());
+                        e.printStackTrace();
+                        orderTable.setPlaceholder(new Label("Lỗi phân tích dữ liệu."));
+                    }
+                } else {
+                    System.err.println("[OrderHistory] Error response " + response.statusCode() + ": " + response.body());
                     if (response.statusCode() == 401 || response.statusCode() == 403) {
                         orderTable.setPlaceholder(new Label("Không có quyền truy cập. Vui lòng đăng nhập lại."));
                     } else {
@@ -444,12 +523,13 @@ public class OrderHistoryController implements Navigatable {
                     }
                     orderTable.setItems(FXCollections.observableArrayList());
                     updatePaginationControls(0);
-                });
-            }
+                }
+            });
         }).exceptionally(ex -> {
             System.err.println("[OrderHistory] Request failed: " + ex.getMessage());
             ex.printStackTrace();
             Platform.runLater(() -> {
+                LoadingUtils.hide();
                 orderTable.setPlaceholder(new Label("Không thể kết nối máy chủ. Vui lòng kiểm tra backend."));
                 orderTable.setItems(FXCollections.observableArrayList());
                 updatePaginationControls(0);

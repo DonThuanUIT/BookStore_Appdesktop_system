@@ -15,4 +15,7 @@ public class InventoryModel {
     public IntegerProperty totalTitlesProperty() { return totalTitles; }
     public IntegerProperty lowStockCountProperty() { return lowStockCount; }
     public StringProperty paginationInfoProperty() { return paginationInfo; }
+    public void setPaginationInfo(String info) {
+        this.paginationInfo.set(info);
+    }
 }
