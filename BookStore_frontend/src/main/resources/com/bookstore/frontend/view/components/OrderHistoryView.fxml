@@ -60,7 +60,7 @@
             </left>
             <right>
                 <HBox spacing="10.0" alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
-                    <Button fx:id="btnPrevPage" onAction="#handlePrevPage" text="< Trước" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
+                    <Button fx:id="btnPrevPage" onAction="#handlePrevPage" text="&#60; Trước" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
                     <Label fx:id="lblCurrentPage" text="1" style="-fx-background-color: #FFC107; -fx-text-fill: #1A1A1A; -fx-padding: 5 12; -fx-background-radius: 3; -fx-font-weight: bold; -fx-min-width: 32; -fx-alignment: center;" />
                     <Button fx:id="btnNextPage" onAction="#handleNextPage" text="Sau >" styleClass="btn-page" style="-fx-background-color: #252525; -fx-text-fill: white; -fx-cursor: hand;" />
                 </HBox>
