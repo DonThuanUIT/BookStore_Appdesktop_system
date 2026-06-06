@@ -220,7 +220,8 @@ public class ShopController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/components/BookCard.fxml"));
                 Node cardNode = loader.load();
                 BookCardController cardController = loader.getController();
-                cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), String.format("%,.0f đ", book.getPrice()),
+                // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+                cardController.setBookData(book.getTitle(), book.getFormattedAuthors(), com.bookstore.frontend.util.CurrencyUtils.formatVND(book.getPrice()),
                         (book.getImageUrl() != null && !book.getImageUrl().isBlank()) ? book.getImageUrl() : DEFAULT_COVER_URL);
                 cardController.setCallbacks(
                         () -> bookDetailSidePanelController.setBookDetailDataAndShow(book),

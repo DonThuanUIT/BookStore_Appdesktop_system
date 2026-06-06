@@ -53,9 +53,10 @@ public class CartController extends BaseController {
     @FXML
     public void initialize() {
         if (lblTotalPrice != null) {
-            lblTotalPrice.setText(String.format("%,.0f đ", model.totalPriceProperty().get()));
+            // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+            lblTotalPrice.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(model.totalPriceProperty().get()));
             model.totalPriceProperty().addListener((obs, oldVal, newVal) -> {
-                lblTotalPrice.setText(String.format("%,.0f đ", newVal.doubleValue()));
+                lblTotalPrice.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(newVal.doubleValue()));
                 updateItemCount();
             });
         }
@@ -260,7 +261,8 @@ public class CartController extends BaseController {
             Label author = new Label("✐ " + item.getBook().getFormattedAuthors());
             author.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px;");
 
-            Label unitPrice = new Label(String.format("Giá: %,.0f đ/cuốn", item.getBook().getPrice()));
+            // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+            Label unitPrice = new Label("Giá: " + com.bookstore.frontend.util.CurrencyUtils.formatVND(item.getBook().getPrice()) + "/cuốn");
             unitPrice.setStyle("-fx-text-fill: #888888; -fx-font-size: 12px;");
 
             infoBox.getChildren().addAll(title, author, unitPrice);
@@ -304,7 +306,8 @@ public class CartController extends BaseController {
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
             // Thành tiền
-            Label subtotal = new Label(String.format("%,.0f đ", item.getSubtotal()));
+            // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+            Label subtotal = new Label(com.bookstore.frontend.util.CurrencyUtils.formatVND(item.getSubtotal()));
             subtotal.setPrefWidth(130);
             subtotal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #FFC107; -fx-alignment: center-right;");
 

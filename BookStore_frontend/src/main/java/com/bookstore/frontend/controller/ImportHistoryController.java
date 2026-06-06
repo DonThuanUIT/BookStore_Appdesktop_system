@@ -96,7 +96,8 @@ public class ImportHistoryController implements Navigatable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(String.format("%,.0f đ", item));
+                    // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(item));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold;");
                 }
             }

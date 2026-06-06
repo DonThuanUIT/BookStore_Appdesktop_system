@@ -34,8 +34,8 @@ public class BookDetailController {
             lblDescription.setText("Chưa có mô tả cho cuốn sách này.");
         }
 
-        // ĐÃ FIX: Đồng bộ định dạng tiền tệ Việt Nam (VNĐ) giống màn hình Shop/Home
-        lblPrice.setText(String.format("%,.0f đ", book.getPrice()));
+        // FIX: Sử dụng CurrencyUtils để đồng bộ định dạng tiền tệ VND thống nhất
+        lblPrice.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(book.getPrice()));
 
         String url = (book.getImageUrl() != null && !book.getImageUrl().isBlank())
                 ? book.getImageUrl()

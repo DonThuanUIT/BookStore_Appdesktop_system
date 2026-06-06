@@ -146,6 +146,20 @@ public class InventoryController extends BaseController {
             }
         });
 
+        // FIX: Định dạng cột giá bán theo tiền tệ Việt Nam (VND)
+        colPrice.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Double price, boolean empty) {
+                super.updateItem(price, empty);
+                if (empty || price == null) {
+                    setText(null);
+                } else {
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(price));
+                    setStyle("-fx-text-fill: -fx-accent-gold; -fx-font-weight: bold; -fx-alignment: CENTER;");
+                }
+            }
+        });
+
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("✎");
             private final Button btnDelete = new Button("🗑");

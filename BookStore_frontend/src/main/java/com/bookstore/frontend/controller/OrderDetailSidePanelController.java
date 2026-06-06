@@ -51,7 +51,8 @@ public class OrderDetailSidePanelController {
             protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
                 if (empty || price == null) setText(null);
-                else setText(String.format("%,.0f đ", price));
+                // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+                else setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(price));
             }
         });
 
@@ -61,7 +62,8 @@ public class OrderDetailSidePanelController {
                 super.updateItem(total, empty);
                 if (empty || total == null) setText(null);
                 else {
-                    setText(String.format("%,.0f đ", total));
+                    // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(total));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
@@ -120,9 +122,10 @@ public class OrderDetailSidePanelController {
         double discount = order.getDiscount() != null ? order.getDiscount() : 0.0;
         double subtotal = finalAmount + discount;
 
-        lblSubtotal.setText(String.format("%,.0f đ", subtotal));
-        lblDiscount.setText(String.format("- %,.0f đ", discount));
-        lblTotalCost.setText(String.format("%,.0f đ", finalAmount));
+        // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+        lblSubtotal.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(subtotal));
+        lblDiscount.setText("- " + com.bookstore.frontend.util.CurrencyUtils.formatVND(discount));
+        lblTotalCost.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(finalAmount));
 
         if (!isShowing) {
             slidePanel(0);

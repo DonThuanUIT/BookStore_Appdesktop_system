@@ -103,6 +103,7 @@ public class OrderHistoryController implements Navigatable {
         });
 
         // Định dạng cột Tổng tiền
+        // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
         colTotal.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(Double item, boolean empty) {
@@ -110,7 +111,7 @@ public class OrderHistoryController implements Navigatable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(String.format("%,.0f đ", item));
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(item));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
@@ -124,7 +125,7 @@ public class OrderHistoryController implements Navigatable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(String.format("%,.0f đ", item));
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(item));
                     setStyle("-fx-text-fill: #ff5555; -fx-alignment: center-right;");
                 }
             }
