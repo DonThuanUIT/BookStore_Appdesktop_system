@@ -47,13 +47,19 @@ public class OrderService {
         this.bookService = bookService;
     }
 
-    public Page<OrderResponse> getAllOrders(int page, int size, String sortBy, String direction) {
+    public Page<OrderResponse> getAllOrders(int page, int size, String sortBy, String direction,
+                                            String status, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate, String search) {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Order> orderPage = orderRepository.findAll(pageable);
+        String statusParam = (status == null || status.isBlank()) ? null : status.trim().toUpperCase();
+        String searchParam = (search == null || search.isBlank()) ? "" : "%" + search.trim().toLowerCase() + "%";
+
+        Page<Order> orderPage = orderRepository.filterOrders(
+                null, statusParam, startDate, endDate, searchParam, pageable
+        );
         return orderPage.map(this::convertToResponse);
     }
 
@@ -212,9 +218,15 @@ public class OrderService {
         return convertToResponse(orderRepository.save(savedOrder));
     }
 
-    public Page<OrderResponse> getOrderHistory(User user, int page, int size) {
+    public Page<OrderResponse> getOrderHistory(User user, int page, int size,
+                                               String status, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Order> orderPage = orderRepository.findByUserId(user.getId(), pageable);
+        String statusParam = (status == null || status.isBlank()) ? null : status.trim().toUpperCase();
+        String searchParam = (search == null || search.isBlank()) ? "" : "%" + search.trim().toLowerCase() + "%";
+
+        Page<Order> orderPage = orderRepository.filterOrders(
+                user.getId(), statusParam, startDate, endDate, searchParam, pageable
+        );
         return orderPage.map(this::convertToResponse);
     }
 

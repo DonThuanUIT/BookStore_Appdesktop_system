@@ -16,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,6 +40,12 @@ public class OrderHistoryController implements Navigatable {
     @FXML private Button btnPrevPage;
     @FXML private Label lblCurrentPage;
     @FXML private Button btnNextPage;
+
+    // Filter controls
+    @FXML private TextField txtSearch;
+    @FXML private ComboBox<String> cbStatus;
+    @FXML private DatePicker dpFrom;
+    @FXML private DatePicker dpTo;
 
     // Side panel chi tiết
     @FXML private VBox orderDetailSidePanel;
@@ -157,6 +164,7 @@ public class OrderHistoryController implements Navigatable {
         setupActionColumn();
         setupPaginationControls();
         registerPaginationSync();
+        setupFilters();
         
         // Ẩn side panel khi bắt đầu
         if (orderDetailSidePanel != null) {
@@ -164,6 +172,47 @@ public class OrderHistoryController implements Navigatable {
             orderDetailSidePanel.setManaged(false);
         }
 
+        determineAndLoadData();
+    }
+
+    private void setupFilters() {
+        cbStatus.setItems(FXCollections.observableArrayList(
+                "Tất cả", "Chờ duyệt", "Đang giao", "Hoàn thành", "Đã hủy"
+        ));
+        cbStatus.setValue("Tất cả");
+
+        txtSearch.textProperty().addListener((obs, oldVal, newVal) -> {
+            currentPage = 0;
+            determineAndLoadData();
+        });
+        cbStatus.valueProperty().addListener((obs, oldVal, newVal) -> {
+            currentPage = 0;
+            determineAndLoadData();
+        });
+        dpFrom.valueProperty().addListener((obs, oldVal, newVal) -> {
+            currentPage = 0;
+            determineAndLoadData();
+        });
+        dpTo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            currentPage = 0;
+            determineAndLoadData();
+        });
+
+        dpFrom.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                dpFrom.setValue(null);
+            }
+        });
+        dpTo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                dpTo.setValue(null);
+            }
+        });
+    }
+
+    @FXML
+    private void handleFilter() {
+        currentPage = 0;
         determineAndLoadData();
     }
 
@@ -380,6 +429,37 @@ public class OrderHistoryController implements Navigatable {
         
         StringBuilder query = new StringBuilder();
         query.append("?page=").append(currentPage).append("&size=").append(PAGE_SIZE);
+
+        String search = txtSearch != null ? txtSearch.getText() : null;
+        if (search != null && !search.trim().isEmpty()) {
+            try {
+                query.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+
+        String statusVal = cbStatus != null ? cbStatus.getValue() : null;
+        if (statusVal != null && !"Tất cả".equals(statusVal)) {
+            String apiStatus = "";
+            switch (statusVal) {
+                case "Chờ duyệt": apiStatus = "PENDING"; break;
+                case "Đang giao": apiStatus = "SHIPPING"; break;
+                case "Hoàn thành": apiStatus = "COMPLETED"; break;
+                case "Đã hủy": apiStatus = "CANCELED"; break;
+            }
+            if (!apiStatus.isEmpty()) {
+                query.append("&status=").append(apiStatus);
+            }
+        }
+
+        LocalDate fromDate = dpFrom != null ? dpFrom.getValue() : null;
+        if (fromDate != null) {
+            query.append("&startDate=").append(fromDate);
+        }
+
+        LocalDate toDate = dpTo != null ? dpTo.getValue() : null;
+        if (toDate != null) {
+            query.append("&endDate=").append(toDate);
+        }
 
         if (isAdminView) {
             query.append("&sortBy=orderDate&direction=desc");

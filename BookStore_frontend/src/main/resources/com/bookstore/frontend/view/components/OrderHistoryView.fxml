@@ -26,6 +26,19 @@
 
 
 
+        <!-- Filter Controls -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #252525; -fx-padding: 15; -fx-background-radius: 10;">
+            <TextField fx:id="txtSearch" prefWidth="280.0" promptText="🔍 Tìm theo mã đơn, khách hàng..." style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-prompt-text-fill: #777777; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 8;" />
+            
+            <ComboBox fx:id="cbStatus" prefWidth="150.0" promptText="Trạng thái" style="-fx-background-color: #1A1A1A; -fx-border-color: #333333; -fx-border-radius: 5; -fx-text-fill: white;" styleClass="custom-combo-box" />
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <DatePicker fx:id="dpFrom" promptText="Từ ngày" style="-fx-background-color: #1A1A1A; -fx-base: #1A1A1A; -fx-control-inner-background: #1A1A1A;" />
+            <DatePicker fx:id="dpTo" promptText="Đến ngày" style="-fx-background-color: #1A1A1A; -fx-base: #1A1A1A; -fx-control-inner-background: #1A1A1A;" />
+            <Button onAction="#handleFilter" style="-fx-background-color: transparent; -fx-border-color: #FFC107; -fx-text-fill: #FFC107; -fx-border-radius: 5; -fx-padding: 6 18; -fx-cursor: hand;" text="Lọc" />
+        </HBox>
+
         <!-- Table View -->
         <TableView fx:id="orderTable" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-base: #1A1A1A; -fx-control-inner-background: #252525; -fx-table-cell-border-color: #333333; -fx-text-fill: white;">
             <columnResizePolicy>

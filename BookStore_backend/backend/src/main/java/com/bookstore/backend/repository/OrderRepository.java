@@ -18,6 +18,27 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
     Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+    @Query("""
+    SELECT DISTINCT o FROM Order o
+    LEFT JOIN o.user u
+    WHERE (:userId IS NULL OR u.id = :userId)
+      AND (:status IS NULL OR o.status = :status)
+      AND (CAST(:startDate AS timestamp) IS NULL OR o.orderDate >= CAST(:startDate AS timestamp))
+      AND (CAST(:endDate AS timestamp) IS NULL OR o.orderDate <= CAST(:endDate AS timestamp))
+      AND (:search = ''
+           OR LOWER(u.username) LIKE :search
+           OR LOWER(u.fullName) LIKE :search
+          )
+    """)
+    Page<Order> filterOrders(
+            @Param("userId") Long userId,
+            @Param("status") String status,
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate,
+            @Param("search") String search,
+            Pageable pageable
+    );
+
     @Query("SELECT o FROM Order o WHERE o.status = :status")
     Page<Order> findByStatus(@Param("status") String status, Pageable pageable);
 
