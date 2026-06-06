@@ -26,6 +26,7 @@ import java.util.List;
 public class CartController extends BaseController {
     @FXML private VBox cartItemsContainer;
     @FXML private Label lblTotalPrice;
+    @FXML private Label lblItemCount;
     @FXML private ImageView imgRandomBook;
 
     private final CartModel model;
@@ -52,9 +53,12 @@ public class CartController extends BaseController {
     @FXML
     public void initialize() {
         if (lblTotalPrice != null) {
-            lblTotalPrice.setText(String.format("%.2fđ", model.totalPriceProperty().get()));
-            model.totalPriceProperty().addListener((obs, oldVal, newVal) ->
-                    lblTotalPrice.setText(String.format("%.2fđ", newVal.doubleValue())));
+            // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+            lblTotalPrice.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(model.totalPriceProperty().get()));
+            model.totalPriceProperty().addListener((obs, oldVal, newVal) -> {
+                lblTotalPrice.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(newVal.doubleValue()));
+                updateItemCount();
+            });
         }
 
         // Random book cover sidebar (BE)
@@ -195,28 +199,45 @@ public class CartController extends BaseController {
         }
     }
 
-    private void renderCart() {
+    private void updateItemCount() {
+        if (lblItemCount != null) {
+            int count = model.getItems().size();
+            lblItemCount.setText(count + " sản phẩm");
+        }
+    }
 
+    private void renderCart() {
         cartItemsContainer.getChildren().clear();
         model.refreshAggregates();
+        updateItemCount();
 
         if (model.getItems().isEmpty()) {
-            Label empty = new Label("Your cart is empty");
-            empty.getStyleClass().add("payment-method-sub");
-            cartItemsContainer.getChildren().add(empty);
+            VBox emptyBox = new VBox(16);
+            emptyBox.setAlignment(Pos.CENTER);
+            emptyBox.setStyle("-fx-padding: 80;");
+            Label emptyIcon = new Label("🛍");
+            emptyIcon.setStyle("-fx-font-size: 48px;");
+            Label emptyMsg = new Label("Giỏ hàng của bạn đang trống");
+            emptyMsg.setStyle("-fx-font-size: 16px; -fx-text-fill: #555555; -fx-font-weight: bold;");
+            Label emptyHint = new Label("Hãy khám phá cửa hàng và thêm sách vào giỏ!");
+            emptyHint.setStyle("-fx-font-size: 13px; -fx-text-fill: #444444;");
+            emptyBox.getChildren().addAll(emptyIcon, emptyMsg, emptyHint);
+            cartItemsContainer.getChildren().add(emptyBox);
             return;
         }
 
         model.getItems().forEach(item -> {
-            HBox row = new HBox(15);
+            HBox row = new HBox(0);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.getStyleClass().add("payment-method-row");
-            row.setStyle("-fx-padding: 10;");
+            row.setStyle("-fx-padding: 16 30; -fx-border-color: #242424; -fx-border-width: 0 0 1 0; -fx-background-color: #1A1A1A;");
 
+            // Hình ảnh sách
             ImageView thumbView = new ImageView();
             thumbView.setFitWidth(50);
             thumbView.setFitHeight(70);
             thumbView.setPreserveRatio(true);
+            thumbView.setSmooth(true);
+            thumbView.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 6, 0, 0, 2);");
 
             String imgUrl = (item.getBook().getImageUrl() != null && !item.getBook().getImageUrl().isBlank())
                     ? item.getBook().getImageUrl()
@@ -224,43 +245,88 @@ public class CartController extends BaseController {
             try {
                 thumbView.setImage(new Image(imgUrl, true));
             } catch (Exception e) {
-                thumbView.setImage(new Image(DEFAULT_COVER_URL));
+                thumbView.setImage(new Image(DEFAULT_COVER_URL, true));
             }
 
-            VBox infoBox = new VBox(4);
+            // Thông tin sách
+            VBox infoBox = new VBox(5);
+            infoBox.setPrefWidth(310);
+            infoBox.setStyle("-fx-padding: 0 0 0 16;");
+
             Label title = new Label(item.getBook().getTitle());
-            title.getStyleClass().add("payment-method-title");
-            title.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
+            title.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #EEEEEE;");
+            title.setWrapText(true);
+            title.setMaxWidth(290);
 
-            Label author = new Label("Tác giả: " + item.getBook().getFormattedAuthors());
-            author.setStyle("-fx-text-fill: #888888; -fx-font-size: 11;");
+            Label author = new Label("✐ " + item.getBook().getFormattedAuthors());
+            author.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px;");
 
-            Label qtyAndPrice = new Label(
-                    String.format("Số lượng: %d  ×  $%.2f", item.getQuantity(), item.getBook().getPrice())
-            );
-            qtyAndPrice.getStyleClass().add("payment-method-sub");
+            // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+            Label unitPrice = new Label("Giá: " + com.bookstore.frontend.util.CurrencyUtils.formatVND(item.getBook().getPrice()) + "/cuốn");
+            unitPrice.setStyle("-fx-text-fill: #888888; -fx-font-size: 12px;");
 
-            infoBox.getChildren().addAll(title, author, qtyAndPrice);
+            infoBox.getChildren().addAll(title, author, unitPrice);
+
+            // Số lượng
+            HBox qtyBox = new HBox(8);
+            qtyBox.setAlignment(Pos.CENTER);
+            qtyBox.setPrefWidth(120);
+
+            Button btnMinus = new Button("−");
+            btnMinus.setStyle("-fx-background-color: #2A2A2A; -fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand; -fx-font-size: 14px; -fx-min-width: 28; -fx-min-height: 28;");
+            btnMinus.setOnAction(e -> {
+                if (item.getQuantity() > 1) {
+                    item.setQuantity(item.getQuantity() - 1);
+                    model.refreshAggregates();
+                    renderCart();
+                } else {
+                    boolean confirmed = AlertUtils.confirm("Xóa sản phẩm",
+                            "Bạn có muốn xóa '" + item.getBook().getTitle() + "' khỏi giỏ?");
+                    if (confirmed) {
+                        model.removeItem(item);
+                        renderCart();
+                    }
+                }
+            });
+
+            Label qtyLabel = new Label(String.valueOf(item.getQuantity()));
+            qtyLabel.setStyle("-fx-text-fill: WHITE; -fx-font-weight: bold; -fx-font-size: 14px; -fx-min-width: 24; -fx-alignment: center;");
+
+            Button btnPlus = new Button("+");
+            btnPlus.setStyle("-fx-background-color: #2A2A2A; -fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand; -fx-font-size: 14px; -fx-min-width: 28; -fx-min-height: 28;");
+            btnPlus.setOnAction(e -> {
+                item.setQuantity(item.getQuantity() + 1);
+                model.refreshAggregates();
+                renderCart();
+            });
+
+            qtyBox.getChildren().addAll(btnMinus, qtyLabel, btnPlus);
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Label subtotal = new Label(String.format("$%.2f", item.getSubtotal()));
-            subtotal.getStyleClass().add("book-card-price");
-            subtotal.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+            // Thành tiền
+            // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+            Label subtotal = new Label(com.bookstore.frontend.util.CurrencyUtils.formatVND(item.getSubtotal()));
+            subtotal.setPrefWidth(130);
+            subtotal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #FFC107; -fx-alignment: center-right;");
 
-            Button removeBtn = new Button("Remove");
-            removeBtn.getStyleClass().add("btn-huy-payment");
+            // Nút xóa
+            Button removeBtn = new Button("✕");
+            removeBtn.setPrefWidth(80);
+            removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #444444; -fx-font-size: 18px; -fx-cursor: hand;");
+            removeBtn.setOnMouseEntered(e -> removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-size: 18px; -fx-cursor: hand;"));
+            removeBtn.setOnMouseExited(e -> removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #444444; -fx-font-size: 18px; -fx-cursor: hand;"));
             removeBtn.setOnAction(e -> {
                 boolean confirmed = AlertUtils.confirm("Xác nhận xóa",
                         "Bạn có chắc muốn xóa '" + item.getBook().getTitle() + "' khỏi giỏ hàng?");
-                if(confirmed) {
+                if (confirmed) {
                     model.removeItem(item);
                     renderCart();
                 }
             });
 
-            row.getChildren().addAll(thumbView, infoBox, spacer, subtotal, removeBtn);
+            row.getChildren().addAll(thumbView, infoBox, qtyBox, spacer, subtotal, removeBtn);
             cartItemsContainer.getChildren().add(row);
         });
     }

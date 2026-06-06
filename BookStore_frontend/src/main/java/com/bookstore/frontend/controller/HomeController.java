@@ -112,7 +112,8 @@ public class HomeController extends BaseController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/bookstore/frontend/view/components/BookCard.fxml"));
                 javafx.scene.Node cardNode = loader.load();
 
-                String formattedPrice = String.format("%,.0f đ", book.getPrice());
+                // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+                String formattedPrice = com.bookstore.frontend.util.CurrencyUtils.formatVND(book.getPrice());
                 String imagePath = (book.getImageUrl() != null && !book.getImageUrl().isBlank())
                         ? book.getImageUrl()
                         : DEFAULT_COVER_URL;

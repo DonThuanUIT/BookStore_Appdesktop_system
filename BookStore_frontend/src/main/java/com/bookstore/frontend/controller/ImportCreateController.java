@@ -137,11 +137,11 @@ public class ImportCreateController {
         colPrice.setCellValueFactory(new PropertyValueFactory<>("importPrice"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("lineTotal"));
 
-        // ĐÃ FIX: Chuyển $%.2f thành %,.0f đ cho Giá Nhập
+        // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
         colPrice.setCellFactory(tc -> new TableCell<>() {
             @Override protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
-                setText((empty || price == null) ? null : String.format("%,.0f đ", price));
+                setText((empty || price == null) ? null : com.bookstore.frontend.util.CurrencyUtils.formatVND(price));
             }
         });
 
@@ -150,7 +150,7 @@ public class ImportCreateController {
                 super.updateItem(total, empty);
                 if (empty || total == null) setText(null);
                 else {
-                    setText(String.format("%,.0f đ", total));
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(total));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
@@ -223,7 +223,8 @@ public class ImportCreateController {
 
     private void calculateTotalCost() {
         double total = cartList.stream().mapToDouble(ImportDetailModel::getLineTotal).sum();
-        lblTotalCartCost.setText(String.format("%,.0f đ", total));
+        // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+        lblTotalCartCost.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(total));
     }
 
     @FXML

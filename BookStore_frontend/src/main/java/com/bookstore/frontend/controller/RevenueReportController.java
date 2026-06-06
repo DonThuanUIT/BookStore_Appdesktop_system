@@ -110,8 +110,9 @@ public class RevenueReportController {
 
 
     private void updateUI(RevenueYearResponse data, List<DataPoint> points) {
-        lblTotalRevenue.setText(String.format("%,.0f VNĐ", data.revenue()));
-        lblTotalProfit.setText(String.format("%,.0f VNĐ", data.profit()));
+        // FIX: Sử dụng CurrencyUtils để hiển thị tiền tệ VND thống nhất
+        lblTotalRevenue.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(data.revenue()));
+        lblTotalProfit.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(data.profit()));
         lblTotalOrders.setText(String.valueOf(data.orderCount()));
 
         tblTopProducts.setItems(data.topProducts() != null ? FXCollections.observableArrayList(data.topProducts()) : FXCollections.observableArrayList());

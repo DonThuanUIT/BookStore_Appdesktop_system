@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="sidePanelRoot" prefWidth="450.0" maxWidth="450.0" style="-fx-background-color: #1E1E1E; -fx-border-color: #333333; -fx-border-width: 0 0 0 1;" stylesheets="@../../css/theme.css" translateX="450.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bookstore.frontend.controller.OrderDetailSidePanelController">
+
+    <HBox alignment="CENTER_LEFT" style="-fx-padding: 20; -fx-border-color: #333333; -fx-border-width: 0 0 1 0;">
+        <Label text="Chi tiết đơn hàng" textFill="WHITE">
+            <font><Font name="System Bold" size="20.0" /></font>
+        </Label>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button onAction="#handleClose" style="-fx-background-color: transparent; -fx-text-fill: #AAAAAA; -fx-font-size: 18px; -fx-cursor: hand;" text="✕" />
+    </HBox>
+
+    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background: #1E1E1E; -fx-background-color: transparent; -fx-viewport-background-color: #1E1E1E; -fx-border-width: 0;">
+        <content>
+            <VBox spacing="15.0" style="-fx-padding: 20;">
+                <!-- Thông tin đơn hàng -->
+                <VBox spacing="8.0" style="-fx-background-color: #252525; -fx-padding: 15; -fx-background-radius: 8;">
+                    <HBox spacing="10.0">
+                        <Label text="🏷 Mã đơn hàng:" textFill="#AAAAAA" />
+                        <Label fx:id="lblOrderId" text="#ORD-..." textFill="#FFC107">
+                            <font><Font name="System Bold" size="13.0" /></font>
+                        </Label>
+                    </HBox>
+                    <HBox spacing="10.0">
+                        <Label text="📅 Ngày đặt:" textFill="#AAAAAA" />
+                        <Label fx:id="lblDate" text="..." textFill="WHITE" />
+                    </HBox>
+                    <HBox spacing="10.0">
+                        <Label text="💳 Thanh toán:" textFill="#AAAAAA" />
+                        <Label fx:id="lblPaymentMethod" text="..." textFill="WHITE" />
+                    </HBox>
+                    <HBox spacing="10.0">
+                        <Label text="🔄 Trạng thái:" textFill="#AAAAAA" />
+                        <Label fx:id="lblStatus" text="..." textFill="#FFC107">
+                            <font><Font name="System Bold" size="13.0" /></font>
+                        </Label>
+                    </HBox>
+                </VBox>
+
+                <!-- Thông tin khách hàng -->
+                <VBox spacing="8.0" style="-fx-background-color: #252525; -fx-padding: 15; -fx-background-radius: 8;">
+                    <Label text="👤 THÔNG TIN KHÁCH HÀNG" textFill="#FFC107">
+                        <font><Font name="System Bold" size="12.0" /></font>
+                    </Label>
+                    <HBox spacing="10.0">
+                        <Label text="Tài khoản:" textFill="#AAAAAA" />
+                        <Label fx:id="lblCustomerUser" text="..." textFill="WHITE" />
+                    </HBox>
+                    <HBox spacing="10.0">
+                        <Label text="Họ tên:" textFill="#AAAAAA" />
+                        <Label fx:id="lblCustomerName" text="..." textFill="WHITE" />
+                    </HBox>
+                    <HBox spacing="10.0">
+                        <Label text="Email:" textFill="#AAAAAA" />
+                        <Label fx:id="lblCustomerEmail" text="..." textFill="WHITE" />
+                    </HBox>
+                    <HBox spacing="10.0">
+                        <Label text="Điện thoại:" textFill="#AAAAAA" />
+                        <Label fx:id="lblCustomerPhone" text="..." textFill="WHITE" />
+                    </HBox>
+                    <VBox spacing="4.0">
+                        <Label text="Địa chỉ giao hàng:" textFill="#AAAAAA" />
+                        <Label fx:id="lblCustomerAddress" text="..." textFill="WHITE" wrapText="true" />
+                    </VBox>
+                </VBox>
+
+                <!-- Danh sách sản phẩm -->
+                <VBox spacing="8.0">
+                    <Label text="📚 DANH SÁCH SẢN PHẨM" textFill="#FFC107">
+                        <font><Font name="System Bold" size="13.0" /></font>
+                    </Label>
+                    <TableView fx:id="tvDetails" prefHeight="220.0" minHeight="220.0" style="-fx-background-color: transparent; -fx-base: #1E1E1E; -fx-control-inner-background: #252525; -fx-table-cell-border-color: #333333;">
+                        <columns>
+                            <TableColumn fx:id="colTitle" prefWidth="180.0" text="TÊN SÁCH" />
+                            <TableColumn fx:id="colQty" prefWidth="55.0" style="-fx-alignment: CENTER;" text="SL" />
+                            <TableColumn fx:id="colPrice" prefWidth="85.0" style="-fx-alignment: CENTER_RIGHT;" text="GIÁ" />
+                            <TableColumn fx:id="colTotal" prefWidth="90.0" style="-fx-alignment: CENTER_RIGHT;" text="TỔNG" />
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+        </content>
+    </ScrollPane>
+
+    <!-- Tổng kết tài chính -->
+    <VBox alignment="CENTER_RIGHT" spacing="5.0" style="-fx-background-color: #252525; -fx-padding: 15;">
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <Label text="Tổng tiền sách:" textFill="#AAAAAA" />
+            <Label fx:id="lblSubtotal" text="0 đ" textFill="WHITE">
+                <font><Font name="System Bold" size="14.0" /></font>
+            </Label>
+        </HBox>
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <Label text="Giảm giá:" textFill="#AAAAAA" />
+            <Label fx:id="lblDiscount" text="0 đ" textFill="#FF5555">
+                <font><Font name="System Bold" size="14.0" /></font>
+            </Label>
+        </HBox>
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <Label text="THÀNH TIỀN:" textFill="#AAAAAA">
+                <font><Font size="13.0" /></font>
+            </Label>
+            <Label fx:id="lblTotalCost" text="0 đ" textFill="#FFC107">
+                <font><Font name="System Bold" size="24.0" /></font>
+            </Label>
+        </HBox>
+    </VBox>
+</VBox>

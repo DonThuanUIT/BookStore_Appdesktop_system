@@ -28,6 +28,11 @@ public class LoginController {
 
     @FXML
     public void initialize() {
+        // Clear all state (cart, order status, user session) when loading the login screen
+        com.bookstore.frontend.util.CartStore.getInstance().getModel().clearCart();
+        com.bookstore.frontend.util.OrderStatusStore.getInstance().reset();
+        com.bookstore.frontend.util.UserSession.getInstance().clean();
+
         backgroundImage.fitWidthProperty().bind(rootStackPane.widthProperty());
         backgroundImage.fitHeightProperty().bind(rootStackPane.heightProperty());
 

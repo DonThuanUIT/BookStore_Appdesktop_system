@@ -1,9 +1,10 @@
 package com.bookstore.frontend.components;
 
 import com.bookstore.frontend.MainApplication;
-import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.navigation.NavigationService;
 import com.bookstore.frontend.navigation.PageType;
+import com.bookstore.frontend.util.CartStore;
+import com.bookstore.frontend.util.OrderStatusStore;
 import com.bookstore.frontend.util.UserSession;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -50,14 +51,20 @@ public class AccountPopup extends Popup {
         btnLogout.setStyle("-fx-text-fill: #ff5555; -fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 10 0 0 0;");
 
         btnLogout.setOnAction(e -> {
-            // 1. Xóa session
+            // 1. Xóa giỏ hàng và reset trạng thái đơn hàng
+            CartStore.getInstance().getModel().clearCart();
+            OrderStatusStore.getInstance().reset();
+
+            // 2. Xóa session người dùng
             UserSession.getInstance().clean();
 
+            // 3. Xóa cache navigation
             NavigationService.getInstance().clearCache();
 
+            // 4. Quay lại màn hình login
             try {
                 MainApplication.showView("LoginView.fxml", "BookStore - Login");
-            } catch (IOException ex) {
+            } catch (java.io.IOException ex) {
                 ex.printStackTrace();
             }
             this.hide();
@@ -71,10 +78,11 @@ public class AccountPopup extends Popup {
         UserSession session = UserSession.getInstance();
         if (session.getUsername() != null) {
             lblName.setText(session.getUsername());
-            lblEmail.setText("User Account");
+            String roleText = session.getRoles().isEmpty() ? "CUSTOMER" : String.join(", ", session.getRoles());
+            lblEmail.setText("Quyền: " + roleText.replace("ROLE_", ""));
         } else {
-            lblName.setText("Guest");
-            lblEmail.setText("Not Logged In");
+            lblName.setText("Khách");
+            lblEmail.setText("Chưa đăng nhập");
         }
     }
 

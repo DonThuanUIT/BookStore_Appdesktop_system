@@ -1,22 +1,35 @@
 package com.bookstore.frontend.model.dto.Response;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderResponseDTO {
     public Long id;
     public Double totalAmount;
-    public Double discount; // <--- THÊM DÒNG NÀY
+    public Double discount;
     public Double finalAmount;
     public String status;
     public String paymentMethod;
+
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public LocalDateTime orderDate;
 
-    // Thêm các Getter tương ứng
+    public UserProfileResponseDto user;
+    public List<OrderDetailResponseDTO> details;
+
+    // Getters
     public Long getId() { return id; }
     public Double getTotalAmount() { return totalAmount; }
-    public Double getDiscount() { return discount; } // <--- THÊM GETTER NÀY
+    public Double getDiscount() { return discount; }
     public Double getFinalAmount() { return finalAmount; }
     public String getStatus() { return status; }
     public String getPaymentMethod() { return paymentMethod; }
     public LocalDateTime getOrderDate() { return orderDate; }
+    public UserProfileResponseDto getUser() { return user; }
+    public List<OrderDetailResponseDTO> getDetails() { return details; }
 }

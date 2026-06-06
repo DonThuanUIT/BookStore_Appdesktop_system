@@ -31,6 +31,7 @@ class RequestValidationTest {
                 null,
                 BigDecimal.valueOf(-1),
                 "x".repeat(501),
+                "x".repeat(2001),
                 -1L,
                 List.of(-2L),
                 List.of()
@@ -46,6 +47,7 @@ class RequestValidationTest {
                 2008,
                 BigDecimal.valueOf(100000),
                 "https://example.com/clean-code.png",
+                "A book about clean code",
                 1L,
                 List.of(1L),
                 List.of(1L)

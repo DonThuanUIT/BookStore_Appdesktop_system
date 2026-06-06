@@ -35,7 +35,8 @@ public class BookDetailSidePanelController {
         this.currentBook = book;
         lblTitle.setText(book.getTitle());
         lblAuthor.setText("By " + book.getAuthorNames());
-        lblPrice.setText(String.format("%,.0f đ", book.getPrice()));
+        // FIX: Sử dụng CurrencyUtils để định dạng VND thống nhất
+        lblPrice.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(book.getPrice()));
 
         if (lblPublisher != null)
             lblPublisher.setText("Publisher: " + (book.getPublisherName() != null ? book.getPublisherName() : "N/A"));

@@ -18,7 +18,42 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
     Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT o FROM Order o WHERE UPPER(o.status) = UPPER(:status)")
+    /**
+     * FIX LỖI: PostgreSQL "column o.orderdate does not exist" + "could not determine data type of parameter $5".
+     *
+     * Đã chuyển sang dùng JPA Specification / hoặc tách method để tránh native query
+     * có thể có vấn đề với tên cột.
+     *
+     * CHIẾN LƯỢC MỚI: BỎ native query, quay lại JPQL nhưng:
+     *  - Đặt TẤT CẢ parameter có giá trị mặc định hợp lệ (không NULL)
+     *  - Tách riêng date filter để không truyền NULL
+     *  - Dùng :search parameter với COALESCE để chuyển NULL thành chuỗi rỗng
+     *    ngay từ đầu, tránh việc PostgreSQL phải suy luận kiểu
+     *  - Sử dụng CAST :search AS string (JPA Standard) trong JPQL
+     */
+    @Query("""
+        SELECT o FROM Order o
+        LEFT JOIN o.user u
+        WHERE (:userId IS NULL OR u.id = :userId)
+          AND (:status IS NULL OR o.status = :status)
+          AND (COALESCE(:startDate, o.orderDate) = o.orderDate OR o.orderDate >= COALESCE(:startDate, o.orderDate))
+          AND (COALESCE(:endDate, o.orderDate) = o.orderDate OR o.orderDate <= COALESCE(:endDate, o.orderDate))
+          AND (COALESCE(CAST(:search AS string), '') = ''
+               OR LOWER(COALESCE(u.username, '')) LIKE LOWER(CONCAT('%', COALESCE(CAST(:search AS string), ''), '%'))
+               OR LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', COALESCE(CAST(:search AS string), ''), '%'))
+              )
+        ORDER BY o.orderDate DESC
+        """)
+    Page<Order> filterOrders(
+            @Param("userId") Long userId,
+            @Param("status") String status,
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate,
+            @Param("search") String search,
+            Pageable pageable
+    );
+
+    @Query("SELECT o FROM Order o WHERE o.status = :status")
     Page<Order> findByStatus(@Param("status") String status, Pageable pageable);
 
     // Tính tổng doanh thu đơn hàng hoàn thành trong khoảng thời gian
@@ -27,7 +62,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             FROM Order o
             WHERE o.orderDate >= :startDate
               AND o.orderDate < :endDate
-              AND UPPER(o.status) = 'COMPLETED'
+              AND o.status = 'COMPLETED'
             """)
     java.math.BigDecimal sumCompletedRevenueByOrderDateBetween(@Param("startDate") LocalDateTime startDate,
                                                                @Param("endDate") LocalDateTime endDate);
@@ -38,7 +73,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             FROM Order o
             WHERE o.orderDate >= :startDate
               AND o.orderDate < :endDate
-              AND UPPER(o.status) = 'COMPLETED'
+              AND o.status = 'COMPLETED'
             """)
     Long countCompletedOrdersByOrderDateBetween(@Param("startDate") LocalDateTime startDate,
                                                 @Param("endDate") LocalDateTime endDate);
@@ -46,15 +81,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Lấy Top sản phẩm bán chạy nhất
     @Query("""
         SELECT new com.bookstore.backend.dto.response.TopProductResponse(
-            b.title, 
-            SUM(od.quantity), 
+            b.title,
+            SUM(od.quantity),
             SUM(od.price * od.quantity)
         )
         FROM OrderDetail od
         JOIN od.book b
         JOIN od.order o
         WHERE o.orderDate >= :startDate AND o.orderDate < :endDate
-          AND UPPER(o.status) = 'COMPLETED'
+          AND o.status = 'COMPLETED'
         GROUP BY b.title
         ORDER BY SUM(od.quantity) DESC
         """)
@@ -72,7 +107,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         JOIN b.categories c
         JOIN od.order o
         WHERE o.orderDate >= :startDate AND o.orderDate < :endDate
-          AND UPPER(o.status) = 'COMPLETED'
+          AND o.status = 'COMPLETED'
         GROUP BY c.name
         """)
     List<Object[]> getRevenueByCategory(@Param("startDate") LocalDateTime startDate,

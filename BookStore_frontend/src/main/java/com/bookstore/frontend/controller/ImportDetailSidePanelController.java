@@ -37,7 +37,8 @@ public class ImportDetailSidePanelController {
             protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
                 if (empty || price == null) setText(null);
-                else setText(String.format("%,.0f đ", price));
+                // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+                else setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(price));
             }
         });
 
@@ -47,7 +48,7 @@ public class ImportDetailSidePanelController {
                 super.updateItem(total, empty);
                 if (empty || total == null) setText(null);
                 else {
-                    setText(String.format("%,.0f đ", total));
+                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(total));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
@@ -58,7 +59,8 @@ public class ImportDetailSidePanelController {
         lblImportId.setText("#IMP-" + data.getId());
         lblDate.setText(data.getImportDate());
 
-        lblTotalCost.setText(String.format("%,.0f đ", data.getTotalCost()));
+        // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
+        lblTotalCost.setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(data.getTotalCost()));
 
         tvDetails.setItems(data.getDetails());
 
