@@ -345,6 +345,18 @@
     -fx-alignment: center-left;
     -fx-padding: 0 0 0 10;
 }
+.table-view .column-header.align-center .label {
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+.table-view .column-header.align-right .label {
+    -fx-alignment: center-right;
+    -fx-padding: 0 10 0 0;
+}
+.table-view .column-header.align-left .label {
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 10;
+}
 .table-view .table-cell {
     -fx-text-fill: -text-primary-light;
     -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;

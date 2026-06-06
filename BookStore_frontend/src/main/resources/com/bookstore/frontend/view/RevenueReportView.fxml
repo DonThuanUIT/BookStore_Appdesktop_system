@@ -2,48 +2,114 @@
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 
-<VBox spacing="15" style="-fx-padding: 20; -fx-background-image: url('/image/libraryBackground.jpg'); -fx-background-size: cover;"
+<VBox spacing="20.0" style="-fx-background-color: #1A1A1A; -fx-padding: 30;"
+      stylesheets="@../css/colors.css,@../css/theme.css"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bookstore.frontend.controller.RevenueReportController">
 
-    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: rgba(0,0,0,0.5); -fx-padding: 15; -fx-background-radius: 10;">
-        <Label text="Nhập năm:" style="-fx-text-fill: white;"/>
-        <TextField fx:id="yearInput" prefWidth="80" promptText="2026"/>
+    <!-- Header Section -->
+    <BorderPane>
+        <left>
+            <VBox spacing="5.0">
+                <Label text="Báo cáo doanh thu" textFill="#FFC107">
+                    <font>
+                        <Font name="System Bold" size="28.0" />
+                    </font>
+                </Label>
+                <Label text="Phân tích tình hình kinh doanh, doanh số và sản phẩm bán chạy" textFill="#AAAAAA">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Label>
+            </VBox>
+        </left>
+    </BorderPane>
 
-        <ComboBox fx:id="chartTypePicker" prefWidth="130" />
+    <!-- Filter & Toolbar Section -->
+    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #252525; -fx-padding: 15; -fx-background-radius: 10;">
+        <Label text="Nhập năm:" textFill="WHITE" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="yearInput" prefWidth="90" promptText="2026"
+                   style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-prompt-text-fill: #777777; -fx-border-color: #333333; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 8; -fx-alignment: center;"/>
 
-        <Button text="XEM BÁO CÁO" onAction="#handleLoadReport" style="-fx-background-color: #FFCC00; -fx-font-weight: bold;"/>
-        <Button text="XUẤT EXCEL" onAction="#handleExportExcel" style="-fx-background-color: #4CAF50; -fx-font-weight: bold;"/>
-        <ProgressIndicator fx:id="loadingIndicator" prefWidth="25" prefHeight="25" visible="false"/>
+        <Label text="Loại biểu đồ:" textFill="WHITE" style="-fx-font-weight: bold; -fx-margin-left: 10;"/>
+        <ComboBox fx:id="chartTypePicker" prefWidth="150"
+                  style="-fx-background-color: #1A1A1A; -fx-border-color: #333333; -fx-border-radius: 5; -fx-text-fill: white;" />
 
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button text="🔍 XEM BÁO CÁO" onAction="#handleLoadReport"
+                style="-fx-background-color: #FFCC00; -fx-text-fill: #110000; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 18; -fx-cursor: hand;" />
+        <Button text="📥 XUẤT EXCEL" onAction="#handleExportExcel"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 8 18; -fx-cursor: hand;" />
+        <ProgressIndicator fx:id="loadingIndicator" prefWidth="25" prefHeight="25" visible="false" style="-fx-progress-color: #FFCC00;"/>
     </HBox>
 
-    <HBox spacing="20" alignment="CENTER">
-        <VBox style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);" prefWidth="200">
-            <Label text="Tổng Doanh Thu" style="-fx-text-fill: #FFCC00;"/>
-            <Label fx:id="lblTotalRevenue" text="0 VNĐ" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
-        </VBox>
-        <VBox style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);" prefWidth="200">
-            <Label text="Tổng Lợi Nhuận" style="-fx-text-fill: #00FF00;"/>
-            <Label fx:id="lblTotalProfit" text="0 VNĐ" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
-        </VBox>
-        <VBox style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);" prefWidth="200">
-            <Label text="Tổng Đơn Hàng" style="-fx-text-fill: #FFFFFF;"/>
-            <Label fx:id="lblTotalOrders" text="0" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
-        </VBox>
-    </HBox>
+    <!-- KPI Cards Section -->
+    <GridPane hgap="20" vgap="10">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="33.3" />
+            <ColumnConstraints percentWidth="33.3" />
+            <ColumnConstraints percentWidth="33.3" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="100" />
+        </rowConstraints>
+        <children>
+            <!-- Revenue Card -->
+            <VBox GridPane.columnIndex="0" styleClass="kpi-card" spacing="8">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="💵" style="-fx-font-size: 24px;"/>
+                    <Label text="TỔNG DOANH THU" textFill="#AAAAAA" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+                </HBox>
+                <Label fx:id="lblTotalRevenue" text="0 đ" textFill="#FFC107" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            </VBox>
 
+            <!-- Profit Card -->
+            <VBox GridPane.columnIndex="1" styleClass="kpi-card" spacing="8">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📈" style="-fx-font-size: 24px;"/>
+                    <Label text="TỔNG LỢI NHUẬN" textFill="#AAAAAA" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+                </HBox>
+                <Label fx:id="lblTotalProfit" text="0 đ" textFill="#27ae60" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            </VBox>
+
+            <!-- Orders Card -->
+            <VBox GridPane.columnIndex="2" styleClass="kpi-card" spacing="8">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📦" style="-fx-font-size: 24px;"/>
+                    <Label text="TỔNG ĐƠN HÀNG" textFill="#AAAAAA" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+                </HBox>
+                <Label fx:id="lblTotalOrders" text="0" textFill="WHITE" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            </VBox>
+        </children>
+    </GridPane>
+
+    <!-- Main Content: Charts & Top Products Table -->
     <HBox spacing="20" VBox.vgrow="ALWAYS">
-        <StackPane HBox.hgrow="ALWAYS" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 10; -fx-border-color: rgba(255,255,255,0.2);">
-            <BarChart fx:id="barChart" animated="false"><xAxis><CategoryAxis label="Thời gian" /></xAxis><yAxis><NumberAxis label="VNĐ" /></yAxis></BarChart>
-            <LineChart fx:id="lineChart" animated="false" visible="false"><xAxis><CategoryAxis label="Thời gian" /></xAxis><yAxis><NumberAxis label="VNĐ" /></yAxis></LineChart>
-        </StackPane>
-        <TableView fx:id="tblTopProducts" prefWidth="350" style="-fx-background-color: rgba(255,255,255,0.1);">
-            <columns>
-                <TableColumn fx:id="colBookName" text="Tên Sách" prefWidth="240" />
-                <TableColumn fx:id="colQuantity" text="SL" prefWidth="90" />
-            </columns>
-        </TableView>
+        <!-- Chart Area -->
+        <VBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: #252525; -fx-padding: 15; -fx-background-radius: 10;">
+            <Label text="Biểu đồ phân tích doanh thu &amp; chi phí" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 15px;"/>
+            <StackPane VBox.vgrow="ALWAYS">
+                <BarChart fx:id="barChart" animated="false" style="-fx-bar-gap: 3; -fx-category-gap: 8;"><xAxis><CategoryAxis tickLabelFill="WHITE" /></xAxis><yAxis><NumberAxis tickLabelFill="WHITE" /></yAxis></BarChart>
+                <LineChart fx:id="lineChart" animated="false" visible="false"><xAxis><CategoryAxis tickLabelFill="WHITE" /></xAxis><yAxis><NumberAxis tickLabelFill="WHITE" /></yAxis></LineChart>
+            </StackPane>
+        </VBox>
+
+        <!-- Top Products Area -->
+        <VBox prefWidth="350" spacing="10" style="-fx-background-color: #252525; -fx-padding: 15; -fx-background-radius: 10;">
+            <Label text="Top sản phẩm bán chạy nhất" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 15px;"/>
+            <TableView fx:id="tblTopProducts" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-base: #252525; -fx-control-inner-background: #252525; -fx-table-cell-border-color: #333333; -fx-text-fill: white;">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+                <columns>
+                    <TableColumn fx:id="colBookName" text="TÊN SÁCH" prefWidth="220" styleClass="align-left" style="-fx-alignment: CENTER-LEFT;" />
+                    <TableColumn fx:id="colQuantity" text="SL BÁN" prefWidth="100" styleClass="align-center" style="-fx-alignment: CENTER;" />
+                </columns>
+            </TableView>
+        </VBox>
     </HBox>
+
 </VBox>

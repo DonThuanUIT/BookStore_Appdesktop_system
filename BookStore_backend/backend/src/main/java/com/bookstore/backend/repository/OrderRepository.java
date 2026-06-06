@@ -32,13 +32,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      *  - Sử dụng CAST :search AS string (JPA Standard) trong JPQL
      */
     @Query("""
-        SELECT o FROM Order o
+        SELECT DISTINCT o FROM Order o
         LEFT JOIN o.user u
         WHERE (:userId IS NULL OR u.id = :userId)
           AND (:status IS NULL OR o.status = :status)
           AND (COALESCE(:startDate, o.orderDate) = o.orderDate OR o.orderDate >= COALESCE(:startDate, o.orderDate))
           AND (COALESCE(:endDate, o.orderDate) = o.orderDate OR o.orderDate <= COALESCE(:endDate, o.orderDate))
           AND (COALESCE(CAST(:search AS string), '') = ''
+               OR CAST(o.id AS string) LIKE CONCAT('%', COALESCE(CAST(:search AS string), ''), '%')
                OR LOWER(COALESCE(u.username, '')) LIKE LOWER(CONCAT('%', COALESCE(CAST(:search AS string), ''), '%'))
                OR LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', COALESCE(CAST(:search AS string), ''), '%'))
               )

@@ -55,9 +55,19 @@ public class OrderService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
         String statusParam = (status == null || status.isBlank()) ? null : status.trim().toUpperCase();
-        // FIX: Không bọc % tại Service, để Repository tự xử lý (CONCAT) trong JPQL
-        // nhằm tránh lỗi PostgreSQL "could not determine data type of parameter $5".
-        String searchParam = (search == null || search.isBlank()) ? "" : search.trim();
+        
+        String searchParam = "";
+        if (search != null && !search.isBlank()) {
+            String cleanSearch = search.trim();
+            if (cleanSearch.toUpperCase().startsWith("#ORD-")) {
+                cleanSearch = cleanSearch.substring(5);
+            } else if (cleanSearch.toUpperCase().startsWith("ORD-")) {
+                cleanSearch = cleanSearch.substring(4);
+            } else if (cleanSearch.startsWith("#")) {
+                cleanSearch = cleanSearch.substring(1);
+            }
+            searchParam = cleanSearch;
+        }
 
         Page<Order> orderPage = orderRepository.filterOrders(
                 null, statusParam, startDate, endDate, searchParam, pageable
@@ -224,9 +234,19 @@ public class OrderService {
                                                String status, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         String statusParam = (status == null || status.isBlank()) ? null : status.trim().toUpperCase();
-        // FIX: Không bọc % tại Service, để Repository tự xử lý (CONCAT) trong JPQL
-        // nhằm tránh lỗi PostgreSQL "could not determine data type of parameter $5".
-        String searchParam = (search == null || search.isBlank()) ? "" : search.trim();
+        
+        String searchParam = "";
+        if (search != null && !search.isBlank()) {
+            String cleanSearch = search.trim();
+            if (cleanSearch.toUpperCase().startsWith("#ORD-")) {
+                cleanSearch = cleanSearch.substring(5);
+            } else if (cleanSearch.toUpperCase().startsWith("ORD-")) {
+                cleanSearch = cleanSearch.substring(4);
+            } else if (cleanSearch.startsWith("#")) {
+                cleanSearch = cleanSearch.substring(1);
+            }
+            searchParam = cleanSearch;
+        }
 
         Page<Order> orderPage = orderRepository.filterOrders(
                 user.getId(), statusParam, startDate, endDate, searchParam, pageable

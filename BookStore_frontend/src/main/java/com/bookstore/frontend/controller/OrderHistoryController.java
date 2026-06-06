@@ -4,11 +4,7 @@ import com.bookstore.frontend.service.api.ApiClient;
 import com.bookstore.frontend.model.dto.Response.OrderResponseDTO;
 import com.bookstore.frontend.model.dto.Response.OrderDetailResponseDTO;
 import com.bookstore.frontend.navigation.Navigatable;
-import com.bookstore.frontend.util.LoadingUtils;
-import com.bookstore.frontend.util.OrderStatusStore;
-import com.bookstore.frontend.util.PaginationSynchronizer;
-import com.bookstore.frontend.util.PaginationUtil;
-import com.bookstore.frontend.util.UserSession;
+import com.bookstore.frontend.util.*;
 import com.bookstore.frontend.utils.AlertUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +16,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,21 +31,21 @@ public class OrderHistoryController implements Navigatable {
     @FXML private TableColumn<OrderResponseDTO, Double> colDiscount;
     @FXML private TableColumn<OrderResponseDTO, String> colStatus;
     @FXML private TableColumn<OrderResponseDTO, String> colPayment;
+    @FXML private TableColumn<OrderResponseDTO, Void> colDetail;
     @FXML private TableColumn<OrderResponseDTO, Void> colAction;
     @FXML private Label lblTitle;
+
+    // Các control phân trang mới
     @FXML private Label lblPaginationInfo;
     @FXML private Button btnPrevPage;
+    @FXML private Label lblCurrentPage;
     @FXML private Button btnNextPage;
-    @FXML private VBox paginationControls;
-    
+
     // Filter controls
     @FXML private TextField txtSearch;
     @FXML private ComboBox<String> cbStatus;
     @FXML private DatePicker dpFrom;
     @FXML private DatePicker dpTo;
-
-    // Pagination controls (new)
-    @FXML private Label lblCurrentPage;
 
     // Side panel chi tiết
     @FXML private VBox orderDetailSidePanel;
@@ -73,6 +68,7 @@ public class OrderHistoryController implements Navigatable {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("finalAmount"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         colPayment.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
+        colDiscount.setCellValueFactory(new PropertyValueFactory<>("discount"));
 
         // Định dạng cột ID
         colId.setCellFactory(column -> new TableCell<>() {
@@ -103,7 +99,6 @@ public class OrderHistoryController implements Navigatable {
         });
 
         // Định dạng cột Tổng tiền
-        // FIX: Sử dụng CurrencyUtils để hiển thị VND thống nhất
         colTotal.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(Double item, boolean empty) {
@@ -111,7 +106,7 @@ public class OrderHistoryController implements Navigatable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(item));
+                    setText(CurrencyUtils.formatVND(item));
                     setStyle("-fx-text-fill: #FFC107; -fx-font-weight: bold; -fx-alignment: center-right;");
                 }
             }
@@ -125,7 +120,7 @@ public class OrderHistoryController implements Navigatable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(com.bookstore.frontend.util.CurrencyUtils.formatVND(item));
+                    setText(CurrencyUtils.formatVND(item));
                     setStyle("-fx-text-fill: #ff5555; -fx-alignment: center-right;");
                 }
             }
@@ -165,38 +160,19 @@ public class OrderHistoryController implements Navigatable {
             return row;
         });
 
+        setupDetailColumn();
         setupActionColumn();
-        setupFilters();
         setupPaginationControls();
-        
-        // Đăng ký listener cho PaginationSynchronizer
         registerPaginationSync();
+        setupFilters();
         
+        // Ẩn side panel khi bắt đầu
+        if (orderDetailSidePanel != null) {
+            orderDetailSidePanel.setVisible(false);
+            orderDetailSidePanel.setManaged(false);
+        }
+
         determineAndLoadData();
-    }
-    
-    /**
-     * Đăng ký đồng bộ hóa phân trang
-     */
-    private void registerPaginationSync() {
-        PaginationSynchronizer.getInstance().addListener((pageType, page, pageSize) -> {
-            if ("ORDER_HISTORY".equals(pageType)) {
-                currentPage = page;
-                loadOrderHistoryForPage();
-            }
-        });
-    }
-    
-    /**
-     * Thiết lập các nút điều khiển phân trang
-     */
-    private void setupPaginationControls() {
-        if (btnPrevPage != null) {
-            btnPrevPage.setOnAction(e -> handlePrevPage());
-        }
-        if (btnNextPage != null) {
-            btnNextPage.setOnAction(e -> handleNextPage());
-        }
     }
 
     private void setupFilters() {
@@ -232,18 +208,30 @@ public class OrderHistoryController implements Navigatable {
                 dpTo.setValue(null);
             }
         });
-
-        // Ẩn side panel khi bắt đầu
-        if (orderDetailSidePanel != null) {
-            orderDetailSidePanel.setVisible(false);
-            orderDetailSidePanel.setManaged(false);
-        }
     }
 
     @FXML
     private void handleFilter() {
         currentPage = 0;
         determineAndLoadData();
+    }
+
+    private void registerPaginationSync() {
+        PaginationSynchronizer.getInstance().addListener((pageType, page, pageSize) -> {
+            if ("ORDER_HISTORY".equals(pageType)) {
+                currentPage = page;
+                loadOrderHistoryForPage();
+            }
+        });
+    }
+
+    private void setupPaginationControls() {
+        if (btnPrevPage != null) {
+            btnPrevPage.setOnAction(e -> handlePrevPage());
+        }
+        if (btnNextPage != null) {
+            btnNextPage.setOnAction(e -> handleNextPage());
+        }
     }
 
     @FXML
@@ -284,14 +272,10 @@ public class OrderHistoryController implements Navigatable {
         }
     }
 
-    private void setupActionColumn() {
-        colAction.setCellFactory(param -> new TableCell<>() {
+    private void setupDetailColumn() {
+        colDetail.setCellFactory(param -> new TableCell<>() {
             private final Button btnView = new Button("👁");
-            private final Button btnAction = new Button();
-            private final HBox pane = new HBox(10, btnView, btnAction);
-
             {
-                pane.setAlignment(javafx.geometry.Pos.CENTER);
                 btnView.setStyle("-fx-background-color: transparent; -fx-text-fill: #FFC107; -fx-cursor: hand; -fx-font-size: 16px;");
                 btnView.setOnAction(event -> {
                     int idx = getIndex();
@@ -300,6 +284,24 @@ public class OrderHistoryController implements Navigatable {
                         onViewDetails(order);
                     }
                 });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btnView);
+                }
+            }
+        });
+    }
+
+    private void setupActionColumn() {
+        colAction.setCellFactory(param -> new TableCell<>() {
+            private final Button btnAction = new Button();
+            {
                 btnAction.setOnAction(event -> {
                     int idx = getIndex();
                     if (idx >= 0 && idx < getTableView().getItems().size()) {
@@ -318,9 +320,6 @@ public class OrderHistoryController implements Navigatable {
                     String status = order.getStatus().toUpperCase();
                     boolean isAdmin = UserSession.getInstance().isAdmin();
 
-                    pane.getChildren().clear();
-                    pane.getChildren().add(btnView);
-
                     boolean hasAction = false;
                     if (isAdmin) {
                         if ("PENDING".equals(status) || "SHIPPING".equals(status)) {
@@ -337,9 +336,10 @@ public class OrderHistoryController implements Navigatable {
                     }
 
                     if (hasAction) {
-                        pane.getChildren().add(btnAction);
+                        setGraphic(btnAction);
+                    } else {
+                        setGraphic(null);
                     }
-                    setGraphic(pane);
                 }
             }
         });
@@ -378,14 +378,11 @@ public class OrderHistoryController implements Navigatable {
                 Platform.runLater(() -> {
                     LoadingUtils.hide();
                     if (response.statusCode() == 200) {
-                        // Giảm số lượng đơn chờ ở icon User nếu chuyển sang trạng thái xử lý
                         if ("SHIPPING".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
                             OrderStatusStore.getInstance().decrementPendingOrder();
                         }
-                        // Tải lại dữ liệu trang hiện tại
                         determineAndLoadData();
                         
-                        // Cập nhật lại chi tiết nếu panel đang mở
                         if (orderDetailSidePanel != null && orderDetailSidePanel.isVisible()) {
                             try {
                                 ObjectMapper mapper = ApiClient.getInstance().getMapper();
@@ -410,10 +407,8 @@ public class OrderHistoryController implements Navigatable {
                 Platform.runLater(() -> {
                     LoadingUtils.hide();
                     if (res.statusCode() == 200) {
-                        // Tải lại dữ liệu
                         determineAndLoadData();
                         
-                        // Cập nhật lại chi tiết nếu panel đang mở
                         if (orderDetailSidePanel != null && orderDetailSidePanel.isVisible()) {
                             try {
                                 ObjectMapper mapper = ApiClient.getInstance().getMapper();
@@ -474,9 +469,6 @@ public class OrderHistoryController implements Navigatable {
         }
     }
     
-    /**
-     * Tải dữ liệu đơn hàng cho trang hiện tại (dùng cho PaginationSynchronizer callback)
-     */
     private void loadOrderHistoryForPage() {
         determineAndLoadData();
     }
