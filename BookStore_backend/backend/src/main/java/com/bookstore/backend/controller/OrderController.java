@@ -61,16 +61,9 @@ public class OrderController {
 
             @RequestParam(defaultValue = "desc")
             @Pattern(regexp = "^(?i)(asc|desc)$", message = "direction must be asc or desc")
-            String direction,
-
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
-            @RequestParam(required = false) String search
+            String direction
     ) {
-        java.time.LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
-        java.time.LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(23, 59, 59, 999999999) : null;
-        return ResponseEntity.ok(orderService.getAllOrders(page, size, sortBy, direction, status, startDateTime, endDateTime, search));
+        return ResponseEntity.ok(orderService.getAllOrders(page, size, sortBy, direction));
     }
     @GetMapping("/sales-history")
     @PreAuthorize("hasRole('ADMIN')")
@@ -109,12 +102,7 @@ public class OrderController {
             @RequestParam(defaultValue = "10")
             @Min(value = 1, message = "size must be at least 1")
             @Max(value = 100, message = "size must not exceed 100")
-            int size,
-
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
-            @RequestParam(required = false) String search
+            int size
     ) {
         if (jwt == null) {
             throw new AppException(HttpStatus.UNAUTHORIZED, "You need to log in to view your history!");
@@ -123,10 +111,7 @@ public class OrderController {
         String username = jwt.getSubject();
         User currentUser = userService.findByUsername(username);
 
-        java.time.LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
-        java.time.LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(23, 59, 59, 999999999) : null;
-
-        return ResponseEntity.ok(orderService.getOrderHistory(currentUser, page, size, status, startDateTime, endDateTime, search));
+        return ResponseEntity.ok(orderService.getOrderHistory(currentUser, page, size));
     }
 
     @PostMapping("/{id}/confirm")

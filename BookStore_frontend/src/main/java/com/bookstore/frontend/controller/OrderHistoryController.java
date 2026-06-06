@@ -16,7 +16,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,14 +28,9 @@ public class OrderHistoryController implements Navigatable {
     @FXML private TableColumn<OrderResponseDTO, String> colStatus;
     @FXML private TableColumn<OrderResponseDTO, String> colPayment;
     @FXML private TableColumn<OrderResponseDTO, Double> colDiscount;
+    @FXML private TableColumn<OrderResponseDTO, Void> colDetail;
     @FXML private TableColumn<OrderResponseDTO, Void> colAction;
     @FXML private Label lblTitle;
-
-    // Các control filter mới
-    @FXML private TextField txtSearch;
-    @FXML private ComboBox<String> cbStatus;
-    @FXML private DatePicker dpFrom;
-    @FXML private DatePicker dpTo;
 
     // Các control phân trang mới
     @FXML private Label lblPaginationInfo;
@@ -151,55 +145,15 @@ public class OrderHistoryController implements Navigatable {
             return row;
         });
 
+        setupDetailColumn();
         setupActionColumn();
-        setupFilters();
-        determineAndLoadData();
-    }
-
-    private void setupFilters() {
-        cbStatus.setItems(FXCollections.observableArrayList(
-                "Tất cả", "Chờ duyệt", "Đang giao", "Hoàn thành", "Đã hủy"
-        ));
-        cbStatus.setValue("Tất cả");
-
-        txtSearch.textProperty().addListener((obs, oldVal, newVal) -> {
-            currentPage = 0;
-            determineAndLoadData();
-        });
-        cbStatus.valueProperty().addListener((obs, oldVal, newVal) -> {
-            currentPage = 0;
-            determineAndLoadData();
-        });
-        dpFrom.valueProperty().addListener((obs, oldVal, newVal) -> {
-            currentPage = 0;
-            determineAndLoadData();
-        });
-        dpTo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            currentPage = 0;
-            determineAndLoadData();
-        });
-
-        dpFrom.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || newVal.trim().isEmpty()) {
-                dpFrom.setValue(null);
-            }
-        });
-        dpTo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || newVal.trim().isEmpty()) {
-                dpTo.setValue(null);
-            }
-        });
-
+        
         // Ẩn side panel khi bắt đầu
         if (orderDetailSidePanel != null) {
             orderDetailSidePanel.setVisible(false);
             orderDetailSidePanel.setManaged(false);
         }
-    }
 
-    @FXML
-    private void handleFilter() {
-        currentPage = 0;
         determineAndLoadData();
     }
 
@@ -233,19 +187,33 @@ public class OrderHistoryController implements Navigatable {
         }
     }
 
-    private void setupActionColumn() {
-        colAction.setCellFactory(param -> new TableCell<>() {
+    private void setupDetailColumn() {
+        colDetail.setCellFactory(param -> new TableCell<>() {
             private final Button btnView = new Button("👁");
-            private final Button btnAction = new Button();
-            private final HBox pane = new HBox(10, btnView, btnAction);
-
             {
-                pane.setAlignment(javafx.geometry.Pos.CENTER);
                 btnView.setStyle("-fx-background-color: transparent; -fx-text-fill: #FFC107; -fx-cursor: hand; -fx-font-size: 16px;");
                 btnView.setOnAction(event -> {
                     OrderResponseDTO order = getTableView().getItems().get(getIndex());
                     onViewDetails(order);
                 });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btnView);
+                }
+            }
+        });
+    }
+
+    private void setupActionColumn() {
+        colAction.setCellFactory(param -> new TableCell<>() {
+            private final Button btnAction = new Button();
+            {
                 btnAction.setOnAction(event -> handleAction(getTableView().getItems().get(getIndex())));
             }
 
@@ -258,9 +226,6 @@ public class OrderHistoryController implements Navigatable {
                     OrderResponseDTO order = getTableView().getItems().get(getIndex());
                     String status = order.getStatus().toUpperCase();
                     boolean isAdmin = UserSession.getInstance().isAdmin();
-
-                    pane.getChildren().clear();
-                    pane.getChildren().add(btnView);
 
                     boolean hasAction = false;
                     if (isAdmin) {
@@ -278,9 +243,10 @@ public class OrderHistoryController implements Navigatable {
                     }
 
                     if (hasAction) {
-                        pane.getChildren().add(btnAction);
+                        setGraphic(btnAction);
+                    } else {
+                        setGraphic(null);
                     }
-                    setGraphic(pane);
                 }
             }
         });
@@ -361,37 +327,6 @@ public class OrderHistoryController implements Navigatable {
     private void determineAndLoadData() {
         StringBuilder query = new StringBuilder();
         query.append("?page=").append(currentPage).append("&size=").append(PAGE_SIZE);
-
-        String search = txtSearch != null ? txtSearch.getText() : null;
-        if (search != null && !search.trim().isEmpty()) {
-            try {
-                query.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
-            } catch (Exception e) { e.printStackTrace(); }
-        }
-
-        String statusVal = cbStatus != null ? cbStatus.getValue() : null;
-        if (statusVal != null && !"Tất cả".equals(statusVal)) {
-            String apiStatus = "";
-            switch (statusVal) {
-                case "Chờ duyệt": apiStatus = "PENDING"; break;
-                case "Đang giao": apiStatus = "SHIPPING"; break;
-                case "Hoàn thành": apiStatus = "COMPLETED"; break;
-                case "Đã hủy": apiStatus = "CANCELED"; break;
-            }
-            if (!apiStatus.isEmpty()) {
-                query.append("&status=").append(apiStatus);
-            }
-        }
-
-        LocalDate fromDate = dpFrom != null ? dpFrom.getValue() : null;
-        if (fromDate != null) {
-            query.append("&startDate=").append(fromDate);
-        }
-
-        LocalDate toDate = dpTo != null ? dpTo.getValue() : null;
-        if (toDate != null) {
-            query.append("&endDate=").append(toDate);
-        }
 
         if (UserSession.getInstance().isAdmin()) {
             query.append("&sortBy=orderDate&direction=desc");
