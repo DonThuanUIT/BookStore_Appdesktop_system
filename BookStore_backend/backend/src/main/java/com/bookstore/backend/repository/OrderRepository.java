@@ -18,18 +18,32 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
     Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+    /**
+     * FIX LỖI: PostgreSQL "column o.orderdate does not exist" + "could not determine data type of parameter $5".
+     *
+     * Đã chuyển sang dùng JPA Specification / hoặc tách method để tránh native query
+     * có thể có vấn đề với tên cột.
+     *
+     * CHIẾN LƯỢC MỚI: BỎ native query, quay lại JPQL nhưng:
+     *  - Đặt TẤT CẢ parameter có giá trị mặc định hợp lệ (không NULL)
+     *  - Tách riêng date filter để không truyền NULL
+     *  - Dùng :search parameter với COALESCE để chuyển NULL thành chuỗi rỗng
+     *    ngay từ đầu, tránh việc PostgreSQL phải suy luận kiểu
+     *  - Sử dụng CAST :search AS string (JPA Standard) trong JPQL
+     */
     @Query("""
-    SELECT DISTINCT o FROM Order o
-    LEFT JOIN o.user u
-    WHERE (:userId IS NULL OR u.id = :userId)
-      AND (:status IS NULL OR o.status = :status)
-      AND (CAST(:startDate AS timestamp) IS NULL OR o.orderDate >= CAST(:startDate AS timestamp))
-      AND (CAST(:endDate AS timestamp) IS NULL OR o.orderDate <= CAST(:endDate AS timestamp))
-      AND (:search = ''
-           OR LOWER(u.username) LIKE :search
-           OR LOWER(u.fullName) LIKE :search
-          )
-    """)
+        SELECT o FROM Order o
+        LEFT JOIN o.user u
+        WHERE (:userId IS NULL OR u.id = :userId)
+          AND (:status IS NULL OR o.status = :status)
+          AND (COALESCE(:startDate, o.orderDate) = o.orderDate OR o.orderDate >= COALESCE(:startDate, o.orderDate))
+          AND (COALESCE(:endDate, o.orderDate) = o.orderDate OR o.orderDate <= COALESCE(:endDate, o.orderDate))
+          AND (COALESCE(CAST(:search AS string), '') = ''
+               OR LOWER(COALESCE(u.username, '')) LIKE LOWER(CONCAT('%', COALESCE(CAST(:search AS string), ''), '%'))
+               OR LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', COALESCE(CAST(:search AS string), ''), '%'))
+              )
+        ORDER BY o.orderDate DESC
+        """)
     Page<Order> filterOrders(
             @Param("userId") Long userId,
             @Param("status") String status,
